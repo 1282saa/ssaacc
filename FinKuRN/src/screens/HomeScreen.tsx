@@ -1,0 +1,384 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { StatusBar } from '../components/common/StatusBar';
+import { BackgroundGradient } from '../components/common/BackgroundGradient';
+import { TodayItem, SavingsSection, SpendingSection } from '../components/home';
+import { HOME_GRADIENTS } from '../constants/gradients';
+import { theme } from '../constants/theme';
+import { ArrowIcon } from '../components/ArrowIcon';
+import type { AppNavigation } from '../types/navigation';
+
+/**
+ * HomeScreen Component
+ *
+ * Main dashboard screen displaying user's financial overview and status.
+ * Shows personalized greeting, today's tasks, savings/spending status, and quick actions.
+ *
+ * Features:
+ * - Personalized greeting message
+ * - Today's financial tasks with D-day countdown
+ * - Policy recommendations and financial quiz cards
+ * - Savings status (managed by SavingsSection component)
+ * - Spending analysis (managed by SpendingSection component)
+ */
+export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<AppNavigation>();
+  const [showAllTodayItems, setShowAllTodayItems] = useState(false);
+
+  const savingsFilters = ['전체', '내 집 마련 적금', '여름 여행', '비상금'];
+  const spendingFilters = ['오늘', '이번 주', '이번 달'];
+
+  return (
+    <View style={styles.container}>
+      <BackgroundGradient layers={HOME_GRADIENTS} />
+
+      <StatusBar />
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* 상단 알림 버튼 */}
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.notificationButton}>
+            <Ionicons name="notifications-outline" size={28} color={theme.colors.black} />
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>3</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* 인사말 섹션 */}
+        <View style={styles.greetingSection}>
+          <Text style={styles.greetingTitle}>좋은 아침이에요, 은별님</Text>
+          <Text style={styles.greetingSubtitle}>
+            오늘은 커피값만큼 절약 도전 어떨까요? 💙
+          </Text>
+        </View>
+
+        {/* 펭귄 이미지 */}
+        <Image
+          source={{ uri: 'https://c.animaapp.com/FwW9Xg6K/img/--@2x.png' }}
+          style={styles.penguinImage}
+          resizeMode="contain"
+        />
+
+        {/* Today 카드 */}
+        <View style={styles.todayCard}>
+          <View style={styles.todayHeader}>
+            <View style={styles.todayTitleRow}>
+              <Text style={styles.todayTitle}>Today</Text>
+              <View style={styles.todayBadge}>
+                <Text style={styles.todayBadgeText}>5</Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={() => setShowAllTodayItems(!showAllTodayItems)}>
+              <Text style={styles.viewAllText}>
+                {showAllTodayItems ? '접기' : '전체 목록 보기'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.todayItemContainer}>
+            <TodayItem
+              title="공과금 납부"
+              dday="D-DAY"
+              detail={
+                <>
+                  <Text style={styles.normalText}>이번 달 전기요금 </Text>
+                  <Text style={styles.highlightText}>43,200원</Text>
+                </>
+              }
+              description="오늘 납부하지 않으면 연체료 2%가 부가돼요"
+            />
+
+            <TodayItem
+              title="청년도약계좌 서류 제출 마감"
+              dday="D-2"
+              detail={<Text style={styles.normalText}>남은 서류 2개</Text>}
+              description="이번 주 안에 제출해야 정부 지원금 받을 수 있어요"
+            />
+
+            {showAllTodayItems && (
+              <>
+                <TodayItem
+                  title="통신비 자동이체"
+                  dday="D-3"
+                  detail={
+                    <>
+                      <Text style={styles.normalText}>SK텔레콤 </Text>
+                      <Text style={styles.highlightText}>55,000원</Text>
+                    </>
+                  }
+                  description="3일 후 자동 출금 예정이에요"
+                />
+
+                <TodayItem
+                  title="적금 납입일"
+                  dday="D-5"
+                  detail={
+                    <>
+                      <Text style={styles.normalText}>내 집 마련 적금 </Text>
+                      <Text style={styles.highlightText}>500,000원</Text>
+                    </>
+                  }
+                  description="5일 후 자동 납입 예정이에요"
+                />
+
+                <TodayItem
+                  title="구독료 결제"
+                  dday="D-7"
+                  detail={
+                    <>
+                      <Text style={styles.normalText}>넷플릭스 프리미엄 </Text>
+                      <Text style={styles.highlightText}>17,000원</Text>
+                    </>
+                  }
+                  description="일주일 후 자동 결제 예정이에요"
+                />
+              </>
+            )}
+          </View>
+        </View>
+
+        {/* 정책 & 퀴즈 카드 */}
+        <View style={styles.policyRow}>
+          {/* 청년 월세 지원 정책 카드 */}
+          <TouchableOpacity style={styles.policyCardBlack} activeOpacity={0.8}>
+            <Text style={styles.policyCardTitleWhite}>청년 월세 지원 정책</Text>
+            <Text style={styles.policyCardDescWhite}>
+              은별님에게 해당되는{'\n'}지원만 가져왔어요
+            </Text>
+            <Image
+              source={{ uri: 'https://c.animaapp.com/FwW9Xg6K/img/image-1@2x.png' }}
+              style={styles.policyImage1}
+              resizeMode="contain"
+            />
+            <View style={styles.arrowButtonWhite}>
+              <ArrowIcon color={theme.colors.black} size={20} />
+            </View>
+          </TouchableOpacity>
+
+          {/* 오늘의 금융 퀴즈 카드 */}
+          <TouchableOpacity style={styles.policyCardWhite} activeOpacity={0.8}>
+            <Text style={styles.policyCardTitleBlack}>오늘의 금융 퀴즈</Text>
+            <Text style={styles.policyCardDescBlack}>
+              예금과 적금의 차이,{'\n'}함께 확인해보실래요?
+            </Text>
+            <Image
+              source={{ uri: 'https://c.animaapp.com/FwW9Xg6K/img/image-2@2x.png' }}
+              style={styles.policyImage2}
+              resizeMode="contain"
+            />
+            <View style={styles.arrowButtonBlack}>
+              <ArrowIcon color={theme.colors.white} size={20} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <SavingsSection savingsFilters={savingsFilters} />
+
+        <SpendingSection spendingFilters={spendingFilters} />
+
+        <View style={{ height: 120 }} />
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  topBar: {
+    marginTop: theme.layout.statusBarHeight,
+    paddingHorizontal: theme.spacing.lg,
+    height: 56,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  notificationButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: 6,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: theme.colors.white,
+    fontSize: 9,
+    fontWeight: '600',
+  },
+  greetingSection: {
+    paddingHorizontal: 18,
+    marginTop: theme.spacing.md,
+  },
+  greetingTitle: {
+    ...theme.typography.heading1,
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.sm,
+    flexShrink: 0,
+  },
+  greetingSubtitle: {
+    ...theme.typography.body1,
+    color: theme.colors.textPrimary,
+    maxWidth: 241,
+  },
+  penguinImage: {
+    width: 240,
+    height: 240,
+    marginLeft: 57,
+    marginTop: -4,
+  },
+  todayCard: {
+    marginHorizontal: theme.spacing.lg,
+    marginTop: 21,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.xxxl,
+    padding: theme.spacing.xl,
+  },
+  todayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 23,
+  },
+  todayTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  todayTitle: {
+    ...theme.typography.heading3,
+    color: theme.colors.textPrimary,
+  },
+  todayBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  todayBadgeText: {
+    fontFamily: 'System',
+    fontWeight: '600',
+    fontSize: 9,
+    color: theme.colors.white,
+  },
+  viewAllText: {
+    ...theme.typography.body3,
+    color: theme.colors.textTertiary,
+  },
+  todayItemContainer: {
+    gap: 11,
+  },
+  normalText: {
+    color: theme.colors.textPrimary,
+    fontWeight: '400',
+  },
+  highlightText: {
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  policyRow: {
+    flexDirection: 'row',
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    gap: theme.spacing.md,
+  },
+  policyCardBlack: {
+    flex: 1,
+    height: 152,
+    backgroundColor: theme.colors.black,
+    borderRadius: theme.borderRadius.xxxl,
+    padding: theme.spacing.xl,
+  },
+  policyCardWhite: {
+    flex: 1,
+    height: 152,
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.xxxl,
+    padding: theme.spacing.xl,
+  },
+  policyCardTitleWhite: {
+    ...theme.typography.heading4,
+    color: theme.colors.white,
+  },
+  policyCardTitleBlack: {
+    ...theme.typography.heading4,
+    color: theme.colors.textPrimary,
+    paddingLeft: 3,
+  },
+  policyCardDescWhite: {
+    ...theme.typography.body2,
+    color: '#cbcbcb',
+    marginTop: 7,
+    marginLeft: -1,
+    width: 119,
+  },
+  policyCardDescBlack: {
+    ...theme.typography.body2,
+    color: theme.colors.textSecondary,
+    marginTop: 7,
+    width: 119,
+  },
+  policyImage1: {
+    position: 'absolute',
+    top: 60,
+    left: -3,
+    width: 108,
+    height: 108,
+  },
+  policyImage2: {
+    position: 'absolute',
+    top: 81,
+    left: 23,
+    width: 62,
+    height: 62,
+  },
+  arrowButtonWhite: {
+    position: 'absolute',
+    top: 92,
+    right: theme.spacing.xl,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrowButtonBlack: {
+    position: 'absolute',
+    top: 92,
+    right: theme.spacing.xl,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: theme.colors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

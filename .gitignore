@@ -54,3 +54,16 @@ build/
 # Environment
 .env
 .env.local
+
+# Data (large files)
+data/*.json
+!data/.gitkeep
+
+# Expo / React Native
+FinKuRN/.expo/
+FinKuRN/.expo-shared/
+
+# Prototype builds
+prototypes/*/node_modules/
+prototypes/*/dist/
+prototypes/*/.vite/
