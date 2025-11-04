@@ -23,6 +23,18 @@ import type { NavigationProp } from '@react-navigation/native';
  */
 export type RootStackParamList = {
   /**
+   * Login Screen
+   * User authentication with email/password and social login
+   */
+  Login: undefined;
+
+  /**
+   * Signup Screen
+   * User registration with name, email, and password
+   */
+  Signup: undefined;
+
+  /**
    * Main Tab Navigator
    * Contains: Home, ChatbotV2, Explore
    */

@@ -17,17 +17,55 @@ import { ArrowIcon } from '../components/ArrowIcon';
 import type { AppNavigation } from '../types/navigation';
 
 /**
- * ChatbotScreenV2 Component
+ * 챗봇 메인 화면 V2 (Chatbot Main Screen V2)
  *
- * Main chatbot screen displaying premium features, quick action cards,
- * and recent chat conversations. This is the primary entry point for
- * users to interact with the FinKu chatbot.
+ * 프리미엄 기능, 빠른 액션 카드, 최근 대화 목록을 표시하는 메인 챗봇 화면입니다.
+ * FinKu 챗봇과 상호작용하기 위한 주요 진입점입니다.
  *
- * Features:
- * - Premium upgrade card with penguin mascot
- * - Quick action cards (New Chat, Finance Routine)
- * - Recent conversations list
- * - Navigation to chat and premium features
+ * @component
+ * @category UI/Screens
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * import { ChatbotScreenV2 } from './screens/ChatbotScreenV2';
+ *
+ * <ChatbotScreenV2 />
+ * ```
+ *
+ * @description
+ * 주요 섹션:
+ * - 헤더: FinKu 로고와 메뉴 버튼 (Header with Logo and Menu)
+ * - 프리미엄 카드 (Premium Card)
+ *   - Premium 배지 (Premium Badge)
+ *   - 플랜 업그레이드 버튼 (Plan Upgrade Button)
+ *   - 펭귄 마스코트 이미지 (Penguin Mascot Image)
+ * - 빠른 액션 카드 (Quick Action Cards)
+ *   - 새로운 금융 대화 시작하기 (Start New Financial Chat)
+ *   - 나의 금융 루틴 확인하기 (Check Finance Routine - Premium)
+ * - 최근 대화 목록 (Recent Conversations List)
+ *   - 청년 월세 지원금 비교 (Youth Rent Support Comparison)
+ *   - 신용카드 혜택 비교 (Credit Card Benefits Comparison)
+ *   - 청년도약계좌 요약 (Youth Leap Account Summary)
+ *
+ * @features
+ * - 대형 그라디언트 배경 (Large Gradient Background with CHAT_GRADIENTS_LARGE)
+ * - 스크롤 가능한 레이아웃 (Scrollable Layout)
+ * - 네비게이션 통합 (Navigation Integration)
+ *   - NewChat 페이지로 이동 (Navigate to NewChat)
+ *   - PlanUpgrade 페이지로 이동 (Navigate to PlanUpgrade)
+ *   - ChatConversation 페이지로 이동 (Navigate to ChatConversation)
+ *
+ * @navigation
+ * - NewChat: 새로운 대화 시작
+ * - PlanUpgrade: 프리미엄 플랜 업그레이드
+ * - ChatConversation: 기존 대화 이어가기
+ *
+ * @see {@link ChatItem}
+ * @see {@link ArrowIcon}
+ * @see {@link NewChatPage}
+ * @see {@link PlanUpgradePage}
+ * @see {@link ChatConversationPage}
  */
 export const ChatbotScreenV2: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();

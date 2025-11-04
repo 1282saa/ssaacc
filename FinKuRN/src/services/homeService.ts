@@ -1,23 +1,48 @@
 /**
- * Home Screen Data Service
+ * 홈 화면 데이터 서비스 (Home Screen Data Service)
  *
- * Handles data fetching for HomeScreen.
- * Currently returns dummy data via Promise.resolve().
- * Can be easily replaced with actual API calls later.
+ * 이 파일은 홈 화면에서 필요한 모든 데이터를 제공하는 서비스 레이어입니다.
+ * API 호출을 추상화하여 UI 컴포넌트와 백엔드 API 사이의 깔끔한 인터페이스를 제공합니다.
+ *
+ * 현재는 개발 및 테스트를 위해 더미 데이터를 반환하며,
+ * 추후 실제 API 엔드포인트로 쉽게 교체할 수 있도록 설계되었습니다.
+ *
+ * @module services/homeService
+ * @category Services
+ * @since 1.0.0
  *
  * @example
- * ```tsx
- * import { homeService } from '../services/homeService';
+ * ```typescript
+ * import { homeService } from '@/services/homeService';
  *
- * const data = await homeService.getHomeScreenData();
+ * // 홈 화면 전체 데이터 가져오기
+ * const homeData = await homeService.getHomeScreenData();
+ *
+ * // 오늘의 할 일만 가져오기
+ * const todayItems = await homeService.getTodayItems();
+ *
+ * // 적금 데이터 가져오기 (필터 적용)
+ * const savings = await homeService.getSavingsData('savings-1');
  * ```
  */
 
 import type { HomeScreenData, TodayItemData } from '../types/home';
 
 /**
- * Dummy data for HomeScreen
- * This will be replaced with actual API responses
+ * 홈 화면 더미 데이터 상수 (HomeScreen Dummy Data Constant)
+ *
+ * 개발 및 테스트를 위한 샘플 데이터입니다.
+ * 실제 API 연동 시 이 데이터는 서버 응답으로 대체됩니다.
+ *
+ * @constant
+ * @type {HomeScreenData}
+ *
+ * @description
+ * 포함된 데이터:
+ * - 사용자 인사말 및 동기부여 메시지
+ * - 오늘의 할 일 5개 (공과금, 청년도약계좌, 통신비, 적금, 구독료)
+ * - 적금 필터 옵션 및 적금 상세 정보
+ * - 지출 필터 옵션 및 카테고리별 지출 내역
  */
 const DUMMY_HOME_DATA: HomeScreenData = {
   greeting: {
@@ -122,93 +147,242 @@ const DUMMY_HOME_DATA: HomeScreenData = {
 };
 
 /**
- * HomeScreen Service
+ * 홈 서비스 클래스 (HomeScreen Service Class)
  *
- * Provides data fetching methods for HomeScreen.
- * All methods return Promises for easy migration to async API calls.
+ * 홈 화면 관련 모든 데이터 fetching 메서드를 제공하는 서비스 클래스입니다.
+ * Singleton 패턴으로 구현되어 애플리케이션 전체에서 단일 인스턴스를 공유합니다.
+ *
+ * @class HomeService
+ *
+ * @description
+ * 모든 메서드는 Promise를 반환하여 비동기 API 호출로의 쉬운 마이그레이션을 지원합니다.
+ * 현재는 더미 데이터를 반환하지만, 주석으로 표시된 TODO 부분을 실제 API 호출로 교체하면 됩니다.
+ *
+ * @example
+ * ```typescript
+ * // 싱글톤 인스턴스 사용
+ * import { homeService } from '@/services/homeService';
+ *
+ * // 컴포넌트에서 사용
+ * useEffect(() => {
+ *   const loadData = async () => {
+ *     const data = await homeService.getHomeScreenData();
+ *     setHomeData(data);
+ *   };
+ *   loadData();
+ * }, []);
+ * ```
  */
 class HomeService {
   /**
-   * Fetch complete HomeScreen data
+   * 홈 화면 전체 데이터 가져오기 (Fetch complete HomeScreen data)
    *
-   * @returns Promise resolving to HomeScreenData
+   * 홈 화면에 필요한 모든 데이터를 한 번에 가져옵니다.
+   * 인사말, 오늘의 할 일, 적금 정보, 지출 분석 등이 포함됩니다.
+   *
+   * @async
+   * @returns {Promise<HomeScreenData>} 홈 화면 전체 데이터를 담은 Promise
    *
    * @example
-   * ```tsx
-   * const data = await homeService.getHomeScreenData();
-   * setHomeData(data);
+   * ```typescript
+   * const HomeScreen = () => {
+   *   const [homeData, setHomeData] = useState<HomeScreenData | null>(null);
+   *   const [loading, setLoading] = useState(true);
+   *
+   *   useEffect(() => {
+   *     const fetchData = async () => {
+   *       try {
+   *         const data = await homeService.getHomeScreenData();
+   *         setHomeData(data);
+   *       } catch (error) {
+   *         console.error('Failed to load home data:', error);
+   *       } finally {
+   *         setLoading(false);
+   *       }
+   *     };
+   *     fetchData();
+   *   }, []);
+   * };
    * ```
+   *
+   * @todo 실제 API 엔드포인트로 교체 필요
+   * @see {@link HomeScreenData} 반환 데이터 타입
    */
   async getHomeScreenData(): Promise<HomeScreenData> {
-    // Simulate network delay (optional, for realistic behavior)
+    // 네트워크 지연 시뮬레이션 (선택사항, 리얼한 동작을 위해)
     // await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Return dummy data
-    // TODO: Replace with actual API call
+    // 더미 데이터 반환
+    // TODO: 실제 API 호출로 교체
     // const response = await fetch('/api/home');
     // return response.json();
     return Promise.resolve(DUMMY_HOME_DATA);
   }
 
   /**
-   * Fetch only today items
+   * 오늘의 할 일 목록만 가져오기 (Fetch only today items)
    *
-   * @returns Promise resolving to array of TodayItemData
+   * 홈 화면에서 오늘의 할 일 섹션에 표시될 데이터만 가져옵니다.
+   * 전체 데이터가 아닌 할 일 목록만 업데이트할 때 유용합니다.
+   *
+   * @async
+   * @returns {Promise<TodayItemData[]>} 오늘의 할 일 배열을 담은 Promise
    *
    * @example
-   * ```tsx
-   * const items = await homeService.getTodayItems();
-   * setTodayItems(items);
+   * ```typescript
+   * const TodaySection = () => {
+   *   const [items, setItems] = useState<TodayItemData[]>([]);
+   *
+   *   useEffect(() => {
+   *     const loadTodayItems = async () => {
+   *       const data = await homeService.getTodayItems();
+   *       setItems(data);
+   *     };
+   *     loadTodayItems();
+   *   }, []);
+   *
+   *   return (
+   *     <View>
+   *       {items.map(item => (
+   *         <TodayItem key={item.id} data={item} />
+   *       ))}
+   *     </View>
+   *   );
+   * };
    * ```
+   *
+   * @todo 실제 API 엔드포인트로 교체 필요
+   * @see {@link TodayItemData} 반환 데이터 타입
    */
   async getTodayItems(): Promise<TodayItemData[]> {
-    // TODO: Replace with actual API call
+    // TODO: 실제 API 호출로 교체
     // const response = await fetch('/api/today-items');
     // return response.json();
     return Promise.resolve(DUMMY_HOME_DATA.todayItems);
   }
 
   /**
-   * Fetch savings data
+   * 적금 데이터 가져오기 (Fetch savings data)
    *
-   * @param filterId - Optional filter ID
-   * @returns Promise resolving to SavingsData
+   * 사용자의 적금 정보를 가져옵니다.
+   * 필터 ID를 전달하면 특정 적금 상품의 데이터만 가져올 수 있습니다.
+   *
+   * @async
+   * @param {string} [filterId] - 필터링할 적금 ID (선택사항)
+   * @returns {Promise<SavingsData>} 적금 데이터를 담은 Promise
    *
    * @example
-   * ```tsx
-   * const savings = await homeService.getSavingsData('savings-1');
-   * setSavings(savings);
+   * ```typescript
+   * const SavingsSection = () => {
+   *   const [savings, setSavings] = useState(null);
+   *   const [selectedFilter, setSelectedFilter] = useState('');
+   *
+   *   // 필터 변경 시 데이터 다시 로드
+   *   useEffect(() => {
+   *     const loadSavings = async () => {
+   *       const data = await homeService.getSavingsData(selectedFilter);
+   *       setSavings(data);
+   *     };
+   *     loadSavings();
+   *   }, [selectedFilter]);
+   *
+   *   return (
+   *     <View>
+   *       <FilterChips
+   *         options={['전체', '적금', '예금']}
+   *         onSelect={setSelectedFilter}
+   *       />
+   *       <SavingsChart data={savings} />
+   *     </View>
+   *   );
+   * };
    * ```
+   *
+   * @todo 실제 API 엔드포인트로 교체 필요
+   * @see {@link SavingsData} 반환 데이터 타입
    */
   async getSavingsData(filterId?: string): Promise<typeof DUMMY_HOME_DATA.savings> {
-    // TODO: Replace with actual API call
+    // TODO: 실제 API 호출로 교체
     // const response = await fetch(`/api/savings${filterId ? `?filter=${filterId}` : ''}`);
     // return response.json();
     return Promise.resolve(DUMMY_HOME_DATA.savings);
   }
 
   /**
-   * Fetch spending data
+   * 지출 데이터 가져오기 (Fetch spending data)
    *
-   * @param period - Time period filter ('오늘', '이번 주', '이번 달')
-   * @returns Promise resolving to SpendingData
+   * 사용자의 지출 분석 데이터를 가져옵니다.
+   * 기간 필터를 전달하여 특정 기간의 지출 데이터를 조회할 수 있습니다.
+   *
+   * @async
+   * @param {string} [period] - 기간 필터 ('오늘', '이번 주', '이번 달' 등)
+   * @returns {Promise<SpendingData>} 지출 데이터를 담은 Promise
    *
    * @example
-   * ```tsx
-   * const spending = await homeService.getSpendingData('이번 달');
-   * setSpending(spending);
+   * ```typescript
+   * const SpendingSection = () => {
+   *   const [spending, setSpending] = useState(null);
+   *   const [period, setPeriod] = useState('이번 달');
+   *
+   *   // 기간 변경 시 데이터 다시 로드
+   *   useEffect(() => {
+   *     const loadSpending = async () => {
+   *       const data = await homeService.getSpendingData(period);
+   *       setSpending(data);
+   *     };
+   *     loadSpending();
+   *   }, [period]);
+   *
+   *   return (
+   *     <View>
+   *       <FilterChips
+   *         options={['오늘', '이번 주', '이번 달']}
+   *         selected={period}
+   *         onSelect={setPeriod}
+   *       />
+   *       <SpendingChart data={spending} />
+   *       <CategoryList categories={spending?.categories} />
+   *     </View>
+   *   );
+   * };
    * ```
+   *
+   * @todo 실제 API 엔드포인트로 교체 필요
+   * @see {@link SpendingData} 반환 데이터 타입
    */
   async getSpendingData(period?: string): Promise<typeof DUMMY_HOME_DATA.spending> {
-    // TODO: Replace with actual API call
+    // TODO: 실제 API 호출로 교체
     // const response = await fetch(`/api/spending${period ? `?period=${period}` : ''}`);
     // return response.json();
     return Promise.resolve(DUMMY_HOME_DATA.spending);
   }
 }
 
-// Export singleton instance
+/**
+ * 홈 서비스 싱글톤 인스턴스 (HomeService Singleton Instance)
+ *
+ * 애플리케이션 전체에서 공유되는 HomeService의 단일 인스턴스입니다.
+ * 이 인스턴스를 import하여 홈 화면 관련 API를 호출하세요.
+ *
+ * @constant
+ * @type {HomeService}
+ *
+ * @example
+ * ```typescript
+ * import { homeService } from '@/services/homeService';
+ *
+ * const data = await homeService.getHomeScreenData();
+ * ```
+ */
 export const homeService = new HomeService();
 
-// Export dummy data for testing purposes
+/**
+ * 더미 데이터 Export (Dummy Data Export)
+ *
+ * 테스트 및 개발 목적으로 더미 데이터를 export합니다.
+ * 단위 테스트나 스토리북에서 mock 데이터로 사용할 수 있습니다.
+ *
+ * @constant
+ * @type {HomeScreenData}
+ */
 export { DUMMY_HOME_DATA };

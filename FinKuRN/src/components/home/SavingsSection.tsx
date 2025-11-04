@@ -1,22 +1,66 @@
+/**
+ * 저축 현황 섹션 컴포넌트 (Savings Section Component)
+ *
+ * 필터링 기능과 함께 저축 현황 개요를 표시하는 섹션입니다.
+ * 차트 시각화와 필터 칩이 포함된 저축 카드를 보여줍니다.
+ *
+ * @module Components/Home/SavingsSection
+ * @category UI/Components/Home
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * import { SavingsSection } from './components/home/SavingsSection';
+ *
+ * <SavingsSection savingsFilters={['전체', '내 집 마련 적금', '여름 여행', '비상금']} />
+ * ```
+ *
+ * @description
+ * 주요 기능:
+ * - 저축 현황 토글 (Savings Status Toggle) - 섹션 표시/숨김
+ * - 필터 칩 통합 (Filter Chips Integration)
+ * - 막대 차트 시각화 (Bar Chart Visualization)
+ *   - 내 집 마련 적금: 24% (12,340,000원)
+ *   - 비상금: 63% (630,000원)
+ *   - 여름 여행 적금: 100% (2,000,000원)
+ * - 월 저축 금액 표시 (Monthly Savings Amount Display)
+ * - 목표 달성률 표시 (Goal Achievement Rate Display)
+ *
+ * @state
+ * - savingsVisible: boolean - 저축 현황 표시 여부
+ * - selectedSavingsFilter: string | null - 선택된 필터 (기본값: "전체")
+ *
+ * @features
+ * - 카드 기반 레이아웃 (Card-based Layout)
+ * - 3개 막대 차트 (3-bar Chart) - 각기 다른 높이와 색상
+ * - Pretendard Variable 폰트 (Pretendard Variable Font)
+ * - 파란색 배경 카드 (#a9bff3)
+ *
+ * @styling
+ * - cardHeight: 311px
+ * - borderRadius: 32px
+ * - gap: 18px
+ *
+ * @see {@link FilterChips}
+ * @see {@link HomeScreen}
+ */
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { theme } from "../../constants/theme";
 import { FilterChips } from "./FilterChips";
 
 /**
- * SavingsSection Component
+ * 저축 섹션 컴포넌트 Props (Savings Section Component Props)
  *
- * Displays the savings overview section with filtering capabilities.
- * Shows savings card with chart visualization and filter chips.
- *
- * @param savingsFilters - Array of filter options for savings
- *
- * @example
- * ```tsx
- * <SavingsSection savingsFilters={['전체', '내 집 마련 적금', '여름 여행', '비상금']} />
- * ```
+ * @interface SavingsSectionProps
+ * @property {string[]} savingsFilters - 저축 필터 옵션 배열 (Array of Filter Options for Savings)
  */
 interface SavingsSectionProps {
+  /**
+   * 저축 필터 옵션 배열 (Array of Filter Options for Savings)
+   *
+   * @example ['전체', '내 집 마련 적금', '여름 여행', '비상금']
+   */
   savingsFilters: string[];
 }
 

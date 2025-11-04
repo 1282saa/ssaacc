@@ -12,6 +12,7 @@ The services layer provides a clean separation between data fetching logic and U
 services/
 ├── homeService.ts      # HomeScreen data fetching
 ├── chatService.ts      # Chat functionality data fetching
+├── authService.ts      # Authentication and user management
 ├── index.ts           # Barrel export
 └── README.md          # This file
 ```
@@ -174,6 +175,61 @@ Deletes a chat conversation.
 ```tsx
 const success = await chatService.deleteChat('chat-1');
 // Returns: boolean
+```
+
+---
+
+### authService
+
+**Location**: `src/services/authService.ts`
+
+**Purpose**: Handles user authentication and authorization
+
+**Methods**:
+
+#### `login(email: string, password: string)`
+
+Authenticates user with email and password.
+
+```tsx
+import { authService } from '../services';
+
+const response = await authService.login('user@example.com', 'password123');
+if (response.success && response.token) {
+  // Store token and navigate
+  await SecureStore.setItemAsync('authToken', response.token);
+  navigation.navigate('Main');
+}
+// Returns: LoginResponse {
+//   success: boolean
+//   token?: string
+//   user?: { id, email, name }
+//   error?: string
+// }
+```
+
+#### `socialLogin(provider: SocialProvider)`
+
+Authenticates user with social login provider (kakao, naver, google).
+
+```tsx
+const response = await authService.socialLogin('kakao');
+if (response.success && response.token) {
+  await SecureStore.setItemAsync('authToken', response.token);
+  navigation.navigate('Main');
+}
+// Returns: LoginResponse
+```
+
+#### `logout()`
+
+Logs out current user.
+
+```tsx
+await authService.logout();
+await SecureStore.deleteItemAsync('authToken');
+navigation.navigate('Login');
+// Returns: void
 ```
 
 ## Usage in Components

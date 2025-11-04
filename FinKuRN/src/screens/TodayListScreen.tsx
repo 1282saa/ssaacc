@@ -1,3 +1,53 @@
+/**
+ * 오늘의 할 일 목록 화면 (Today List Screen)
+ *
+ * 오늘의 모든 금융 작업과 마감일을 포괄적으로 표시하는 화면입니다.
+ * HomeScreen의 "Today" 섹션에 표시되는 항목들의 전체 보기입니다.
+ *
+ * @module Screens/TodayListScreen
+ * @category UI/Screens
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * // HomeScreen에서 네비게이션
+ * navigation.navigate('TodayList');
+ * ```
+ *
+ * @description
+ * 표시 내용:
+ * - 헤더 (Header)
+ *   - 제목: "오늘의 할 일" (Today's Tasks)
+ *   - 부제: "총 5개의 항목이 있어요" (Total Item Count)
+ * - 작업 항목 카드 목록 (Task Item Cards List)
+ *   - D-DAY 카운트다운 (D-DAY Countdown for Each Task)
+ *   - 금액 표시 (Financial Amount Displays for Payments)
+ *   - 작업 설명 및 결과 (Task Descriptions and Consequences)
+ *   - 긴급도별 분류 (Categorized by Urgency: D-DAY, D-2, D-3, etc.)
+ *
+ * @features
+ * - 그라디언트 배경 (Gradient Background with TODAY_GRADIENTS)
+ * - 스크롤 가능한 카드 목록 (Scrollable Card-based Layout)
+ * - 일관된 카드 디자인 (Consistent Card Design)
+ * - D-day 색상 강조 (D-day Color Highlighting with Primary Color)
+ *
+ * @taskTypes
+ * 포함되는 작업 유형:
+ * - 공과금 납부 (Bill Payments)
+ * - 서류 제출 마감 (Document Submission Deadlines)
+ * - 자동이체 알림 (Auto-debit Notifications)
+ * - 적금 납입일 (Savings Deposit Dates)
+ * - 구독료 갱신 (Subscription Renewals)
+ *
+ * @styling
+ * - cardBorderRadius: 20px (xl)
+ * - cardPadding: 20px (xl)
+ * - gap: 12px (md)
+ * - backgroundColor: white
+ *
+ * @see {@link HomeScreen}
+ * @see {@link TodayItem}
+ */
 import React from 'react';
 import {
   View,
@@ -13,31 +63,26 @@ import { theme } from '../constants/theme';
 import type { AppNavigation } from '../types/navigation';
 
 /**
- * TodayListScreen Component
+ * 오늘의 할 일 목록 화면 컴포넌트 (Today List Screen Component)
  *
- * Displays a comprehensive list of all today's financial tasks and deadlines.
- * This is a full-page view of items that appear in the HomeScreen's "Today" section.
- *
- * Features:
- * - Header with total item count
- * - D-DAY countdown for each task
- * - Financial amount displays for payments
- * - Task descriptions and consequences
- * - Categorized by urgency (D-DAY, D-2, D-3, etc.)
- * - Clean card-based layout for each task
- *
- * Task types include:
- * - Bill payments
- * - Document submission deadlines
- * - Auto-debit notifications
- * - Savings deposit dates
- * - Subscription renewals
+ * 오늘의 금융 작업 전체 목록을 카드 형태로 표시합니다.
  *
  * @component
+ *
+ * @returns {JSX.Element} 오늘의 할 일 목록 화면
+ *
  * @example
  * ```tsx
  * <TodayListScreen />
  * ```
+ *
+ * @note
+ * 실제 구현 시:
+ * - 백엔드 API에서 작업 목록 조회
+ * - 작업 완료 상태 관리
+ * - 작업 우선순위 정렬
+ * - 작업 알림 설정
+ * 등의 기능이 추가되어야 합니다.
  */
 export const TodayListScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();

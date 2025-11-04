@@ -1,3 +1,63 @@
+/**
+ * 탐색 화면 (Explore Screen)
+ *
+ * 다양한 정부 혜택, 지원 프로그램, 금융 정책을 표시하는 메인 탐색/발견 화면입니다.
+ *
+ * @module Screens/ExploreScreen
+ * @category UI/Screens
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * // 하단 탭 네비게이션에서 접근
+ * <Tab.Screen name="Page3" component={ExploreScreen} />
+ * ```
+ *
+ * @description
+ * 주요 섹션:
+ * - 검색 바 (Search Bar)
+ *   - 정책, 지원금 제도 검색 (Search for Policies and Support Programs)
+ *   - 햄버거 메뉴 버튼 (Hamburger Menu Button)
+ * - 추천 정책 카드 (Featured Policy Card)
+ *   - 서울시 청년 월세 지원 제도 (Seoul Youth Rent Support)
+ *   - D-day 카운트다운 (D-day Countdown)
+ *   - 지원 금액 정보 (Support Amount Information)
+ *   - 신청 링크 (Application Link)
+ *   - 통계 정보 (Statistics Information)
+ * - 빠른 접근 카드 (Quick Access Shortcuts)
+ *   - 개인화된 혜택 바로가기 (Personalized Benefits Quick Access)
+ *   - 청년 월세 지원, 청년도약계좌, 통신비 절감 지원
+ * - 청년 지원 혜택 섹션 (Youth Support Benefits Section)
+ *   - 수평 스크롤 카드 (Horizontal Scroll Cards)
+ * - 금융 혜택 섹션 (Financial Benefits Section)
+ *   - 수평 스크롤 카드 (Horizontal Scroll Cards)
+ * - 금융 소식 섹션 (Financial News Section)
+ *   - FinKu 추천 금융 뉴스 (FinKu Recommended Financial News)
+ *   - 뉴스 기사 3개 (3 News Articles)
+ *   - 조회수 및 반응 통계 (View Count and Reaction Statistics)
+ * - 페이지 인디케이터 (Page Indicators)
+ *   - 추천 콘텐츠 캐러셀용 (For Featured Content Carousel)
+ *
+ * @features
+ * - 그라디언트 배경 (Gradient Background with EXPLORE_GRADIENTS)
+ * - 스크롤 가능한 레이아웃 (Scrollable Layout)
+ * - 카드 기반 UI 디자인 (Card-based UI Design)
+ * - 수평 스크롤 섹션 (Horizontal Scroll Sections)
+ * - 이미지 플레이스홀더 (Image Placeholders)
+ * - 터치 가능한 카드 (Touchable Cards with Arrow Icons)
+ *
+ * @styling
+ * - searchBarHeight: 52px
+ * - mainCardHeight: 283px
+ * - benefitCardSize: 157x152px
+ * - newsImageSize: 110x110px
+ * - borderRadius: 36px (main card), 32px (benefit cards)
+ *
+ * @see {@link ArrowIcon}
+ * @see {@link StatusBar}
+ * @see {@link BackgroundGradient}
+ * @see {@link EXPLORE_GRADIENTS}
+ */
 import React from 'react';
 import {
   View,
@@ -17,28 +77,30 @@ import { theme } from '../constants/theme';
 const { width } = Dimensions.get('window');
 
 /**
- * ExploreScreen Component
+ * 탐색 화면 컴포넌트 (Explore Screen Component)
  *
- * The main explore/discover screen that displays various government benefits,
- * support programs, and financial policies available to users.
- *
- * Features:
- * - Search bar for finding policies and support programs
- * - Featured policy card with recommendations (Seoul Youth Rent Support)
- * - Quick access shortcuts to personalized benefits
- * - Youth support benefits section with horizontal scroll
- * - Financial benefits section
- * - Latest financial news from FinKu
- * - Page indicators for featured content carousel
- *
- * This screen uses the EXPLORE_GRADIENTS for consistent background styling
- * and the StatusBar component for the top system UI.
+ * 사용자가 이용 가능한 정부 혜택, 지원 프로그램, 금융 정책을 탐색하고 발견할 수 있는 메인 화면입니다.
+ * EXPLORE_GRADIENTS를 사용하여 일관된 배경 스타일을 제공하고,
+ * StatusBar 컴포넌트로 상단 시스템 UI를 표시합니다.
  *
  * @component
+ *
+ * @returns {JSX.Element} 탐색 화면
+ *
  * @example
  * ```tsx
  * <ExploreScreen />
  * ```
+ *
+ * @note
+ * 실제 구현 시:
+ * - 검색 기능 구현
+ * - 정책/혜택 데이터 API 연동
+ * - 개인화 추천 알고리즘
+ * - 뉴스 기사 동적 로딩
+ * - 북마크/저장 기능
+ * - 필터링 및 정렬 기능
+ * 등이 추가되어야 합니다.
  */
 export const ExploreScreen: React.FC = () => {
   return (

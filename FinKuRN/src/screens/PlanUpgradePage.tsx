@@ -1,3 +1,43 @@
+/**
+ * 플랜 업그레이드 페이지 (Plan Upgrade Page)
+ *
+ * 프리미엄 플랜 업그레이드 페이지로, 사용자가 프리미엄 기능과 혜택에 대해 알아볼 수 있습니다.
+ *
+ * @module Screens/PlanUpgradePage
+ * @category UI/Screens
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * // ChatbotScreenV2에서 네비게이션
+ * navigation.navigate('PlanUpgrade');
+ * ```
+ *
+ * @description
+ * 표시 내용:
+ * - 별 아이콘 (Star Icon) - 프리미엄 브랜딩
+ * - Premium 플랜 타이틀 (Premium Plan Title)
+ * - 설명 문구 (Description) - "모든 기능을 무제한으로 사용하세요"
+ * - 돌아가기 버튼 (Back Button)
+ *
+ * @features
+ * - 중앙 정렬 레이아웃 (Centered Layout Design)
+ * - Ionicons 별 아이콘 (Ionicons Star Icon) - 100px
+ * - 뒤로가기 네비게이션 (Back Navigation)
+ * - 흰색 배경 (White Background)
+ *
+ * @styling
+ * - flex: 1
+ * - justifyContent: 'center'
+ * - alignItems: 'center'
+ * - fontSize: 28 (title), 16 (description)
+ * - color: theme.colors.primary
+ *
+ * @navigation
+ * - goBack(): 이전 화면으로 돌아가기
+ *
+ * @see {@link ChatbotScreenV2}
+ */
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,22 +46,26 @@ import { theme } from '../constants/theme';
 import type { AppNavigation } from '../types/navigation';
 
 /**
- * PlanUpgradePage Component
+ * 플랜 업그레이드 페이지 컴포넌트 (Plan Upgrade Page Component)
  *
- * Displays the premium plan upgrade page where users can learn about
- * premium features and benefits.
- *
- * Features:
- * - Premium plan description and benefits
- * - Visual star icon for premium branding
- * - Back navigation button
- * - Clean, centered layout design
+ * 프리미엄 플랜에 대한 정보를 표시하고 사용자가 업그레이드할 수 있도록 안내합니다.
  *
  * @component
+ *
+ * @returns {JSX.Element} 플랜 업그레이드 화면
+ *
  * @example
  * ```tsx
  * <PlanUpgradePage />
  * ```
+ *
+ * @note
+ * 현재는 플레이스홀더 화면입니다. 실제 구현 시:
+ * - 플랜별 가격 표시
+ * - 기능 비교표
+ * - 결제 연동
+ * - 구독 관리 기능
+ * 등이 추가되어야 합니다.
  */
 export const PlanUpgradePage: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
