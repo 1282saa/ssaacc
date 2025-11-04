@@ -253,17 +253,17 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   todayCard: {
-    marginHorizontal: theme.spacing.lg,
+    marginHorizontal: 16,
     marginTop: 21,
     backgroundColor: theme.colors.white,
     borderRadius: theme.borderRadius.xxxl,
-    padding: theme.spacing.xl,
+    padding: 20,
   },
   todayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 23,
+    marginBottom: 43,
   },
   todayTitleRow: {
     flexDirection: 'row',
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
   },
   policyRow: {
     flexDirection: 'row',
-    marginHorizontal: theme.spacing.lg,
+    marginHorizontal: 16,
     marginTop: theme.spacing.md,
     gap: theme.spacing.md,
   },
@@ -314,14 +314,14 @@ const styles = StyleSheet.create({
     height: 152,
     backgroundColor: theme.colors.black,
     borderRadius: theme.borderRadius.xxxl,
-    padding: theme.spacing.xl,
+    padding: 20,
   },
   policyCardWhite: {
     flex: 1,
     height: 152,
     backgroundColor: theme.colors.white,
     borderRadius: theme.borderRadius.xxxl,
-    padding: theme.spacing.xl,
+    padding: 20,
   },
   policyCardTitleWhite: {
     ...theme.typography.heading4,
@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   arrowButtonWhite: {
     position: 'absolute',
     top: 92,
-    right: theme.spacing.xl,
+    right: 20,
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
   arrowButtonBlack: {
     position: 'absolute',
     top: 92,
-    right: theme.spacing.xl,
+    right: 20,
     width: 40,
     height: 40,
     borderRadius: 20,

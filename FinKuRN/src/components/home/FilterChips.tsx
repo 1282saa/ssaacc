@@ -68,29 +68,35 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
 
 const styles = StyleSheet.create({
   filterScrollView: {
-    marginTop: 18,
+    // No marginTop - controlled by parent
   },
   filterContainer: {
     flexDirection: 'row',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: 16,
     gap: 6,
-    marginTop: 18,
+    // No marginTop - controlled by parent
   },
   filterChip: {
     paddingHorizontal: 28,
-    paddingVertical: theme.spacing.md,
+    paddingVertical: 12,
     backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.full,
+    borderRadius: 100,
   },
   filterChipActive: {
     backgroundColor: theme.colors.black,
   },
   filterChipText: {
-    ...theme.typography.button,
+    fontFamily: 'Pretendard Variable',
+    fontSize: 13,
+    fontWeight: '600',
     color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   filterChipTextActive: {
-    ...theme.typography.button,
+    fontFamily: 'Pretendard Variable',
+    fontSize: 13,
+    fontWeight: '600',
     color: theme.colors.white,
+    textAlign: 'center',
   },
 });
