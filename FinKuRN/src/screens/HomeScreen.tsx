@@ -18,17 +18,49 @@ import { ArrowIcon } from '../components/ArrowIcon';
 import type { AppNavigation } from '../types/navigation';
 
 /**
- * HomeScreen Component
+ * 홈 화면 (Home Screen)
  *
- * Main dashboard screen displaying user's financial overview and status.
- * Shows personalized greeting, today's tasks, savings/spending status, and quick actions.
+ * 사용자의 금융 현황과 상태를 표시하는 메인 대시보드 화면입니다.
+ * 개인화된 인사말, 오늘의 할 일, 저축/소비 현황, 빠른 액션 기능을 제공합니다.
  *
- * Features:
- * - Personalized greeting message
- * - Today's financial tasks with D-day countdown
- * - Policy recommendations and financial quiz cards
- * - Savings status (managed by SavingsSection component)
- * - Spending analysis (managed by SpendingSection component)
+ * @component
+ * @category UI/Screens
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * import { HomeScreen } from './screens/HomeScreen';
+ *
+ * <HomeScreen />
+ * ```
+ *
+ * @description
+ * 주요 섹션:
+ * - 개인화된 인사말 메시지 (Personalized Greeting Message)
+ * - 알림 버튼 with 배지 (Notification Button with Badge)
+ * - 펭귄 마스코트 이미지 (Penguin Mascot)
+ * - Today 카드: 오늘의 금융 할 일 목록 (Today's Financial Tasks)
+ *   - D-day 카운트다운 (D-day Countdown)
+ *   - 공과금, 서류 제출, 자동이체, 적금, 구독료 등 (Bills, Documents, Auto-debit, Savings, Subscriptions)
+ * - 정책 추천 카드 (Policy Recommendation Card)
+ *   - 청년 월세 지원 정책 (Youth Rent Support Policy)
+ * - 금융 퀴즈 카드 (Financial Quiz Card)
+ *   - 예금과 적금의 차이 (Difference between Deposit and Savings)
+ * - 저축 현황 섹션 (Savings Section) - {@link SavingsSection}
+ * - 소비 분석 섹션 (Spending Section) - {@link SpendingSection}
+ *
+ * @state
+ * - showAllTodayItems: Today 카드의 전체 항목 표시 여부
+ *
+ * @features
+ * - 스크롤 가능한 레이아웃 (Scrollable Layout)
+ * - 그라디언트 배경 (Gradient Background with HOME_GRADIENTS)
+ * - 동적 항목 표시/숨김 (Dynamic Item Show/Hide)
+ * - 카드 기반 UI 디자인 (Card-based UI Design)
+ *
+ * @see {@link TodayItem}
+ * @see {@link SavingsSection}
+ * @see {@link SpendingSection}
  */
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();

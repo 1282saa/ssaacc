@@ -18,16 +18,48 @@ import { theme } from '../constants/theme';
 import type { AppNavigation } from '../types/navigation';
 
 /**
- * NewChatPage Component
+ * 새 채팅 페이지 (New Chat Page)
  *
- * Displays the new chat interface with suggested questions.
- * Users can start a conversation by selecting a suggested question or typing their own.
+ * 추천 질문과 함께 새로운 채팅 인터페이스를 표시하는 화면입니다.
+ * 사용자는 추천 질문을 선택하거나 직접 질문을 입력하여 대화를 시작할 수 있습니다.
  *
- * Features:
- * - Welcome message and guidance
- * - Suggested question cards
- * - Input controls for custom questions
- * - Navigation to active chat conversation
+ * @component
+ * @category UI/Screens
+ * @since 1.0.0
+ *
+ * @example
+ * ```tsx
+ * import { NewChatPage } from './screens/NewChatPage';
+ *
+ * <NewChatPage />
+ * ```
+ *
+ * @description
+ * 주요 섹션:
+ * - 환영 메시지와 안내 (Welcome Message and Guidance)
+ * - 추천 질문 카드 (Suggested Question Cards)
+ *   - "청년 월세 지원금 받을 수 있을까?"
+ *   - "요즘 청년 금융지원제도 뭐 있어?"
+ *   - "신용점수는 어떻게 올라가는거야?"
+ *   - "이번 달 내 소비 괜찮을까?" (Premium 아이콘 포함)
+ * - 입력 컨트롤 (Input Controls)
+ *   - 텍스트 입력 (Text Input)
+ *   - 음성 입력 버튼 (Voice Input)
+ *   - 첨부 파일 버튼 (Attachment)
+ *   - 전송 버튼 (Send Button)
+ *
+ * @features
+ * - 키보드 회피 레이아웃 (KeyboardAvoidingView)
+ * - 그라디언트 배경 (Gradient Background with CHAT_GRADIENTS_LARGE)
+ * - 스크롤 가능한 질문 카드 목록 (Scrollable Question Cards)
+ * - 질문 카드 클릭 시 ChatConversation으로 네비게이션
+ * - 2열 그리드 레이아웃 (Two-column Grid Layout)
+ *
+ * @navigation
+ * - ChatConversation: 선택된 질문으로 대화 시작
+ *
+ * @see {@link ChatConversationPage}
+ * @see {@link ChatbotScreenV2}
  */
 export const NewChatPage: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
@@ -39,6 +71,22 @@ export const NewChatPage: React.FC = () => {
     '이번 달 내 소비 괜찮을까?',
   ];
 
+  /**
+   * 추천 질문 선택 핸들러 (Question Selection Handler)
+   *
+   * 사용자가 추천 질문 카드를 클릭하면 해당 질문으로 대화를 시작합니다.
+   *
+   * @function handleQuestionPress
+   * @param {string} question - 선택된 질문 텍스트
+   *
+   * @description
+   * ChatConversation 페이지로 네비게이션하며 질문 텍스트를 chatTitle로 전달합니다.
+   *
+   * @example
+   * ```tsx
+   * handleQuestionPress('청년 월세 지원금 받을 수 있을까?');
+   * ```
+   */
   const handleQuestionPress = (question: string) => {
     navigation.navigate('ChatConversation', { chatTitle: question });
   };

@@ -1,11 +1,68 @@
+/**
+ * 네비게이션 아이콘 컴포넌트 (Navigation Icon Components)
+ *
+ * 하단 탭 네비게이션에서 사용되는 SVG 기반 아이콘 컴포넌트 모음입니다.
+ * 각 아이콘은 활성/비활성 상태에 따라 색상과 크기를 커스터마이징할 수 있습니다.
+ *
+ * @module Components/NavIcons
+ * @category UI/Components/Navigation
+ * @since 1.0.0
+ *
+ * @description
+ * 포함된 아이콘:
+ * - HomeIcon: 홈 대시보드 아이콘 (Home Dashboard Icon)
+ * - ChatIcon: 챗봇 메인 아이콘 (Chatbot Main Icon)
+ * - ManageSearchIcon: 탐색/혜택 검색 아이콘 (Explore/Search Icon)
+ * - LibraryAddCheckIcon: 체크리스트 아이콘 (Checklist Icon)
+ * - PersonIcon: 프로필 아이콘 (Profile Icon)
+ *
+ * @example
+ * ```tsx
+ * import { HomeIcon, ChatIcon } from './components/NavIcons';
+ *
+ * // 활성 상태 (흰색, 24px)
+ * <HomeIcon color="#fff" size={24} />
+ *
+ * // 비활성 상태 (회색, 24px)
+ * <ChatIcon color="#CCCCCC" size={24} />
+ * ```
+ *
+ * @see {@link MainNavigator}
+ */
 import React from 'react';
 import Svg, { Path, G, Defs, ClipPath, Rect } from 'react-native-svg';
 
+/**
+ * 아이콘 공통 Props (Common Icon Props)
+ *
+ * @interface IconProps
+ * @property {string} [color] - SVG path의 fill/stroke 색상 (Icon Color)
+ * @property {number} [size] - 아이콘의 가로/세로 크기 (Icon Size in pixels)
+ */
 interface IconProps {
+  /** SVG 색상 (Icon color - fill or stroke depending on icon) */
   color?: string;
+  /** 아이콘 크기 (Icon size in pixels) */
   size?: number;
 }
 
+/**
+ * 홈 아이콘 컴포넌트 (Home Icon Component)
+ *
+ * 하단 탭 네비게이션의 홈 탭을 나타내는 집 모양 아이콘입니다.
+ *
+ * @component
+ * @param {IconProps} props - 아이콘 props
+ * @param {string} [props.color='white'] - 아이콘 색상 (기본값: 흰색)
+ * @param {number} [props.size=24] - 아이콘 크기 (기본값: 24px)
+ * @returns {JSX.Element} SVG 홈 아이콘
+ *
+ * @example
+ * ```tsx
+ * // 활성 상태 (흰색)
+ * <HomeIcon color="#fff" size={24} />
+ * ```
+ */
 export const HomeIcon: React.FC<IconProps> = ({ color = 'white', size = 24 }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -17,6 +74,23 @@ export const HomeIcon: React.FC<IconProps> = ({ color = 'white', size = 24 }) =>
   );
 };
 
+/**
+ * 채팅 아이콘 컴포넌트 (Chat Icon Component)
+ *
+ * 하단 탭 네비게이션의 채팅 탭을 나타내는 말풍선 아이콘입니다.
+ *
+ * @component
+ * @param {IconProps} props - 아이콘 props
+ * @param {string} [props.color='#CCCCCC'] - 아이콘 색상 (기본값: 회색)
+ * @param {number} [props.size=24] - 아이콘 크기 (기본값: 24px)
+ * @returns {JSX.Element} SVG 채팅 아이콘
+ *
+ * @example
+ * ```tsx
+ * // 비활성 상태 (회색)
+ * <ChatIcon color="#CCCCCC" size={24} />
+ * ```
+ */
 export const ChatIcon: React.FC<IconProps> = ({ color = '#CCCCCC', size = 24 }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -28,6 +102,23 @@ export const ChatIcon: React.FC<IconProps> = ({ color = '#CCCCCC', size = 24 }) 
   );
 };
 
+/**
+ * 탐색 검색 아이콘 컴포넌트 (Manage Search Icon Component)
+ *
+ * 하단 탭 네비게이션의 탐색/혜택 탭을 나타내는 검색 아이콘입니다.
+ *
+ * @component
+ * @param {IconProps} props - 아이콘 props
+ * @param {string} [props.color='#CCCCCC'] - 아이콘 색상 (기본값: 회색)
+ * @param {number} [props.size=24] - 아이콘 크기 (기본값: 24px)
+ * @returns {JSX.Element} SVG 탐색 검색 아이콘
+ *
+ * @example
+ * ```tsx
+ * // 활성 상태 (흰색)
+ * <ManageSearchIcon color="#fff" size={24} />
+ * ```
+ */
 export const ManageSearchIcon: React.FC<IconProps> = ({ color = '#CCCCCC', size = 24 }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -39,6 +130,23 @@ export const ManageSearchIcon: React.FC<IconProps> = ({ color = '#CCCCCC', size 
   );
 };
 
+/**
+ * 체크리스트 아이콘 컴포넌트 (Library Add Check Icon Component)
+ *
+ * 하단 탭 네비게이션의 체크리스트 탭을 나타내는 아이콘입니다.
+ *
+ * @component
+ * @param {IconProps} props - 아이콘 props
+ * @param {string} [props.color='#CCCCCC'] - 아이콘 색상 (기본값: 회색)
+ * @param {number} [props.size=24] - 아이콘 크기 (기본값: 24px)
+ * @returns {JSX.Element} SVG 체크리스트 아이콘
+ *
+ * @example
+ * ```tsx
+ * // 플레이스홀더 화면용 대형 아이콘
+ * <LibraryAddCheckIcon size={100} color={theme.colors.primary} />
+ * ```
+ */
 export const LibraryAddCheckIcon: React.FC<IconProps> = ({ color = '#CCCCCC', size = 24 }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -57,6 +165,26 @@ export const LibraryAddCheckIcon: React.FC<IconProps> = ({ color = '#CCCCCC', si
   );
 };
 
+/**
+ * 프로필 아이콘 컴포넌트 (Person Icon Component)
+ *
+ * 하단 탭 네비게이션의 프로필 탭을 나타내는 사람 아이콘입니다.
+ *
+ * @component
+ * @param {IconProps} props - 아이콘 props
+ * @param {string} [props.color='#CCCCCC'] - 아이콘 테두리 색상 (기본값: 회색)
+ * @param {number} [props.size=24] - 아이콘 크기 (기본값: 24px)
+ * @returns {JSX.Element} SVG 프로필 아이콘
+ *
+ * @note
+ * 이 아이콘은 다른 아이콘들과 달리 fill이 아닌 stroke를 사용합니다.
+ *
+ * @example
+ * ```tsx
+ * // 활성 상태 (흰색 테두리)
+ * <PersonIcon color="#fff" size={24} />
+ * ```
+ */
 export const PersonIcon: React.FC<IconProps> = ({ color = '#CCCCCC', size = 24 }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
