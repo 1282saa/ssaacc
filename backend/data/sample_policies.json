@@ -1,0 +1,374 @@
+[
+  {
+    "policy_id": "POLICY_001",
+    "title": "청년 우대 적금",
+    "description": "만 19세부터 34세까지의 청년을 대상으로 하는 우대 금리 적금 상품입니다. 일반 적금 대비 연 2%p 높은 금리를 제공하며, 월 최대 50만원까지 납입 가능합니다. 서울 지역 거주자의 경우 추가로 0.5%p 우대금리를 받을 수 있습니다.",
+    "category": "금융_적금",
+    "subcategory": "청년_지원",
+    "age_range": "19-34세",
+    "region": "전국",
+    "region_detail": ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종"],
+    "target_group": ["청년", "대학생", "취업준비생", "사회초년생"],
+    "benefits": [
+      "연 최대 5% 우대금리",
+      "월 50만원 한도 납입",
+      "만기 시 이자소득세 감면",
+      "중도해지 패널티 면제 (특정 조건)"
+    ],
+    "requirements": {
+      "age": {
+        "min": 19,
+        "max": 34
+      },
+      "income": {
+        "max": 5000
+      },
+      "employment_status": ["재직", "구직중", "학생"],
+      "residence": "전국"
+    },
+    "application_method": "시중은행 모바일앱 또는 영업점 방문",
+    "required_documents": [
+      "신분증",
+      "소득증빙서류 (재직자)",
+      "재학증명서 (학생)"
+    ],
+    "url": "https://example.com/youth-savings",
+    "contact": "1588-1234",
+    "tags": ["적금", "청년", "우대금리", "저축", "금융"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_002",
+    "title": "대학생 학자금 대출",
+    "description": "대학 재학 중인 학생을 위한 저금리 학자금 대출 상품입니다. 등록금 및 생활비 대출이 가능하며, 재학 중에는 이자만 납부하고 졸업 후 원금 상환이 시작됩니다. 소득 구간에 따라 금리 우대 혜택을 받을 수 있습니다.",
+    "category": "교육_학자금",
+    "subcategory": "대학생_지원",
+    "age_range": "18-35세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["대학생", "대학원생"],
+    "benefits": [
+      "저금리 연 1.7-2.9%",
+      "재학 중 원금 상환 유예",
+      "소득 구간별 금리 우대",
+      "중도상환 수수료 면제"
+    ],
+    "requirements": {
+      "age": {
+        "min": 18,
+        "max": 35
+      },
+      "education": ["대학 재학", "대학원 재학"],
+      "income": {
+        "max": 10000
+      }
+    },
+    "application_method": "한국장학재단 웹사이트 또는 모바일앱",
+    "required_documents": [
+      "재학증명서",
+      "가족관계증명서",
+      "소득증빙서류"
+    ],
+    "url": "https://example.com/student-loan",
+    "contact": "1599-2000",
+    "tags": ["학자금", "대출", "대학생", "저금리", "교육"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_003",
+    "title": "청년 전세자금 대출",
+    "description": "무주택 청년의 주거 안정을 위한 전세자금 대출 상품입니다. 최대 3억원까지 대출 가능하며, 시중은행 대비 낮은 금리로 이용할 수 있습니다. 부부 합산 연소득 5천만원 이하 또는 단독 세대주인 경우 신청 가능합니다.",
+    "category": "주거_전세",
+    "subcategory": "청년_주거지원",
+    "age_range": "19-34세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["청년", "무주택자", "신혼부부"],
+    "benefits": [
+      "연 1.5-2.1% 저금리",
+      "최대 3억원 대출",
+      "최장 10년 대출 기간",
+      "중도상환 수수료 면제"
+    ],
+    "requirements": {
+      "age": {
+        "min": 19,
+        "max": 34
+      },
+      "income": {
+        "max": 5000
+      },
+      "housing_status": "무주택"
+    },
+    "application_method": "주택도시기금 포털 또는 은행 영업점",
+    "required_documents": [
+      "신분증",
+      "소득증빙서류",
+      "전세계약서",
+      "주민등록등본"
+    ],
+    "url": "https://example.com/youth-jeonse",
+    "contact": "1566-9009",
+    "tags": ["전세", "대출", "청년", "주거", "무주택"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_004",
+    "title": "중소기업 청년 취업 지원금",
+    "description": "중소기업에 취업한 청년에게 지급되는 취업 장려금입니다. 3년간 매년 최대 300만원을 지원하며, 중소기업 근무를 장려하고 청년 실업 문제를 완화하기 위한 정책입니다. 6개월 이상 재직 시 첫 지급이 이루어집니다.",
+    "category": "고용_취업지원",
+    "subcategory": "청년_일자리",
+    "age_range": "18-34세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["청년", "구직자", "중소기업 재직자"],
+    "benefits": [
+      "연 최대 300만원 지원",
+      "최대 3년간 지급",
+      "별도 신청 간소화",
+      "세금 면제"
+    ],
+    "requirements": {
+      "age": {
+        "min": 18,
+        "max": 34
+      },
+      "employment_status": ["중소기업 재직"],
+      "employment_duration": {
+        "min_months": 6
+      }
+    },
+    "application_method": "고용노동부 워크넷 또는 회사를 통한 신청",
+    "required_documents": [
+      "재직증명서",
+      "급여명세서",
+      "사업자등록증 사본"
+    ],
+    "url": "https://example.com/youth-employment",
+    "contact": "1350",
+    "tags": ["취업", "청년", "중소기업", "지원금", "고용"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_005",
+    "title": "창업 지원 사업비",
+    "description": "청년 창업가를 위한 초기 사업비 지원 프로그램입니다. 사업 아이디어 심사를 통해 선정되면 최대 5천만원의 사업비를 지원받을 수 있습니다. 멘토링, 사무공간 제공 등 추가 지원 혜택도 포함되어 있습니다.",
+    "category": "창업_지원",
+    "subcategory": "청년_창업",
+    "age_range": "20-39세",
+    "region": "전국",
+    "region_detail": ["서울", "경기", "부산", "대구"],
+    "target_group": ["청년", "예비창업자", "초기창업자"],
+    "benefits": [
+      "최대 5천만원 사업비 지원",
+      "전문가 멘토링 제공",
+      "사무공간 무상 제공 (6개월)",
+      "네트워킹 기회 제공"
+    ],
+    "requirements": {
+      "age": {
+        "min": 20,
+        "max": 39
+      },
+      "business_status": ["예비창업자", "창업 3년 이내"]
+    },
+    "application_method": "창업진흥원 웹사이트를 통한 온라인 신청",
+    "required_documents": [
+      "사업계획서",
+      "신분증",
+      "사업자등록증 (기창업자)"
+    ],
+    "url": "https://example.com/startup-support",
+    "contact": "1357",
+    "tags": ["창업", "청년", "사업비", "멘토링", "스타트업"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_006",
+    "title": "서울시 청년 월세 지원",
+    "description": "서울시 거주 무주택 청년을 위한 월세 지원 정책입니다. 소득 및 재산 요건을 충족하면 매월 최대 20만원의 월세를 10개월간 지원받을 수 있습니다. 1인 가구도 신청 가능하며, 청년의 주거 부담을 경감하기 위한 서울시 특화 정책입니다.",
+    "category": "주거_월세",
+    "subcategory": "지역_특화_주거지원",
+    "age_range": "19-39세",
+    "region": "서울",
+    "region_detail": ["서울"],
+    "target_group": ["청년", "무주택자", "1인가구"],
+    "benefits": [
+      "월 최대 20만원 지원",
+      "10개월간 지급",
+      "1인 가구 신청 가능",
+      "소득 구간별 차등 지원"
+    ],
+    "requirements": {
+      "age": {
+        "min": 19,
+        "max": 39
+      },
+      "income": {
+        "max": 4000
+      },
+      "residence": "서울시",
+      "housing_status": "무주택"
+    },
+    "application_method": "서울시 복지포털 또는 동주민센터 방문",
+    "required_documents": [
+      "임대차계약서",
+      "소득증빙서류",
+      "주민등록등본",
+      "통장 사본"
+    ],
+    "url": "https://example.com/seoul-monthly-rent",
+    "contact": "120",
+    "tags": ["월세", "청년", "서울", "주거", "무주택"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_007",
+    "title": "국민연금 추납 지원",
+    "description": "국민연금 납부 이력이 부족한 청년을 위한 추납 지원 제도입니다. 과거 미납 기간에 대해 추가 납부 시 일부 금액을 지원받을 수 있으며, 노후 대비를 위한 연금 수령액을 늘릴 수 있습니다.",
+    "category": "금융_연금",
+    "subcategory": "노후_대비",
+    "age_range": "18-34세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["청년", "국민연금 가입자"],
+    "benefits": [
+      "추납 금액의 50% 지원",
+      "최대 500만원 한도",
+      "노후 연금 수령액 증대",
+      "세액 공제 혜택"
+    ],
+    "requirements": {
+      "age": {
+        "min": 18,
+        "max": 34
+      },
+      "pension_status": "국민연금 가입자",
+      "income": {
+        "max": 6000
+      }
+    },
+    "application_method": "국민연금공단 지사 방문 또는 온라인 신청",
+    "required_documents": [
+      "신분증",
+      "소득증빙서류",
+      "국민연금 가입증명서"
+    ],
+    "url": "https://example.com/pension-support",
+    "contact": "1355",
+    "tags": ["연금", "청년", "노후대비", "추납", "국민연금"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_008",
+    "title": "청년 내일채움공제",
+    "description": "중소기업에 취업한 청년이 2년 또는 3년간 근속하면 목돈을 마련할 수 있는 공제 상품입니다. 청년, 기업, 정부가 함께 적립하여 만기 시 최대 3천만원 이상의 자산을 형성할 수 있습니다. 중도 퇴사 시에도 일부 금액을 수령할 수 있습니다.",
+    "category": "고용_자산형성",
+    "subcategory": "청년_일자리",
+    "age_range": "15-34세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["청년", "중소기업 재직자", "신규 취업자"],
+    "benefits": [
+      "2년형: 1,600만원 수령",
+      "3년형: 3,000만원 수령",
+      "기업·정부 매칭 적립",
+      "이자소득 비과세"
+    ],
+    "requirements": {
+      "age": {
+        "min": 15,
+        "max": 34
+      },
+      "employment_status": ["중소기업 정규직"],
+      "employment_duration": {
+        "min_months": 6
+      }
+    },
+    "application_method": "중소벤처기업진흥공단 웹사이트 또는 회사를 통한 신청",
+    "required_documents": [
+      "재직증명서",
+      "근로계약서",
+      "사업자등록증 사본"
+    ],
+    "url": "https://example.com/tomorrow-fund",
+    "contact": "1357",
+    "tags": ["공제", "청년", "중소기업", "자산형성", "적립"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_009",
+    "title": "디지털 역량 강화 교육 바우처",
+    "description": "청년의 디지털 역량 강화를 위한 교육비 지원 프로그램입니다. AI, 데이터 분석, 프로그래밍, 디자인 등 다양한 디지털 교육 과정을 수강할 수 있으며, 1인당 최대 100만원의 교육비를 지원받을 수 있습니다.",
+    "category": "교육_직업훈련",
+    "subcategory": "디지털_역량",
+    "age_range": "18-34세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["청년", "구직자", "이직 준비자", "재직자"],
+    "benefits": [
+      "최대 100만원 교육비 지원",
+      "다양한 디지털 교육 과정",
+      "온·오프라인 교육 선택 가능",
+      "수료 시 수료증 발급"
+    ],
+    "requirements": {
+      "age": {
+        "min": 18,
+        "max": 34
+      },
+      "employment_status": ["구직중", "재직", "학생"]
+    },
+    "application_method": "고용노동부 HRD-Net 웹사이트",
+    "required_documents": [
+      "신분증",
+      "재직증명서 또는 재학증명서"
+    ],
+    "url": "https://example.com/digital-education",
+    "contact": "1350",
+    "tags": ["교육", "청년", "디지털", "직업훈련", "바우처"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  },
+  {
+    "policy_id": "POLICY_010",
+    "title": "청년 건강검진 지원",
+    "description": "만 20세부터 34세까지의 청년을 대상으로 한 무료 건강검진 프로그램입니다. 기본 건강검진 외에도 정신건강 검사, 치과 검진 등을 포함하며, 조기에 건강 문제를 발견하여 관리할 수 있도록 지원합니다.",
+    "category": "보건_건강",
+    "subcategory": "청년_건강",
+    "age_range": "20-34세",
+    "region": "전국",
+    "region_detail": ["전국"],
+    "target_group": ["청년", "미취업자", "재직자"],
+    "benefits": [
+      "무료 건강검진 제공",
+      "정신건강 검사 포함",
+      "치과 검진 포함",
+      "건강상담 서비스 제공"
+    ],
+    "requirements": {
+      "age": {
+        "min": 20,
+        "max": 34
+      }
+    },
+    "application_method": "국민건강보험공단 지사 또는 검진기관 예약",
+    "required_documents": [
+      "신분증",
+      "건강보험증"
+    ],
+    "url": "https://example.com/youth-health-checkup",
+    "contact": "1577-1000",
+    "tags": ["건강검진", "청년", "보건", "정신건강", "치과"],
+    "created_at": "2024-01-01",
+    "updated_at": "2024-01-01"
+  }
+]

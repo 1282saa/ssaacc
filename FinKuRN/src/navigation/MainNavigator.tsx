@@ -106,14 +106,17 @@ const TabNavigator = () => {
           right: 30,
           height: 60,
           borderRadius: 100,
-          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          backgroundColor: '#FFFFFF',
           borderTopWidth: 0,
           paddingTop: 10,
           paddingBottom: 2,
           paddingLeft: 0,
           paddingRight: 0,
-          elevation: 0,
-          shadowOpacity: 0,
+          elevation: 12,
+          shadowColor: '#000000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.25,
+          shadowRadius: 12,
         },
         tabBarItemStyle: {
           flex: 1,
@@ -151,7 +154,7 @@ const TabNavigator = () => {
 
           return (
             <View style={styles.inactiveIconWithBorder}>
-              <IconComponent color="rgba(255, 255, 255, 0.6)" size={24} />
+              <IconComponent color="#A0A0A0" size={24} />
             </View>
           );
         },
@@ -294,7 +297,5 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#A0A0A0',
   },
 });
