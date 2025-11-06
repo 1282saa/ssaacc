@@ -328,6 +328,108 @@ npm run dev
 | **Search Timeout** | 5초 | 검색 타임아웃 |
 | **nprobe** | 10 | IVF 인덱스 탐색 클러스터 수 |
 
+#### Reranking Strategy (검색 품질 향상)
+
+**Reranking**은 초기 벡터 검색 결과를 더 정교한 모델로 재정렬하여 검색 품질을 향상시키는 기법입니다.
+
+**현재 워크플로우 (Without Rerank)**:
+```
+Query → Titan Embedding → Milvus Vector Search → Top-5 Results → Response Generator
+```
+
+**개선된 워크플로우 (With Rerank)**:
+```
+Query → Titan Embedding → Milvus Vector Search → Top-10 Results
+  ↓
+Reranker (Cross-Encoder 또는 AWS Bedrock Rerank)
+  ↓
+Top-3 Reranked Results → Response Generator
+```
+
+**Reranking 전략**:
+
+| Aspect | Value | 설명 |
+|--------|-------|------|
+| **Initial Retrieval** | Top-10 | Milvus에서 먼저 더 많은 후보 검색 |
+| **Reranking Model** | AWS Bedrock Rerank 또는 Cross-Encoder | Query-Document 쌍의 관련성 직접 평가 |
+| **Final Selection** | Top-3 | Reranking 후 상위 3개만 Response Generator에 전달 |
+| **Rerank Temperature** | 0.1 | 결정론적 재정렬 |
+
+**Reranking 장점**:
+
+1. **검색 정확도 향상**:
+   - 벡터 유사도만으로는 놓칠 수 있는 의미적 관련성 포착
+   - Cross-Encoder는 Query와 Document를 동시에 고려하여 더 정확한 평가
+
+2. **RAG 품질 개선**:
+   - Response Generator에게 더 관련성 높은 정책 전달
+   - 불필요한 정보 제거로 응답 품질 향상
+
+3. **효율성**:
+   - 초기 벡터 검색은 빠르게 후보 필터링
+   - 비용이 높은 Reranker는 소수 후보에만 적용
+
+**구현 옵션**:
+
+**Option 1: AWS Bedrock Rerank API** (추천)
+```python
+# Policy Search Agent에서 Reranking 추가
+from langchain_aws import BedrockRerank
+
+reranker = BedrockRerank(
+    model_id="anthropic.rerank-v1:0",  # 가상의 모델 ID
+    top_n=3
+)
+
+# Milvus에서 Top-10 검색
+initial_results = milvus_client.search(query_embedding, top_k=10)
+
+# Reranking
+reranked_results = reranker.rerank(
+    query=query,
+    documents=[doc["content"] for doc in initial_results]
+)
+```
+
+**Option 2: Cohere Rerank API**
+```python
+import cohere
+
+co = cohere.Client(api_key="...")
+reranked = co.rerank(
+    query=query,
+    documents=[doc["content"] for doc in initial_results],
+    top_n=3,
+    model="rerank-multilingual-v2.0"  # 한국어 지원
+)
+```
+
+**Option 3: Cross-Encoder (Self-Hosted)**
+```python
+from sentence_transformers import CrossEncoder
+
+cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2")
+scores = cross_encoder.predict([
+    (query, doc["content"]) for doc in initial_results
+])
+# 점수 기준 정렬 후 Top-3 선택
+```
+
+**성능 예상치**:
+
+| Metric | Without Rerank | With Rerank | 개선률 |
+|--------|---------------|-------------|-------|
+| **검색 정확도 (Precision@3)** | 65% | 85% | +20% |
+| **응답 관련성** | 70% | 88% | +18% |
+| **평균 응답 시간** | 18초 | 20초 | +2초 |
+| **비용 (per query)** | $0.05 | $0.07 | +40% |
+
+**도입 시 고려사항**:
+
+- Reranking은 추가 API 호출이 필요하므로 응답 시간과 비용 증가
+- Top-10 → Top-3로 줄이면 응답 시간은 최소화하면서 품질 향상 가능
+- 한국어 정책 데이터에 최적화된 Reranker 선택 중요
+
 #### API Rate Limits & Timeouts
 
 | Service | Rate Limit | Timeout | Retry Strategy |
