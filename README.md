@@ -184,6 +184,7 @@ npm run dev
 | **MCP** | FastMCP | - | Model Context Protocol |
 | **Vector DB** | Milvus | 2.3+ | 정책 임베딩 저장/검색 |
 | **Graph DB** | Neo4j | 5.x | 관계 분석 (Phase 2) |
+| **News APIs** | Tavily, BigKinds | - | 실시간 뉴스 크롤링 |
 | **Containerization** | Docker Compose | - | 멀티 컨테이너 오케스트레이션 |
 
 ### AI Models
@@ -285,48 +286,94 @@ User Query → Supervisor → Policy Search → Response Generator → User
 - **출력**: 사용자 친화적인 최종 응답
 - **전략**: RAG (Retrieval-Augmented Generation)
 
+**4. News Agent** (`news_agent.py`)
+- **역할**: 정책 관련 최신 뉴스 수집 및 분석
+- **입력**: 정책 키워드, 검색 날짜 범위
+- **출력**: 관련 뉴스 기사 리스트 (제목, 요약, URL, 발행일)
+- **도구**:
+  - **Tavily WebSearch API**: 실시간 웹 검색
+  - **빅카인즈 (BigKinds) API**: 한국 언론사 뉴스 데이터베이스
+
 ### Prompt Engineering Techniques
 
 각 에이전트는 **고급 프롬프트 엔지니어링 기법**을 활용하여 성능과 정확도를 극대화합니다.
+
+> **중요**: 모든 에이전트 프롬프트는 **XML 태그 기반 구조화**를 따릅니다. Claude는 XML 태그를 통해 프롬프트의 각 섹션을 명확히 구분하고, 더 정확한 응답을 생성할 수 있습니다.
 
 #### 1. Chain-of-Thought (CoT) Reasoning
 
 **Supervisor Agent**에서 사용자 의도를 분석할 때 단계별 추론 과정을 명시합니다.
 
 ```python
-# supervisor.py 시스템 프롬프트 (일부)
+# supervisor.py 시스템 프롬프트 (XML 태그 구조)
 """
-사용자 메시지를 분석하여 다음 단계를 결정하세요.
+<system_role>
+당신은 Multi-Agent 시스템의 Supervisor로, 사용자 의도를 분석하여 적절한 에이전트로 라우팅합니다.
+</system_role>
 
-추론 단계:
+<task>
+사용자 메시지를 분석하여 다음 에이전트 중 하나를 선택하세요:
+- policy_search: 정책 검색이 필요한 경우
+- response_generator: 단순 응답 생성이 필요한 경우
+- news_agent: 정책 관련 뉴스가 필요한 경우
+- end: 대화 종료
+</task>
+
+<reasoning_steps>
 1. 사용자가 정책 검색을 요청하는가?
 2. 이미 충분한 정보가 수집되었는가?
-3. 사용자에게 추가 질문이 필요한가?
+3. 최신 뉴스 정보가 필요한가?
+4. 사용자에게 추가 질문이 필요한가?
+</reasoning_steps>
 
-각 단계를 고려한 후 최종 결정을 내리세요.
+<output_format>
+JSON 형식으로 다음 에이전트를 반환:
+{"next_agent": "policy_search", "reason": "이유"}
+</output_format>
 """
 ```
 
-**효과**: 복잡한 의사결정 과정에서 오류 감소, 추론 과정 추적 가능
+**효과**: 복잡한 의사결정 과정에서 오류 감소, 추론 과정 추적 가능, 프롬프트 섹션 명확화
 
 #### 2. Persona-Based Prompting
 
 **Response Generator Agent**는 **금융 전문가 페르소나**를 부여받아 일관성 있는 응답을 생성합니다.
 
 ```python
-# response_generator.py 시스템 프롬프트 (일부)
+# response_generator.py 시스템 프롬프트 (XML 태그 구조)
 """
+<persona>
 당신은 청년을 위한 친절한 금융 전문가입니다.
+이름: 핀쿠(FinKu)
+</persona>
 
-특징:
+<characteristics>
 - 복잡한 금융 용어를 쉽게 설명합니다
 - 사용자의 상황(나이, 지역, 직업)을 고려한 맞춤형 조언을 제공합니다
 - 긍정적이고 격려하는 어조를 사용합니다
 - 구체적인 수치와 예시를 활용합니다
+</characteristics>
+
+<context>
+<user_profile>
+나이: {age}
+지역: {region}
+고용 상태: {employment_status}
+</user_profile>
+
+<retrieved_policies>
+{policies_json}
+</retrieved_policies>
+</context>
+
+<instructions>
+위 정책 정보를 바탕으로 사용자에게 맞춤형 금융 조언을 제공하세요.
+반드시 검색된 정책 정보만 사용하고, 없는 정보는 만들지 마세요.
+</instructions>
 """
 ```
 
-**효과**: 응답 품질 향상, 사용자 만족도 증가, 브랜드 일관성 유지
+**효과**: 응답 품질 향상, 사용자 만족도 증가, 브랜드 일관성 유지, 컨텍스트 명확화
 
 #### 3. ReAct (Reasoning + Acting) Pattern
 
@@ -449,12 +496,180 @@ LangGraph Agent → FastMCP → Tool Function → Milvus/Neo4j
 | **사용자 만족도** | - | Phase 2에서 측정 예정 |
 | **에이전트 라우팅 정확도** | 92% | 테스트 100건 기준 |
 
+### News Crawling & Real-time Updates
+
+**News Agent**는 정책 관련 최신 뉴스를 수집하여 사용자에게 실시간 정보를 제공합니다.
+
+#### 뉴스 소스
+
+**1. Tavily WebSearch API**
+- **특징**: 실시간 웹 검색, 다양한 소스 커버
+- **사용 케이스**: 최신 정책 발표, 정부 공지사항
+- **장점**:
+  - 빠른 응답 속도
+  - 다양한 언론사 및 공식 사이트 크롤링
+  - 검색 결과 랭킹 및 관련도 점수 제공
+
+```python
+# Tavily API 사용 예시 (XML 태그 프롬프트)
+"""
+<task>
+"{policy_keyword}" 관련 최신 뉴스를 검색하세요.
+</task>
+
+<search_parameters>
+- 키워드: {policy_keyword}
+- 날짜 범위: 최근 30일
+- 지역: 대한민국
+- 언어: 한국어
+</search_parameters>
+
+<output_requirements>
+각 뉴스 기사마다 다음 정보를 포함:
+- 제목
+- 요약 (2-3문장)
+- 출처 (언론사명)
+- 발행일
+- URL
+</output_requirements>
+"""
+```
+
+**2. 빅카인즈 (BigKinds) API**
+- **특징**: 한국언론진흥재단의 공식 뉴스 아카이브
+- **커버리지**: 국내 주요 언론사 54개
+- **사용 케이스**: 정책 관련 심층 분석 기사
+- **장점**:
+  - 신뢰할 수 있는 언론사 데이터
+  - 정확한 메타데이터 (카테고리, 키워드)
+  - 기사 전문 제공
+
+```python
+# BigKinds API 사용 예시
+"""
+<search_config>
+<endpoint>https://www.bigkinds.or.kr/api/search</endpoint>
+<authentication>API_KEY: {bigkinds_api_key}</authentication>
+</search_config>
+
+<query>
+<keyword>청년 정책</keyword>
+<date_range>
+  <start>2024-01-01</start>
+  <end>2024-12-31</end>
+</date_range>
+<news_category>정치,경제</news_category>
+<provider>조선일보,중앙일보,한겨레,경향신문</provider>
+</query>
+
+<processing>
+1. API 응답 파싱
+2. 정책 관련성 점수 계산 (Claude 활용)
+3. Top-K 기사 선정
+4. 요약 생성 (Claude Summarization)
+</processing>
+"""
+```
+
+#### News Agent 워크플로우
+
+```
+User Query ("청년 적금 정책 최신 뉴스 알려줘")
+  ↓
+Supervisor Agent (news_agent로 라우팅)
+  ↓
+News Agent
+  ├─ Tavily API 호출 (실시간 검색)
+  ├─ BigKinds API 호출 (아카이브 검색)
+  ├─ 중복 제거 및 관련도 순 정렬
+  └─ Claude로 요약 생성
+  ↓
+Response Generator (뉴스 + 정책 정보 통합 응답)
+  ↓
+User
+```
+
+#### XML 태그 기반 News Agent 프롬프트
+
+```python
+# news_agent.py 시스템 프롬프트
+"""
+<system_role>
+당신은 금융 정책 관련 뉴스를 수집하고 분석하는 News Agent입니다.
+</system_role>
+
+<available_tools>
+1. tavily_search: 실시간 웹 검색
+2. bigkinds_search: 한국 언론사 뉴스 아카이브 검색
+</available_tools>
+
+<task>
+사용자가 요청한 정책 키워드에 대한 최신 뉴스를 검색하고 분석하세요.
+</task>
+
+<workflow>
+1. <keyword_extraction>
+   사용자 메시지에서 핵심 키워드 추출
+   예: "청년 적금 정책" → ["청년", "적금", "정책"]
+</keyword_extraction>
+
+2. <parallel_search>
+   Tavily와 BigKinds를 병렬로 호출
+</parallel_search>
+
+3. <deduplication>
+   중복 기사 제거 (제목 유사도 > 0.8)
+</deduplication>
+
+4. <relevance_scoring>
+   각 기사의 정책 관련성 점수 계산 (0-1)
+   기준: 키워드 매칭, 내용 관련성, 출처 신뢰도
+</relevance_scoring>
+
+5. <summarization>
+   Top-5 기사에 대해 2-3문장 요약 생성
+</summarization>
+</workflow>
+
+<output_format>
+<news_results>
+  <article>
+    <title>기사 제목</title>
+    <summary>요약</summary>
+    <source>언론사</source>
+    <date>발행일</date>
+    <url>링크</url>
+    <relevance_score>0.95</relevance_score>
+  </article>
+  ...
+</news_results>
+</output_format>
+"""
+```
+
+#### 환경 변수 설정
+
+```bash
+# .env 파일
+TAVILY_API_KEY=tvly-xxxxxxxxxxxxxxxxxxxxxx
+BIGKINDS_API_KEY=bk-xxxxxxxxxxxxxxxxxxxxxx
+```
+
+#### 기대 효과
+
+- **실시간성**: 최신 정책 변경 사항을 즉시 반영
+- **신뢰성**: 공식 언론사 데이터 활용
+- **맥락 제공**: 정책 검색 결과에 관련 뉴스 추가
+- **사용자 참여도 증가**: 최신 이슈에 대한 관심 유도
+
 ### Future Enhancements
 
 - [ ] **Self-Reflection**: Agent가 자신의 응답을 평가하고 개선
 - [ ] **Multi-Turn Refinement**: 사용자 피드백 기반 정책 재검색
 - [ ] **Cypher Agent**: Neo4j 관계 분석을 통한 정책 간 연관성 탐색
 - [ ] **Memory System**: 사용자별 선호도 및 이력 저장
+- [ ] **News Sentiment Analysis**: 뉴스 기사의 긍정/부정 분석
+- [ ] **Policy Change Tracking**: 정책 변경 이력 추적 및 알림
 
 ## API Integration
 
