@@ -27,7 +27,7 @@ Supervisor → Policy Search → **Response Generator** → Synthesizer → 사�
 
 from typing import Dict, Any
 from app.langgraph.state import AgentState, add_intermediate_step
-from langchain_anthropic import ChatAnthropic
+from app.llm_config import get_chat_llm  # ⭐ AWS Bedrock 또는 Direct API 자동 선택
 from langchain_core.messages import HumanMessage, SystemMessage
 import os
 from loguru import logger
@@ -37,14 +37,11 @@ from loguru import logger
 # LLM 초기화
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Claude 3.5 Sonnet 사용
+# Claude 3.5 Sonnet 사용 (AWS Bedrock 또는 Direct API)
 # - 자연스러운 대화체 응답 생성
 # - 정책 정보를 쉬운 언어로 설명
-llm = ChatAnthropic(
-    model="claude-3-5-sonnet-20241022",
-    anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-    temperature=0.7,  # 창의적이고 자연스러운 응답을 위해 높은 temperature
-)
+# - 환경 변수 USE_AWS_BEDROCK에 따라 자동 선택
+llm = get_chat_llm(temperature=0.7)  # 창의적이고 자연스러운 응답을 위해 높은 temperature
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
