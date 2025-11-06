@@ -127,48 +127,91 @@ async def send_message(chat_id: str, request: Request):
     """
     채팅 메시지 전송 엔드포인트
 
-    Flow:
+    ## Flow:
     1. 사용자 메시지 수신
     2. LangGraph Workflow 실행
        - Supervisor Agent: 의도 파악 & 라우팅
-       - Specialized Agents: 각자 역할 수행
-       - Synthesizer Agent: 최종 응답 생성
+       - Specialized Agents: 각자 역할 수행 (Policy Search, Eligibility Check 등)
+       - Response Generator: 최종 응답 생성
     3. 응답 반환
 
-    TODO: 실제 LangGraph 워크플로우 구현
+    ## Request Body:
+    ```json
+    {
+        "message": "25살인데 적금 추천해줘",
+        "context": {
+            "age": 25,
+            "region": "서울",
+            "employment_status": "재직"
+        }
+    }
+    ```
+
+    ## Response:
+    ```json
+    {
+        "id": "msg_1234567890",
+        "chatId": "chat_123",
+        "content": "25세시라면 청년 우대 적금이 딱이에요! ...",
+        "role": "assistant",
+        "timestamp": "2024-01-01T12:00:00",
+        "metadata": {
+            "workflow_status": "success",
+            "agents_triggered": ["supervisor", "policy_search", "response_generator"],
+            "policies_found": 3
+        }
+    }
+    ```
     """
     try:
         body = await request.json()
         user_message = body.get("message", "")
         user_context = body.get("context", {})
 
-        logger.info(f"Chat {chat_id}: Received message: {user_message}")
+        logger.info(f"💬 Chat {chat_id}: Received message: {user_message}")
 
-        # TODO: LangGraph 워크플로우 실행
-        # from app.langgraph.graph import run_workflow
-        # response = await run_workflow(user_message, user_context)
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # LangGraph 워크플로우 실행
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-        # 임시 응답 (구현 완료 전까지)
-        mock_response = {
+        from app.langgraph.graph import run_workflow
+
+        # 워크플로우 실행 및 최종 응답 받기
+        final_response = await run_workflow(
+            user_message=user_message,
+            user_context=user_context
+        )
+
+        logger.info(f"✅ Chat {chat_id}: Workflow completed")
+
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # 응답 포맷팅
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        response = {
             "id": f"msg_{datetime.utcnow().timestamp()}",
             "chatId": chat_id,
-            "content": f"[테스트 응답] 메시지를 받았습니다: '{user_message}'\n\n실제 LangGraph 워크플로우는 아직 구현 중입니다.",
+            "content": final_response,
             "role": "assistant",
             "timestamp": datetime.utcnow().isoformat(),
             "metadata": {
-                "workflow_status": "not_implemented",
-                "agents_triggered": [],
-                "tools_used": [],
+                "workflow_status": "success",
+                "architecture": "메이크리 AI 워크플로우",
+                "agents": ["supervisor", "policy_search", "response_generator"],
             },
         }
 
-        return mock_response
+        return response
 
     except Exception as e:
-        logger.error(f"Error processing message: {str(e)}")
+        logger.error(f"❌ Chat {chat_id}: Error processing message: {str(e)}")
         return JSONResponse(
             status_code=500,
-            content={"error": "Internal server error", "detail": str(e)},
+            content={
+                "error": "Internal server error",
+                "detail": str(e),
+                "chatId": chat_id
+            },
         )
 
 
