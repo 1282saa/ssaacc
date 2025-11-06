@@ -14,39 +14,154 @@ FinKuRN은 **AI 기반 금융 정책 추천 시스템**으로, 청년들에게 �
 
 ## Architecture
 
+### System Overview
+
 ```mermaid
 graph TB
-    subgraph "Frontend"
+    subgraph "Frontend Layer"
         Mobile[React Native App<br/>Expo]
     end
 
-    subgraph "Backend API"
-        API[FastAPI Server<br/>:8000]
-        LG[LangGraph Workflow]
-        Supervisor[Supervisor Agent]
-        PolicySearch[Policy Search Agent]
-        ResponseGen[Response Generator Agent]
+    subgraph "Backend API Layer"
+        API[FastAPI Server<br/>Port 8000]
     end
 
-    subgraph "AI Services"
-        Bedrock[AWS Bedrock<br/>Claude 3.5 Sonnet v1]
-        Titan[Titan Embeddings V2<br/>1024 dimensions]
+    subgraph "AI Orchestration Layer - LangGraph Multi-Agent"
+        LG[LangGraph StateGraph]
+        Supervisor[Supervisor Agent<br/>Temperature: 0.1]
+        PolicyAgent[Policy Search Agent<br/>Temperature: 0.3]
+        ResponseAgent[Response Generator<br/>Temperature: 0.7]
+        NewsAgent[News Agent<br/>Temperature: 0.3]
     end
 
-    subgraph "Databases"
-        Milvus[(Milvus Vector DB<br/>정책 임베딩)]
-        Neo4j[(Neo4j Graph DB<br/>관계 분석)]
+    subgraph "Tool Layer - FastMCP"
+        MCP[FastMCP Server]
+        SearchTool[search_policies]
+        NewsTool[search_news]
     end
 
-    Mobile --> API
+    subgraph "AI Services - AWS Bedrock"
+        Claude[Claude 3.5 Sonnet v1<br/>Max Tokens: 4000]
+        Titan[Titan Embeddings V2<br/>Dimensions: 1024]
+    end
+
+    subgraph "External APIs"
+        Tavily[Tavily WebSearch]
+        BigKinds[BigKinds API]
+    end
+
+    subgraph "Database Layer"
+        Milvus[(Milvus Vector DB<br/>COSINE Similarity)]
+        Neo4j[(Neo4j Graph DB<br/>Phase 2)]
+    end
+
+    Mobile -->|HTTP POST /api/chats| API
     API --> LG
     LG --> Supervisor
-    Supervisor --> PolicySearch
-    Supervisor --> ResponseGen
-    PolicySearch --> Milvus
-    PolicySearch --> Titan
-    ResponseGen --> Bedrock
-    API -.-> Neo4j
+    Supervisor -->|Route Decision| PolicyAgent
+    Supervisor -->|Route Decision| ResponseAgent
+    Supervisor -->|Route Decision| NewsAgent
+
+    PolicyAgent --> MCP
+    NewsAgent --> MCP
+
+    MCP --> SearchTool
+    MCP --> NewsTool
+
+    SearchTool -->|Query Embedding| Titan
+    SearchTool -->|Vector Search| Milvus
+
+    NewsTool --> Tavily
+    NewsTool --> BigKinds
+
+    PolicyAgent -->|LLM Call| Claude
+    ResponseAgent -->|LLM Call| Claude
+    NewsAgent -->|LLM Call| Claude
+    Supervisor -->|LLM Call| Claude
+
+    ResponseAgent -->|Final Response| API
+    API -->|JSON Response| Mobile
+
+    style Supervisor fill:#e1f5ff
+    style PolicyAgent fill:#e1f5ff
+    style ResponseAgent fill:#e1f5ff
+    style NewsAgent fill:#e1f5ff
+    style Claude fill:#ffe1f5
+    style Titan fill:#ffe1f5
+```
+
+### Detailed LLM Workflow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Mobile as Mobile App
+    participant API as FastAPI
+    participant LG as LangGraph
+    participant SV as Supervisor Agent
+    participant PS as Policy Search Agent
+    participant RG as Response Generator
+    participant NA as News Agent
+    participant MCP as FastMCP Tools
+    participant Milvus as Milvus DB
+    participant Titan as Titan Embeddings
+    participant Claude as Claude 3.5
+    participant News as News APIs
+
+    User->>Mobile: "25살 청년 적금 추천해줘"
+    Mobile->>API: POST /api/chats/{id}/messages
+    API->>LG: invoke(state)
+
+    rect rgb(225, 245, 255)
+        Note over LG,SV: Step 1: Intent Classification
+        LG->>SV: Initial State
+        SV->>Claude: Analyze user intent<br/>(Temp: 0.1)
+        Claude-->>SV: Decision: "policy_search"
+        SV->>LG: next_agent = "policy_search"
+    end
+
+    rect rgb(255, 245, 225)
+        Note over LG,PS: Step 2: Policy Search
+        LG->>PS: State + User Query
+        PS->>MCP: search_policies(query="청년 적금")
+        MCP->>Titan: embed_query("청년 적금")
+        Titan-->>MCP: [1024d vector]
+        MCP->>Milvus: vector_search(embedding, top_k=5)
+        Milvus-->>MCP: Top 5 policies
+        MCP-->>PS: Policy Results
+        PS->>Claude: Refine search if needed<br/>(Temp: 0.3)
+        Claude-->>PS: Refined results
+        PS->>LG: state.policies = [...]
+    end
+
+    rect rgb(225, 255, 225)
+        Note over LG,RG: Step 3: Response Generation
+        LG->>RG: State + Policies
+        RG->>Claude: Generate user-friendly response<br/>(Temp: 0.7, Persona: FinKu)
+        Claude-->>RG: Personalized response
+        RG->>LG: state.response = "..."
+    end
+
+    opt User asks for news
+        rect rgb(255, 225, 245)
+            Note over LG,NA: Step 4: News Search (Optional)
+            LG->>NA: State + Keywords
+            par Parallel News Search
+                NA->>News: Tavily API
+                News-->>NA: Web results
+            and
+                NA->>News: BigKinds API
+                News-->>NA: Archive results
+            end
+            NA->>Claude: Summarize & deduplicate<br/>(Temp: 0.3)
+            Claude-->>NA: News summary
+            NA->>LG: state.news = [...]
+        end
+    end
+
+    LG->>API: Final State
+    API->>Mobile: JSON Response
+    Mobile->>User: Display AI Response
 ```
 
 ## Directory Structure
