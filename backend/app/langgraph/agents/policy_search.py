@@ -31,7 +31,7 @@ Supervisor → **Policy Search Agent** → Response Generator → Synthesizer
 from typing import Dict, Any, List
 from app.langgraph.state import AgentState, add_intermediate_step
 from app.mcp.tools import search_policies
-from langchain_anthropic import ChatAnthropic
+from app.llm_config import get_chat_llm  # ⭐ AWS Bedrock 또는 Direct API 자동 선택
 from langchain_core.messages import HumanMessage, SystemMessage
 import os
 from loguru import logger
@@ -41,14 +41,11 @@ from loguru import logger
 # LLM 초기화
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# Claude 3.5 Sonnet 사용
+# Claude 3.5 Sonnet 사용 (AWS Bedrock 또는 Direct API)
 # - 쿼리 최적화 및 결과 해석에 사용
 # - 사용자 의도를 검색 쿼리로 변환
-llm = ChatAnthropic(
-    model="claude-3-5-sonnet-20241022",
-    anthropic_api_key=os.getenv("ANTHROPIC_API_KEY"),
-    temperature=0.2,  # 검색 쿼리 생성 시 일관성 중요
-)
+# - 환경 변수 USE_AWS_BEDROCK에 따라 자동 선택
+llm = get_chat_llm(temperature=0.2)  # 검색 쿼리 생성 시 일관성 중요
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
