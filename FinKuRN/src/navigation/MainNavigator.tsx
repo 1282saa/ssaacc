@@ -101,25 +101,27 @@ const TabNavigator = () => {
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 16,
+          bottom: 50,
           left: 30,
           right: 30,
-          height: 60,
+          height: 65,
           borderRadius: 100,
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0,
-          paddingTop: 10,
-          paddingBottom: 2,
+          paddingTop: 13,
+          paddingBottom: 8,
           paddingLeft: 0,
           paddingRight: 0,
-          elevation: 12,
+          elevation: 16,
           shadowColor: '#000000',
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.25,
+          shadowOpacity: 0.4,
           shadowRadius: 12,
         },
         tabBarItemStyle: {
           flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         tabBarShowLabel: false,
         tabBarIcon: ({ focused }) => {
@@ -141,12 +143,13 @@ const TabNavigator = () => {
             return (
               <View style={styles.iconContainer}>
                 <LinearGradient
-                  colors={['#3060F1', '#5078F2']}
-                  start={{ x: 0.05, y: 0.43 }}
-                  end={{ x: 1.19, y: 0.62 }}
+                  colors={['#001E6E', '#3060F1', '#E9E9E9']}
+                  locations={[0, 0.51, 1]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                   style={styles.gradientCircle}
                 >
-                  <IconComponent color={theme.colors.white} size={24} />
+                  <IconComponent color={theme.colors.white} size={26} />
                 </LinearGradient>
               </View>
             );
@@ -154,7 +157,7 @@ const TabNavigator = () => {
 
           return (
             <View style={styles.inactiveIconWithBorder}>
-              <IconComponent color="#A0A0A0" size={24} />
+              <IconComponent color="#A0A0A0" size={26} />
             </View>
           );
         },
@@ -279,22 +282,22 @@ export const MainNavigator = () => {
 
 const styles = StyleSheet.create({
   iconContainer: {
-    width: 48,
-    height: 48,
+    width: 54,
+    height: 54,
     justifyContent: 'center',
     alignItems: 'center',
   },
   gradientCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
   },
   inactiveIconWithBorder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     justifyContent: 'center',
     alignItems: 'center',
   },
