@@ -81,13 +81,6 @@ graph TB
 
     ResponseAgent -->|Final Response| API
     API -->|JSON Response| Mobile
-
-    style Supervisor fill:#e1f5ff
-    style PolicyAgent fill:#e1f5ff
-    style ResponseAgent fill:#e1f5ff
-    style NewsAgent fill:#e1f5ff
-    style Claude fill:#ffe1f5
-    style Titan fill:#ffe1f5
 ```
 
 ### Detailed LLM Workflow
@@ -112,51 +105,43 @@ sequenceDiagram
     Mobile->>API: POST /api/chats/{id}/messages
     API->>LG: invoke(state)
 
-    rect rgb(225, 245, 255)
-        Note over LG,SV: Step 1: Intent Classification
-        LG->>SV: Initial State
-        SV->>Claude: Analyze user intent<br/>(Temp: 0.1)
-        Claude-->>SV: Decision: "policy_search"
-        SV->>LG: next_agent = "policy_search"
-    end
+    Note over LG,SV: Step 1: Intent Classification
+    LG->>SV: Initial State
+    SV->>Claude: Analyze user intent<br/>(Temp: 0.1)
+    Claude-->>SV: Decision: "policy_search"
+    SV->>LG: next_agent = "policy_search"
 
-    rect rgb(255, 245, 225)
-        Note over LG,PS: Step 2: Policy Search
-        LG->>PS: State + User Query
-        PS->>MCP: search_policies(query="청년 적금")
-        MCP->>Titan: embed_query("청년 적금")
-        Titan-->>MCP: [1024d vector]
-        MCP->>Milvus: vector_search(embedding, top_k=5)
-        Milvus-->>MCP: Top 5 policies
-        MCP-->>PS: Policy Results
-        PS->>Claude: Refine search if needed<br/>(Temp: 0.3)
-        Claude-->>PS: Refined results
-        PS->>LG: state.policies = [...]
-    end
+    Note over LG,PS: Step 2: Policy Search
+    LG->>PS: State + User Query
+    PS->>MCP: search_policies(query="청년 적금")
+    MCP->>Titan: embed_query("청년 적금")
+    Titan-->>MCP: [1024d vector]
+    MCP->>Milvus: vector_search(embedding, top_k=5)
+    Milvus-->>MCP: Top 5 policies
+    MCP-->>PS: Policy Results
+    PS->>Claude: Refine search if needed<br/>(Temp: 0.3)
+    Claude-->>PS: Refined results
+    PS->>LG: state.policies = [...]
 
-    rect rgb(225, 255, 225)
-        Note over LG,RG: Step 3: Response Generation
-        LG->>RG: State + Policies
-        RG->>Claude: Generate user-friendly response<br/>(Temp: 0.7, Persona: FinKu)
-        Claude-->>RG: Personalized response
-        RG->>LG: state.response = "..."
-    end
+    Note over LG,RG: Step 3: Response Generation
+    LG->>RG: State + Policies
+    RG->>Claude: Generate user-friendly response<br/>(Temp: 0.7, Persona: FinKu)
+    Claude-->>RG: Personalized response
+    RG->>LG: state.response = "..."
 
     opt User asks for news
-        rect rgb(255, 225, 245)
-            Note over LG,NA: Step 4: News Search (Optional)
-            LG->>NA: State + Keywords
-            par Parallel News Search
-                NA->>News: Tavily API
-                News-->>NA: Web results
-            and
-                NA->>News: BigKinds API
-                News-->>NA: Archive results
-            end
-            NA->>Claude: Summarize & deduplicate<br/>(Temp: 0.3)
-            Claude-->>NA: News summary
-            NA->>LG: state.news = [...]
+        Note over LG,NA: Step 4: News Search (Optional)
+        LG->>NA: State + Keywords
+        par Parallel News Search
+            NA->>News: Tavily API
+            News-->>NA: Web results
+        and
+            NA->>News: BigKinds API
+            News-->>NA: Archive results
         end
+        NA->>Claude: Summarize & deduplicate<br/>(Temp: 0.3)
+        Claude-->>NA: News summary
+        NA->>LG: state.news = [...]
     end
 
     LG->>API: Final State
