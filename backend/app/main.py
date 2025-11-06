@@ -165,7 +165,8 @@ async def send_message(chat_id: str, request: Request):
     """
     try:
         body = await request.json()
-        user_message = body.get("message", "")
+        # "message" 또는 "content" 키 모두 지원
+        user_message = body.get("message") or body.get("content", "")
         user_context = body.get("context", {})
 
         logger.info(f"💬 Chat {chat_id}: Received message: {user_message}")
@@ -230,8 +231,15 @@ async def startup_event():
     logger.info("🗄️  Vector DB: Milvus")
     logger.info("🕸️  Graph DB: Neo4j")
 
-    # TODO: 데이터베이스 연결 초기화
-    # await init_milvus()
+    # 데이터베이스 연결 초기화
+    try:
+        from app.db.milvus_client import init_milvus
+        await init_milvus()
+        logger.info("✅ Milvus initialized successfully")
+    except Exception as e:
+        logger.warning(f"⚠️  Milvus initialization skipped: {str(e)}")
+
+    # TODO Phase 2: Neo4j 초기화
     # await init_neo4j()
 
 

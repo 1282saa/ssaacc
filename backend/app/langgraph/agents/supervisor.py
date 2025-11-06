@@ -138,7 +138,15 @@ async def supervisor_agent(state: AgentState) -> AgentState:
             state["next_action"] = "end"
             return state
 
-        latest_message = messages[-1]["content"]
+        # LangChain Message 객체에서 content 추출
+        latest_msg = messages[-1]
+        if hasattr(latest_msg, 'content'):
+            latest_message = latest_msg.content
+        elif isinstance(latest_msg, dict):
+            latest_message = latest_msg["content"]
+        else:
+            latest_message = str(latest_msg)
+
         logger.debug(f"사용자 메시지: {latest_message}")
 
         # Step 2: 컨텍스트 정보 수집

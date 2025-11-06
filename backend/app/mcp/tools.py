@@ -30,7 +30,7 @@ result = await search_policies(
 from typing import List, Dict, Any, Optional
 from fastmcp import FastMCP
 from app.db.milvus_client import get_milvus_client
-from openai import OpenAI
+from app.llm_config import get_embeddings  # ⭐ AWS Bedrock 또는 OpenAI 자동 선택
 import os
 from loguru import logger
 
@@ -43,9 +43,10 @@ from loguru import logger
 # - 여러 에이전트가 이 도구들을 공유함
 mcp = FastMCP("FinKuRN-Policy-Tools")
 
-# OpenAI 클라이언트 초기화 (임베딩 생성용)
-# - text-embedding-3-large 모델 사용 (3072 차원)
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# 임베딩 모델 초기화 (AWS Bedrock Titan 또는 OpenAI)
+# - USE_AWS_BEDROCK=true → AWS Bedrock Titan Embeddings (1024 차원)
+# - USE_AWS_BEDROCK=false → OpenAI text-embedding-3-large (3072 차원)
+embeddings_model = get_embeddings()
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -61,7 +62,9 @@ def generate_embedding(text: str) -> List[float]:
         text: 임베딩할 텍스트 (예: "25세 청년 적금 추천")
 
     Returns:
-        3072차원 벡터 임베딩 (OpenAI text-embedding-3-large)
+        벡터 임베딩
+        - AWS Bedrock: 1024차원 (Titan Embeddings V2)
+        - OpenAI: 3072차원 (text-embedding-3-large)
 
     Purpose:
         - 사용자 쿼리를 벡터로 변환하여 Milvus에서 유사도 검색
@@ -69,16 +72,14 @@ def generate_embedding(text: str) -> List[float]:
 
     Example:
         >>> embedding = generate_embedding("청년 적금 추천")
-        >>> len(embedding)
-        3072
+        >>> len(embedding)  # 1024 (Bedrock) 또는 3072 (OpenAI)
     """
     try:
-        response = openai_client.embeddings.create(
-            model="text-embedding-3-large",
-            input=text,
-            encoding_format="float"
-        )
-        return response.data[0].embedding
+        # LangChain Embeddings 인터페이스 사용
+        # - embed_query: 단일 텍스트 임베딩 생성
+        embedding = embeddings_model.embed_query(text)
+        logger.debug(f"Generated embedding with dimension: {len(embedding)}")
+        return embedding
     except Exception as e:
         logger.error(f"Failed to generate embedding: {str(e)}")
         raise

@@ -98,7 +98,7 @@ def get_chat_llm(temperature: float = 0.7, max_tokens: int = 4000):
             # Claude 3.5 Sonnet on AWS Bedrock
             llm = ChatBedrock(
                 client=bedrock_runtime,
-                model_id="anthropic.claude-3-5-sonnet-20241022-v2:0",  # Bedrock 모델 ID
+                model_id="anthropic.claude-3-5-sonnet-20240620-v1:0",  # Bedrock 모델 ID (v1)
                 model_kwargs={
                     "temperature": temperature,
                     "max_tokens": max_tokens,

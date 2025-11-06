@@ -3,7 +3,7 @@ Milvus Vector Database Client
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Milvus 벡터 DB 연결 및 검색 기능:
-- OpenAI text-embedding-3-large (3072차원)
+- AWS Bedrock Titan Embeddings V2 (1024차원)
 - 정책 데이터 유사도 검색
 - 컬렉션 관리
 """
@@ -21,7 +21,7 @@ class MilvusClient:
         self.host = os.getenv("MILVUS_HOST", "localhost")
         self.port = int(os.getenv("MILVUS_PORT", "19530"))
         self.collection_name = "policy_embeddings"
-        self.dimension = 3072  # OpenAI text-embedding-3-large
+        self.dimension = 1024  # AWS Bedrock Titan Embeddings V2
         self.collection: Optional[Collection] = None
 
     def connect(self):
@@ -52,7 +52,7 @@ class MilvusClient:
         Schema:
         - id: 정책 고유 ID
         - policy_id: 정책 번호 (검색 결과 매핑용)
-        - embedding: 벡터 임베딩 (3072차원)
+        - embedding: 벡터 임베딩 (1024차원)
         - metadata: JSON 메타데이터 (정책명, 대상 등)
         """
         try:
@@ -137,7 +137,7 @@ class MilvusClient:
 
         Args:
             policy_ids: 정책 ID 리스트
-            embeddings: 벡터 임베딩 리스트 (각 3072차원)
+            embeddings: 벡터 임베딩 리스트 (각 1024차원)
             metadata: JSON 문자열 메타데이터 리스트
         """
         try:
@@ -169,7 +169,7 @@ class MilvusClient:
         벡터 유사도 검색
 
         Args:
-            query_embedding: 쿼리 벡터 (3072차원)
+            query_embedding: 쿼리 벡터 (1024차원)
             top_k: 반환할 결과 개수
             output_fields: 반환할 필드 리스트
 

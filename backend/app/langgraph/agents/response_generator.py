@@ -199,7 +199,15 @@ async def response_generator_agent(state: AgentState) -> AgentState:
             state["next_action"] = "end"
             return state
 
-        user_message = messages[-1]["content"]
+        # LangChain Message 객체에서 content 추출
+        latest_msg = messages[-1]
+        if hasattr(latest_msg, 'content'):
+            user_message = latest_msg.content
+        elif isinstance(latest_msg, dict):
+            user_message = latest_msg["content"]
+        else:
+            user_message = str(latest_msg)
+
         user_context = state.get("user_context", {})
         search_results = state.get("search_results", [])
 
