@@ -141,8 +141,8 @@ export const SignupScreen: React.FC = () => {
 
       console.log('Signup successful:', { name, email });
 
-      // Navigate to login or directly to main
-      navigation.navigate('Main');
+      // 회원가입 성공 시 온보딩 화면으로 이동
+      navigation.navigate('OnboardingWelcome' as any);
     } catch (err) {
       setError('회원가입에 실패했습니다. 다시 시도해주세요.');
       console.error('Signup error:', err);
@@ -182,7 +182,8 @@ export const SignupScreen: React.FC = () => {
     try {
       const response = await authService.socialLogin(provider);
       if (response.success && response.token) {
-        navigation.navigate('Main');
+        // 소셜 회원가입 성공 시 온보딩 화면으로 이동
+        navigation.navigate('OnboardingWelcome' as any);
       } else {
         setError(response.error || `${provider} 회원가입에 실패했습니다.`);
       }

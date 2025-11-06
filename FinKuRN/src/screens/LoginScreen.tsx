@@ -116,7 +116,17 @@ export const LoginScreen: React.FC = () => {
 
       if (response.success && response.token) {
         console.log('Login successful:', response.user);
-        navigation.navigate('Main');
+
+        // TODO: 실제 구현 시 checkOnboardingStatus API로 확인
+        // const status = await checkOnboardingStatus(response.user.id);
+        // if (status.completed) {
+        //   navigation.navigate('Main');
+        // } else {
+        //   navigation.navigate('OnboardingWelcome' as any);
+        // }
+
+        // 임시: 로그인 시 온보딩으로 이동
+        navigation.navigate('OnboardingWelcome' as any);
       } else {
         setError(response.error || '로그인에 실패했습니다.');
       }
@@ -159,7 +169,9 @@ export const LoginScreen: React.FC = () => {
     try {
       const response = await authService.socialLogin(provider);
       if (response.success && response.token) {
-        navigation.navigate('Main');
+        // TODO: 실제 구현 시 checkOnboardingStatus API로 확인
+        // 임시: 소셜 로그인 시 온보딩으로 이동
+        navigation.navigate('OnboardingWelcome' as any);
       } else {
         setError(response.error || `${provider} 로그인에 실패했습니다.`);
       }

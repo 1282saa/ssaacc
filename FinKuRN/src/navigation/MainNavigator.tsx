@@ -13,6 +13,11 @@
  * - Stack Navigator (Root Level)
  *   - Login: 로그인 화면
  *   - Signup: 회원가입 화면
+ *   - OnboardingWelcome: 온보딩 환영 화면
+ *   - OnboardingGoals: 온보딩 목표 선택 화면
+ *   - OnboardingBasicInfo: 온보딩 기본 정보 입력 화면
+ *   - OnboardingConsent: 온보딩 알림 동의 화면
+ *   - OnboardingComplete: 온보딩 완료 화면
  *   - Main: 탭 네비게이터 (메인 애플리케이션)
  *   - PlanUpgrade: 플랜 업그레이드 화면
  *   - NewChat: 새 채팅 화면
@@ -23,7 +28,7 @@
  *   - HomeTab: 홈 대시보드
  *   - ChatTab: 챗봇 메인
  *   - Page3: 탐색/혜택 화면
- *   - Page4: 체크리스트 (추후 구현)
+ *   - Page4: Plan (AI 투두리스트/실천 관리)
  *   - Page5: 프로필 (추후 구현)
  *
  * @features
@@ -52,6 +57,14 @@ import { PlanUpgradePage } from '../screens/PlanUpgradePage';
 import { NewChatPage } from '../screens/NewChatPage';
 import { ChatConversationPage } from '../screens/ChatConversationPage';
 import { TodayListScreen } from '../screens/TodayListScreen';
+import { PlanScreen } from '../screens/PlanScreen';
+import {
+  OnboardingWelcomeScreen,
+  OnboardingGoalsScreen,
+  OnboardingBasicInfoScreen,
+  OnboardingConsentScreen,
+  OnboardingCompleteScreen,
+} from '../screens/onboarding';
 import { theme } from '../constants/theme';
 import {
   HomeIcon,
@@ -78,7 +91,7 @@ const Tab = createBottomTabNavigator();
  * 1. HomeTab - 홈 대시보드 (Home Dashboard)
  * 2. ChatTab - 챗봇 메인 (Chatbot Main)
  * 3. Page3 - 탐색/혜택 (Explore/Benefits)
- * 4. Page4 - 체크리스트 (Checklist - Placeholder)
+ * 4. Page4 - Plan (AI To-Dos / Task Management)
  * 5. Page5 - 프로필 (Profile - Placeholder)
  *
  * @features
@@ -166,14 +179,7 @@ const TabNavigator = () => {
       <Tab.Screen name="HomeTab" component={HomeScreen} />
       <Tab.Screen name="ChatTab" component={ChatbotScreenV2} />
       <Tab.Screen name="Page3" component={ExploreScreen} />
-      <Tab.Screen
-        name="Page4"
-        component={() => (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <LibraryAddCheckIcon size={100} color={theme.colors.primary} />
-          </View>
-        )}
-      />
+      <Tab.Screen name="Page4" component={PlanScreen} />
       <Tab.Screen
         name="Page5"
         component={() => (
@@ -199,11 +205,16 @@ const TabNavigator = () => {
  * Stack 구조:
  * 1. Login (headerShown: false) - 로그인 화면
  * 2. Signup (headerShown: false) - 회원가입 화면
- * 3. Main (headerShown: false) - 탭 내비게이터 (메인 앱)
- * 4. PlanUpgrade (title: '플랜 업그레이드') - 플랜 업그레이드 화면
- * 5. NewChat (headerShown: false) - 새 채팅 화면
- * 6. ChatConversation (headerShown: false) - 채팅 대화 화면
- * 7. TodayList (title: '오늘의 할 일') - 할 일 목록 화면
+ * 3. OnboardingWelcome (headerShown: false) - 온보딩 환영 화면
+ * 4. OnboardingGoals (headerShown: false) - 온보딩 목표 선택 화면
+ * 5. OnboardingBasicInfo (headerShown: false) - 온보딩 기본 정보 입력 화면
+ * 6. OnboardingConsent (headerShown: false) - 온보딩 알림 동의 화면
+ * 7. OnboardingComplete (headerShown: false) - 온보딩 완료 화면
+ * 8. Main (headerShown: false) - 탭 내비게이터 (메인 앱)
+ * 9. PlanUpgrade (title: '플랜 업그레이드') - 플랜 업그레이드 화면
+ * 10. NewChat (headerShown: false) - 새 채팅 화면
+ * 11. ChatConversation (headerShown: false) - 채팅 대화 화면
+ * 12. TodayList (title: '오늘의 할 일') - 할 일 목록 화면
  *
  * @features
  * - 조건부 헤더 표시 (Conditional Header Display)
@@ -249,6 +260,31 @@ export const MainNavigator = () => {
       <Stack.Screen
         name="Signup"
         component={SignupScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OnboardingWelcome"
+        component={OnboardingWelcomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OnboardingGoals"
+        component={OnboardingGoalsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OnboardingBasicInfo"
+        component={OnboardingBasicInfoScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OnboardingConsent"
+        component={OnboardingConsentScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="OnboardingComplete"
+        component={OnboardingCompleteScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
