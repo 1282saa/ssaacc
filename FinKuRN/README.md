@@ -35,11 +35,12 @@
 ## 📋 Project Overview
 
 FinKuRN is a comprehensive financial assistant app that helps users:
-- Track daily financial tasks and deadlines
-- Explore government financial support programs
-- Manage savings and spending habits
-- Interact with an AI chatbot for financial guidance
-- Access personalized financial recommendations
+- **Onboarding**: 5-step guided setup for personalized experience
+- **Plan Management**: Track daily financial tasks with interactive checklists
+- **Explore**: Discover government financial support programs
+- **Savings & Spending**: Monitor financial habits with visual insights
+- **AI Chatbot**: Get instant financial guidance and recommendations
+- **Personalized Content**: Receive tailored financial information
 
 ---
 
@@ -59,6 +60,7 @@ FinKuRN is a comprehensive financial assistant app that helps users:
 ```
 FinKuRN/
 ├── 📄 PROJECT_OVERVIEW.md       ← START HERE! Complete guide
+├── 📄 PROJECT_STRUCTURE.md      ← Detailed file-by-file guide (NEW!)
 ├── 📄 API_SPECIFICATION.md      ← Backend API specs
 ├── 📄 BACKEND_INTEGRATION_GUIDE.md  ← Backend developer guide
 ├── 📄 REFACTORING_SUMMARY.md    ← What we've refactored
@@ -69,7 +71,13 @@ FinKuRN/
 │   ├── components/
 │   │   ├── 📄 README.md         ← Component creation guide
 │   │   ├── common/              ← Shared components (3)
-│   │   └── home/                ← HomeScreen components (4)
+│   │   ├── home/                ← HomeScreen components (4)
+│   │   └── plan/                ← PlanScreen components (4) (NEW!)
+│   │       └── 📄 README.md     ← Plan components guide
+│   │
+│   ├── api/                     ← API layer (NEW!)
+│   │   ├── planApi.ts           ← Plan/Todo API
+│   │   └── onboardingApi.ts     ← Onboarding API
 │   │
 │   ├── services/                ← Data fetching layer
 │   │   ├── 📄 README.md         ← Service layer guide
@@ -79,13 +87,19 @@ FinKuRN/
 │   ├── types/                   ← TypeScript type definitions
 │   │   ├── home.ts              ← Home data types
 │   │   ├── chat.ts              ← Chat data types
+│   │   ├── plan.ts              ← Plan/Todo data types (NEW!)
+│   │   ├── onboarding.ts        ← Onboarding data types (NEW!)
 │   │   └── navigation.ts        ← Navigation types
 │   │
 │   ├── constants/               ← Theme & design tokens
 │   │   ├── theme.ts             ← Colors, typography, spacing
 │   │   └── gradients.ts         ← Gradient configs
 │   │
-│   ├── screens/                 ← 7 screens (all refactored)
+│   ├── screens/                 ← 13 screens (all refactored)
+│   │   ├── onboarding/          ← 5 onboarding screens (NEW!)
+│   │   │   └── 📄 README.md     ← Onboarding flow guide
+│   │   └── PlanScreen.tsx       ← Todo/Checklist screen (NEW!)
+│   │
 │   └── navigation/              ← Navigation config
 │
 └── App.tsx                      ← Entry point
@@ -97,20 +111,25 @@ FinKuRN/
 
 ### What Makes This Project AI-Friendly
 
-1. **Comprehensive Documentation**: 2,600+ lines of docs
+1. **Comprehensive Documentation**: 6,000+ lines of docs (including onboarding & plan guides)
 2. **Clear Architecture**: Single Responsibility Principle everywhere
 3. **Type Definitions**: All data structures documented
 4. **JSDoc Comments**: Every component explained
 5. **Consistent Patterns**: Easy to learn, easy to extend
+6. **Detailed READMEs**: File-by-file explanations with UI mockups
 
 ### AI Development Workflow
 
 ```
 1. Read PROJECT_OVERVIEW.md (understand structure)
-2. Read src/README.md (understand code architecture)
-3. Read src/components/README.md (learn component patterns)
-4. Check JSDoc comments in files (specific implementation details)
-5. Start coding! (follow established patterns)
+2. Read PROJECT_STRUCTURE.md (detailed file guide)
+3. Read src/README.md (understand code architecture)
+4. Read src/components/README.md (learn component patterns)
+5. Check feature-specific READMEs:
+   - src/screens/onboarding/README.md (onboarding flow)
+   - src/components/plan/README.md (plan components)
+6. Check JSDoc comments in files (specific implementation details)
+7. Start coding! (follow established patterns)
 ```
 
 ### Key Principles (Must Follow)
@@ -234,11 +253,14 @@ app.use(cors({
 | File | Purpose | For Who |
 |------|---------|---------|
 | **PROJECT_OVERVIEW.md** | Complete project guide | Everyone (START HERE) |
+| **PROJECT_STRUCTURE.md** | File-by-file detailed guide | Everyone (NEW!) |
 | **README.md** | Quick start & overview | Everyone (you are here) |
 | **API_SPECIFICATION.md** | Detailed API specs | Backend devs |
 | **BACKEND_INTEGRATION_GUIDE.md** | Backend integration guide | Backend devs |
 | **src/README.md** | Source code architecture | Frontend devs, AI |
 | **src/components/README.md** | Component creation guide | Frontend devs, AI |
+| **src/components/plan/README.md** | Plan components guide | Frontend devs, AI (NEW!) |
+| **src/screens/onboarding/README.md** | Onboarding flow guide | Frontend devs, AI (NEW!) |
 | **src/services/README.md** | Data layer guide | Frontend devs, AI |
 | **REFACTORING_SUMMARY.md** | Refactoring history | Everyone (reference) |
 
@@ -297,21 +319,34 @@ Centralized theme in `src/constants/theme.ts`:
 
 ## 🧪 Current Status
 
-### ✅ Completed (Latest Updates - 2025-01-04)
+### ✅ Completed (Latest Updates - 2025-01-15)
 
-- [x] 7 screens fully refactored
+**Core Features**
+- [x] 13 screens fully refactored (7 main + 5 onboarding + 1 plan)
+- [x] **5-step onboarding flow** (Welcome → Goals → BasicInfo → Consent → Complete)
+- [x] **Plan/Todo screen** with 4 reusable card components
 - [x] Theme system implemented
 - [x] Service layer with dummy data
 - [x] Type definitions for all data
+
+**Components**
 - [x] HomeScreen component breakdown (818 → 384 lines)
-- [x] **ExploreScreen refined to match design 100%**
-  - Fixed text spacing and alignment
-  - Corrected penguin positioning and statistics text
-  - Aligned all cards with search bar edges (16px margins)
-  - Adjusted gap between header and content sections (21px)
-- [x] Comprehensive documentation
-- [x] Backend API specification
+- [x] Plan components (ProgressCard, TaskItemCard, UpcomingItemCard, GoalCard)
+- [x] Onboarding screens with clean design (no emojis, penguin PNG mascot)
+- [x] Back navigation on all onboarding screens
+
+**Design**
+- [x] ExploreScreen refined to match design 100%
+- [x] Consistent borderRadius.xxxl (32px) across all cards
+- [x] Letter-spacing applied for typography refinement
 - [x] Zero hardcoded values
+
+**Documentation**
+- [x] Comprehensive documentation (6,000+ lines)
+- [x] PROJECT_STRUCTURE.md (complete file guide)
+- [x] src/screens/onboarding/README.md (onboarding flow)
+- [x] src/components/plan/README.md (plan components)
+- [x] Backend API specification
 - [x] 100% JSDoc coverage
 
 ### 🔄 Ready for Backend Integration
@@ -333,9 +368,10 @@ return response.json();
 
 - **Lines of code reduced**: 347 lines (via refactoring)
 - **Code duplication**: Eliminated 200+ lines
-- **Components**: 27 TypeScript files
-- **Documentation**: 2,630+ lines
-- **TypeScript errors**: 4 (all non-blocking, runtime works fine)
+- **Components**: 36 TypeScript files (13 screens + 11 components + 12 support files)
+- **Documentation**: 6,000+ lines
+- **Features**: Onboarding (5 screens), Plan (4 components), Home, Explore, Chat, Profile
+- **TypeScript errors**: 0 (all resolved)
 - **SRP violations**: 0
 - **Hardcoded values**: 0
 
@@ -414,10 +450,14 @@ Copyright 2025. All rights reserved.
 ### For New AI Assistant
 
 1. Read `PROJECT_OVERVIEW.md` (5 min)
-2. Read `src/README.md` (5 min)
-3. Read `src/components/README.md` (5 min)
-4. Check a few component JSDoc comments (2 min)
-5. Start coding! You now understand the entire project.
+2. Read `PROJECT_STRUCTURE.md` (8 min) - NEW! File-by-file guide
+3. Read `src/README.md` (5 min)
+4. Read `src/components/README.md` (5 min)
+5. Check feature-specific READMEs as needed:
+   - `src/screens/onboarding/README.md` (onboarding)
+   - `src/components/plan/README.md` (plan/todo)
+6. Check component JSDoc comments (2 min)
+7. Start coding! You now understand the entire project.
 
 ### For Backend Developer
 
