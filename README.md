@@ -302,14 +302,66 @@ npm run dev
 | **News APIs** | Tavily, BigKinds | - | 실시간 뉴스 크롤링 |
 | **Containerization** | Docker Compose | - | 멀티 컨테이너 오케스트레이션 |
 
-### AI Models
-- **LLM**: Claude 3.5 Sonnet v1 (`anthropic.claude-3-5-sonnet-20240620-v1:0`)
-  - Max tokens: 4000
-  - Temperature: 0.7
-  - Provider: AWS Bedrock
-- **Embeddings**: Titan Embeddings V2 (`amazon.titan-embed-text-v2:0`)
-  - Dimensions: 1024
-  - Provider: AWS Bedrock
+### AI Models & Parameters
+
+#### LLM Configuration (Claude 3.5 Sonnet v1)
+
+| Parameter | Value | 설명 |
+|-----------|-------|------|
+| **Model ID** | `anthropic.claude-3-5-sonnet-20240620-v1:0` | AWS Bedrock Model ID |
+| **Provider** | AWS Bedrock | 호스팅 서비스 |
+| **Context Window** | 200,000 tokens | 최대 입력 토큰 |
+| **Max Output Tokens** | 4,000 tokens | 최대 생성 토큰 |
+| **Training Data Cutoff** | April 2024 | 학습 데이터 기준일 |
+
+#### Embeddings Configuration (Titan Embeddings V2)
+
+| Parameter | Value | 설명 |
+|-----------|-------|------|
+| **Model ID** | `amazon.titan-embed-text-v2:0` | AWS Bedrock Model ID |
+| **Provider** | AWS Bedrock | 호스팅 서비스 |
+| **Dimensions** | 1,024 | 벡터 차원 |
+| **Max Input Tokens** | 8,000 tokens | 최대 입력 길이 |
+| **Normalize** | True | 벡터 정규화 활성화 |
+
+#### Agent-Specific Parameters
+
+| Agent | Temperature | Top-P | Max Tokens | Stop Sequences | 목적 |
+|-------|-------------|-------|------------|----------------|------|
+| **Supervisor** | 0.1 | 0.95 | 500 | `["```", "END"]` | 결정론적 라우팅, 일관된 의사결정 |
+| **Policy Search** | 0.3 | 0.9 | 1,000 | `["```"]` | 일관된 쿼리 생성, 정확한 검색 |
+| **Response Generator** | 0.7 | 0.95 | 2,500 | - | 자연스럽고 창의적인 응답 |
+| **News Agent** | 0.3 | 0.9 | 1,500 | `["```"]` | 정확한 뉴스 요약 |
+
+#### Vector Search Parameters (Milvus)
+
+| Parameter | Value | 설명 |
+|-----------|-------|------|
+| **Metric Type** | COSINE | 유사도 측정 방식 |
+| **Top-K** | 5 | 반환할 최대 결과 수 |
+| **Consistency Level** | Strong | 일관성 수준 |
+| **Search Timeout** | 5초 | 검색 타임아웃 |
+| **nprobe** | 10 | IVF 인덱스 탐색 클러스터 수 |
+
+#### API Rate Limits & Timeouts
+
+| Service | Rate Limit | Timeout | Retry Strategy |
+|---------|------------|---------|----------------|
+| **AWS Bedrock (Claude)** | 100 req/min | 60초 | Exponential backoff (3회) |
+| **AWS Bedrock (Titan)** | 200 req/min | 30초 | Exponential backoff (3회) |
+| **Milvus** | Unlimited | 5초 | 즉시 실패 |
+| **Tavily API** | 1,000 req/day | 10초 | Linear backoff (2회) |
+| **BigKinds API** | 100 req/hour | 15초 | Linear backoff (2회) |
+
+#### Prompt Engineering Parameters
+
+| Technique | Parameter | Value | 적용 Agent |
+|-----------|-----------|-------|-----------|
+| **Few-Shot Examples** | 예제 개수 | 3-5개 | Supervisor, Policy Search |
+| **CoT Steps** | 추론 단계 | 4단계 | Supervisor |
+| **Persona Traits** | 특성 개수 | 4개 | Response Generator |
+| **Context Window Management** | 대화 히스토리 제한 | 최근 5턴 | All Agents |
+| **XML Tag Depth** | 최대 중첩 깊이 | 3단계 | All Agents |
 
 ### Code Quality Standards
 | Aspect | Frontend | Backend |
