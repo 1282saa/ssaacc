@@ -38,6 +38,12 @@ yarn-error.log*
 dist/
 build/
 
+# Claude Code 관련 (CLAUDE.md 제외)
+.claude/
+.claude_history
+claude_code_*
+claude_session_*
+
 # IDE
 .vscode/
 .idea/
