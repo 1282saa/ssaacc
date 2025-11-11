@@ -60,16 +60,69 @@
 
 ---
 
-### 🔄 다음 작업: 데이터베이스 스키마 설계 및 구현
+### ✅ 작업 2: 데이터베이스 스키마 설계 및 구현
+**시작 시간**: 19:20  
+**예상 완료**: 19:50  
 
-#### 예정 작업 내용
+#### 작업 내용
 1. SQLAlchemy 모델 정의 (users, user_profiles, user_consents, user_social_accounts)
 2. Alembic 마이그레이션 설정
 3. 데이터베이스 연결 설정 (database.py)
 4. 초기 테이블 생성 및 테스트
 
-#### 예상 소요 시간
-약 30-45분
+#### 작업 진행 상황
+- [x] app/models/ 디렉토리 구조 생성
+- [x] User 모델 구현
+- [x] UserProfile 모델 구현  
+- [x] UserSocialAccount 모델 구현
+- [x] UserConsent 모델 구현
+- [x] database.py 연결 설정
+- [x] Alembic 초기화 및 마이그레이션 생성
+- [x] 테스트 실행
+
+#### 생성된 파일
+- `app/database.py`: SQLAlchemy 연결 설정
+- `app/models/user.py`: 사용자 관리 모델 정의
+- `alembic.ini`: Alembic 설정 (SQLite 연결)
+- `alembic/env.py`: 마이그레이션 환경 설정
+- `test_models.py`: 데이터베이스 모델 테스트
+
+#### 테스트 결과
+```
+Testing database models...
+1. Creating test user...
+User created with ID: 060ca946-959b-4b1a-911f-11396792ea97
+2. Creating user profile...
+Profile created for user: Test User
+3. Creating social account...
+Social account created: kakao
+4. Creating user consents...
+User consents created
+5. Testing relationships...
+User: Test User
+Profile age: 25
+Social accounts: 1
+Push notifications: True
+6. Cleaning up test data...
+Test data cleaned up
+All tests passed! Database models are working correctly.
+```
+
+#### 검증 항목
+- [x] User 모델 CRUD 동작 확인
+- [x] UserProfile 관계 연결 정상
+- [x] UserSocialAccount 관계 연결 정상
+- [x] UserConsent 관계 연결 정상
+- [x] Alembic 마이그레이션 정상 실행
+- [x] SQLite 데이터베이스 생성 확인
+
+#### 발견된 이슈
+없음
+
+#### 다음 작업 준비사항
+- JWT 인증 시스템 구현 필요
+- 비밀번호 해싱 함수 구현 필요
+- API 라우터 구조 설계 필요
 
 ---
 
