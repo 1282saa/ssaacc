@@ -126,6 +126,62 @@ All tests passed! Database models are working correctly.
 
 ---
 
+### 작업 3: 회원가입/로그인 API 엔드포인트 구현
+**시작 시간**: 19:25  
+**예상 완료**: 20:15  
+
+#### 세부 작업 단계
+1. **보안 유틸리티 구현** (10분)
+   - [ ] app/core/security.py 생성
+   - [ ] 비밀번호 해싱 함수 구현
+   - [ ] JWT 토큰 생성/검증 함수 구현
+   - [ ] 커밋: "feat: 보안 유틸리티 구현 (해싱, JWT)"
+
+2. **Pydantic 스키마 정의** (15분)
+   - [ ] app/schemas/auth.py 생성
+   - [ ] UserCreate, UserLogin, UserResponse 스키마 정의
+   - [ ] Token, TokenData 스키마 정의
+   - [ ] 커밋: "feat: 인증 관련 Pydantic 스키마 정의"
+
+3. **인증 서비스 로직 구현** (15분)
+   - [ ] app/services/auth_service.py 생성
+   - [ ] 사용자 생성 함수 구현
+   - [ ] 사용자 인증 함수 구현
+   - [ ] 현재 사용자 조회 함수 구현
+   - [ ] 커밋: "feat: 인증 서비스 비즈니스 로직 구현"
+
+4. **API 라우터 구현** (10분)
+   - [ ] app/api/v1/auth.py 생성
+   - [ ] 회원가입 엔드포인트 (/api/v1/auth/register)
+   - [ ] 로그인 엔드포인트 (/api/v1/auth/login)
+   - [ ] 커밋: "feat: 회원가입/로그인 API 엔드포인트 구현"
+
+5. **main.py 라우터 통합** (5분)
+   - [ ] app/main.py에 auth 라우터 추가
+   - [ ] API 버전 구조 설정
+   - [ ] 커밋: "feat: 인증 라우터를 main 앱에 통합"
+
+6. **API 테스트 및 검증** (10분)
+   - [ ] test_auth_api.py 생성
+   - [ ] 회원가입 API 테스트
+   - [ ] 로그인 API 테스트
+   - [ ] JWT 토큰 검증 테스트
+   - [ ] 커밋: "test: 인증 API 테스트 구현 및 검증 완료"
+
+#### 현재 진행 상황
+**준비 단계**
+- [x] app/core/ 디렉토리 생성
+- [x] app/schemas/ 디렉토리 생성  
+- [x] app/services/ 디렉토리 생성
+- [x] app/api/v1/ 디렉토리 생성
+
+**1단계: 보안 유틸리티 구현**
+- [x] app/core/security.py 생성
+- [x] 비밀번호 해싱 함수 구현
+- [x] JWT 토큰 생성/검증 함수 구현
+
+---
+
 ## 개발 환경 정보
 
 ### 시스템 환경
