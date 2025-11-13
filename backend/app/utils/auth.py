@@ -15,8 +15,12 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key-change-in-production")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24시간
 
-# 비밀번호 해싱 컨텍스트
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# 비밀번호 해싱 컨텍스트  
+pwd_context = CryptContext(
+    schemes=["bcrypt"], 
+    deprecated="auto",
+    bcrypt__rounds=int(os.getenv("BCRYPT_ROUNDS", "12"))
+)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
