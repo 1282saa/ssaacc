@@ -1,8 +1,8 @@
-"""Create user management tables
+"""Initial migration with all user models
 
-Revision ID: b19cd7a7669e
+Revision ID: a218e512d7cc
 Revises: 
-Create Date: 2025-11-11 19:14:46.155974
+Create Date: 2025-11-13 20:43:25.770515
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'b19cd7a7669e'
+revision: str = 'a218e512d7cc'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -52,6 +52,7 @@ def upgrade() -> None:
     sa.Column('job_category', sa.String(length=50), nullable=True),
     sa.Column('income_range', sa.String(length=50), nullable=True),
     sa.Column('goals', sa.Text(), nullable=True),
+    sa.Column('profile_image_url', sa.String(length=500), nullable=True),
     sa.Column('onboarding_completed', sa.Boolean(), nullable=True),
     sa.Column('profile_completion_rate', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import urllib.parse
+import json
 
 from app.database import get_db
 from app.services.auth_service import auth_service
@@ -36,12 +37,16 @@ async def google_callback(code: str = None, error: str = None, db: Session = Dep
     """구글 OAuth 콜백 처리"""
     import os
     
+    print(f"🔍 Google callback received - code: {code is not None}, error: {error}")
+    
     if error:
-        error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/error?message={urllib.parse.quote(error)}"
+        print(f"❌ OAuth error: {error}")
+        error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:8081')}/auth/error?message={urllib.parse.quote(error)}"
         return RedirectResponse(url=error_url)
     
     if not code:
-        error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/error?message=authorization_code_missing"
+        print("❌ No authorization code received")
+        error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:8081')}/auth/error?message=authorization_code_missing"
         return RedirectResponse(url=error_url)
     
     try:
@@ -84,13 +89,76 @@ async def google_callback(code: str = None, error: str = None, db: Session = Dep
             
             user, jwt_token = result
             
-            # 성공 시 프론트엔드로 리디렉션 (토큰과 함께)
-            frontend_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/success?token={jwt_token.access_token}"
-            return RedirectResponse(url=frontend_url)
+            # 성공 시 HTML 페이지 반환 (JavaScript로 메시지 전송)
+            user_data = {
+                "id": str(user.id),
+                "email": user.email,
+                "name": user.name,
+                "is_active": user.is_active,
+                "created_at": user.created_at.isoformat()
+            }
+            
+            # 성공 HTML 페이지 직접 생성
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>로그인 성공</title>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ 
+                        font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+                        display: flex; 
+                        justify-content: center; 
+                        align-items: center; 
+                        height: 100vh; 
+                        margin: 0; 
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    }}
+                    .container {{ 
+                        text-align: center; 
+                        background: white; 
+                        padding: 40px; 
+                        border-radius: 10px; 
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    }}
+                    .success {{ color: #4CAF50; font-size: 24px; margin-bottom: 20px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2 class="success">✅ 구글 로그인 성공!</h2>
+                    <p>로그인이 완료되었습니다.</p>
+                    <p>이 창은 자동으로 닫힙니다...</p>
+                </div>
+
+                <script>
+                    const token = "{jwt_token.access_token}";
+                    const user = {json.dumps(user_data)};
+                    
+                    if (window.opener) {{
+                        window.opener.postMessage({{
+                            type: 'GOOGLE_AUTH_SUCCESS',
+                            token: token,
+                            user: user
+                        }}, 'http://localhost:8081');
+                        window.close();
+                    }}
+                    
+                    setTimeout(() => {{
+                        window.close();
+                    }}, 3000);
+                </script>
+            </body>
+            </html>
+            """
+            
+            return HTMLResponse(content=html_content)
             
     except Exception as e:
-        # 에러 시 프론트엔드 에러 페이지로 리디렉션
-        error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/auth/error?message={urllib.parse.quote(str(e))}"
+        print(f"❌ Exception in callback: {str(e)}")
+        # 에러 시 프론트엔드 에러 페이지로 리디렉션  
+        error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:8081')}/auth/error?message={urllib.parse.quote(str(e))}"
         return RedirectResponse(url=error_url)
 
 @router.post("/google", response_model=dict)

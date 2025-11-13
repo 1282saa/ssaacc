@@ -29,6 +29,7 @@ class UserProfile(Base):
     job_category = Column(String(50), nullable=True)
     income_range = Column(String(50), nullable=True)
     goals = Column(Text, nullable=True)  # JSON string for SQLite compatibility
+    profile_image_url = Column(String(500), nullable=True)  # 프로필 이미지 URL
     onboarding_completed = Column(Boolean, default=False)
     profile_completion_rate = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -70,7 +70,6 @@ class AuthService:
             
             user_profile = UserProfile(
                 user_id=user.id,
-                name=google_user["name"],
                 profile_image_url=google_user.get("picture")
             )
             db.add(user_profile)
