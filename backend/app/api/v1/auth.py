@@ -317,3 +317,85 @@ async def google_login(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Google 로그인 중 오류가 발생했습니다: {str(e)}"
         )
+
+
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    authorization: str = Depends(lambda req: req.headers.get("Authorization")),
+    db: Session = Depends(get_db)
+):
+    """
+    JWT 토큰 갱신
+    
+    유효한 JWT 토큰을 사용하여 새로운 토큰을 발급받습니다.
+    """
+    try:
+        if not authorization:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authorization 헤더가 필요합니다",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+        
+        # Bearer 토큰 추출
+        token = authorization.replace("Bearer ", "").strip()
+        if not token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Bearer 토큰이 필요합니다",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+        
+        # 토큰 검증 및 사용자 정보 추출
+        user_info = get_user_from_token(token)
+        if not user_info:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="유효하지 않거나 만료된 토큰입니다",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+        
+        # 사용자 존재 및 활성화 상태 확인
+        user = db.query(User).filter(User.id == user_info["user_id"]).first()
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="사용자를 찾을 수 없거나 비활성화된 계정입니다",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+        
+        # 새 토큰 생성
+        new_access_token = create_user_token(user.id, user.email)
+        
+        # 토큰 만료 시간
+        from app.utils.auth import ACCESS_TOKEN_EXPIRE_MINUTES
+        expires_in = ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        
+        return TokenResponse(
+            access_token=new_access_token,
+            token_type="bearer",
+            expires_in=expires_in
+        )
+        
+    except HTTPException:
+        # FastAPI HTTPException은 그대로 재전파
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"토큰 갱신 중 오류가 발생했습니다: {str(e)}"
+        )
+
+
+@router.post("/logout")
+async def logout_user():
+    """
+    로그아웃
+    
+    JWT 토큰 기반 시스템에서는 서버 측에서 토큰을 무효화할 수 없으므로,
+    클라이언트에서 토큰을 삭제하도록 안내하는 메시지를 반환합니다.
+    """
+    return {
+        "message": "로그아웃 완료",
+        "detail": "클라이언트에서 토큰을 삭제해주세요"
+    }
