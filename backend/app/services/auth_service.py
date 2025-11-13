@@ -119,7 +119,8 @@ class AuthService:
     def get_current_user(self, db: Session, token: str) -> Optional[User]:
         """현재 사용자 조회"""
         try:
-            payload = jwt.decode(token, "your-secret-key", algorithms=["HS256"])
+            from app.core.security import SECRET_KEY, ALGORITHM
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             email: str = payload.get("sub")
             if email is None:
                 return None

@@ -39,8 +39,8 @@ async def get_onboarding_status(
 ):
     """온보딩 상태 조회"""
     try:
-        status = onboarding_service.get_onboarding_status(db, user_id)
-        return status
+        onboarding_status = onboarding_service.get_onboarding_status(db, user_id)
+        return onboarding_status
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

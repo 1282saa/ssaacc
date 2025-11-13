@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from typing import Optional, List
 import json
+import uuid
 
 from app.models.user import User, UserProfile, UserConsent
 from app.schemas.onboarding import (
@@ -16,7 +17,9 @@ class OnboardingService:
     
     def get_onboarding_status(self, db: Session, user_id: str) -> OnboardingStatusResponse:
         """사용자의 온보딩 상태 조회"""
-        user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        # 문자열을 UUID로 변환
+        user_uuid = uuid.UUID(user_id)
+        user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_uuid).first()
         
         if not user_profile:
             return OnboardingStatusResponse(
@@ -40,7 +43,7 @@ class OnboardingService:
             current_step = "consent"
         
         # 동의 정보 완료 여부
-        user_consent = db.query(UserConsent).filter(UserConsent.user_id == user_id).first()
+        user_consent = db.query(UserConsent).filter(UserConsent.user_id == user_uuid).first()
         if user_consent and user_consent.privacy_policy and user_consent.terms_of_service:
             completion_rate += 25
             current_step = "complete"
@@ -60,12 +63,13 @@ class OnboardingService:
     def save_goals(self, db: Session, user_id: str, goals_request: OnboardingGoalsRequest) -> dict:
         """온보딩 목표 저장"""
         try:
-            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+            user_uuid = uuid.UUID(user_id)
+            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_uuid).first()
             
             if not user_profile:
                 # UserProfile이 없으면 생성
                 user_profile = UserProfile(
-                    user_id=user_id,
+                    user_id=user_uuid,
                     goals=json.dumps(goals_request.goals),
                     profile_completion_rate=25
                 )
@@ -91,12 +95,13 @@ class OnboardingService:
     def save_profile(self, db: Session, user_id: str, profile_request: OnboardingProfileRequest) -> dict:
         """온보딩 프로필 정보 저장"""
         try:
-            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+            user_uuid = uuid.UUID(user_id)
+            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_uuid).first()
             
             if not user_profile:
                 # UserProfile이 없으면 생성
                 user_profile = UserProfile(
-                    user_id=user_id,
+                    user_id=user_uuid,
                     age=profile_request.age,
                     region=profile_request.region,
                     job_category=profile_request.job_category,
@@ -129,12 +134,13 @@ class OnboardingService:
     def save_consent(self, db: Session, user_id: str, consent_request: OnboardingConsentRequest) -> dict:
         """온보딩 동의 정보 저장"""
         try:
-            user_consent = db.query(UserConsent).filter(UserConsent.user_id == user_id).first()
+            user_uuid = uuid.UUID(user_id)
+            user_consent = db.query(UserConsent).filter(UserConsent.user_id == user_uuid).first()
             
             if not user_consent:
                 # UserConsent가 없으면 생성
                 user_consent = UserConsent(
-                    user_id=user_id,
+                    user_id=user_uuid,
                     push_notification=consent_request.push_notification,
                     marketing_notification=consent_request.marketing_notification,
                     reward_program=consent_request.reward_program,
@@ -151,7 +157,7 @@ class OnboardingService:
                 user_consent.terms_of_service = consent_request.terms_of_service
             
             # 프로필 완성도 업데이트
-            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_uuid).first()
             if user_profile:
                 completion_rate = 75  # 기본 정보 + 목표 + 동의
                 user_profile.profile_completion_rate = completion_rate
@@ -167,7 +173,8 @@ class OnboardingService:
     def complete_onboarding(self, db: Session, user_id: str) -> OnboardingCompleteResponse:
         """온보딩 완료 처리"""
         try:
-            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+            user_uuid = uuid.UUID(user_id)
+            user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_uuid).first()
             
             if not user_profile:
                 return OnboardingCompleteResponse(
