@@ -16,6 +16,8 @@ from loguru import logger
 import os
 from datetime import datetime
 
+from app.api.v1 import api_router
+
 # FastAPI 앱 초기화
 app = FastAPI(
     title="FinKuRN AI Backend",
@@ -31,6 +33,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api_router, prefix="/api/v1")
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Health Check & Status Endpoints
