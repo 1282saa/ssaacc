@@ -9,7 +9,7 @@ User Schemas
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserBase(BaseModel):
@@ -47,7 +47,8 @@ class UserProfileBase(BaseModel):
     preferred_language: str = Field(default="ko", description="선호 언어")
     ai_personality: Optional[str] = Field(None, max_length=50, description="AI 성격 설정")
 
-    @validator('job_category')
+    @field_validator('job_category')
+    @classmethod
     def validate_job_category(cls, v):
         if v is not None:
             allowed = ["학생", "직장인", "무직", "자영업", "프리랜서", "기타"]
@@ -55,7 +56,8 @@ class UserProfileBase(BaseModel):
                 raise ValueError(f"직업 카테고리는 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
 
-    @validator('employment_status')
+    @field_validator('employment_status')
+    @classmethod
     def validate_employment_status(cls, v):
         if v is not None:
             allowed = ["재직", "구직", "자영업", "학업", "휴직", "기타"]
@@ -63,7 +65,8 @@ class UserProfileBase(BaseModel):
                 raise ValueError(f"고용 상태는 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
 
-    @validator('income_range')
+    @field_validator('income_range')
+    @classmethod
     def validate_income_range(cls, v):
         if v is not None:
             allowed = [
@@ -74,7 +77,8 @@ class UserProfileBase(BaseModel):
                 raise ValueError(f"소득 구간은 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
 
-    @validator('education_level')
+    @field_validator('education_level')
+    @classmethod
     def validate_education_level(cls, v):
         if v is not None:
             allowed = ["중졸 이하", "고졸", "전문대졸", "대졸", "대학원졸"]
@@ -82,7 +86,8 @@ class UserProfileBase(BaseModel):
                 raise ValueError(f"학력은 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
 
-    @validator('ai_personality')
+    @field_validator('ai_personality')
+    @classmethod
     def validate_ai_personality(cls, v):
         if v is not None:
             allowed = ["친근한", "전문적인", "간결한", "상세한"]
@@ -129,10 +134,11 @@ class UserConsentBase(BaseModel):
     data_analytics: bool = Field(default=False, description="데이터 분석 활용 동의")
     personalized_ads: bool = Field(default=False, description="개인화 광고 활용 동의")
 
-    @validator('privacy_policy', 'terms_of_service')
-    def required_consents_must_be_true(cls, v, field):
+    @field_validator('privacy_policy', 'terms_of_service')
+    @classmethod
+    def required_consents_must_be_true(cls, v, info):
         if not v:
-            field_name = "개인정보 처리방침" if field.name == "privacy_policy" else "서비스 이용약관"
+            field_name = "개인정보 처리방침" if info.field_name == "privacy_policy" else "서비스 이용약관"
             raise ValueError(f"{field_name} 동의는 필수입니다")
         return v
 
@@ -166,7 +172,8 @@ class OnboardingStepRequest(BaseModel):
     step: str = Field(..., description="온보딩 단계 (goals, profile, consent)")
     data: Dict[str, Any] = Field(..., description="단계별 데이터")
 
-    @validator('step')
+    @field_validator('step')
+    @classmethod
     def validate_step(cls, v):
         allowed_steps = ["goals", "profile", "consent"]
         if v not in allowed_steps:

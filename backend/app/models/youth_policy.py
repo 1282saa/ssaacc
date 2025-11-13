@@ -8,7 +8,7 @@ Youth Policy Model (기존 시스템 참조용)
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy import Column, DateTime, Integer, String, Text, JSON
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.sql import func
 

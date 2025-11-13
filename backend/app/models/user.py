@@ -11,8 +11,7 @@ User Management Models
 from datetime import datetime
 from typing import List, Optional
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import relationship, Mapped, declarative_base
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid

@@ -131,4 +131,6 @@ def get_password_hash(password: str) -> str:
     Returns:
         str: 해싱된 비밀번호
     """
+    # bcrypt는 최대 72바이트만 지원하므로 자동 잘라내기
+    password = password[:72]
     return pwd_context.hash(password)
