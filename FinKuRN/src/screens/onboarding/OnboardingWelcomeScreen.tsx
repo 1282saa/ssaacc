@@ -31,6 +31,15 @@ export const OnboardingWelcomeScreen: React.FC = () => {
     <View style={styles.container}>
       <BackgroundGradient layers={HOME_GRADIENTS} />
 
+      {/* Skip Button */}
+      <TouchableOpacity
+        style={styles.skipButton}
+        onPress={() => navigation.navigate('Main')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.skipButtonText}>건너뛰기</Text>
+      </TouchableOpacity>
+
       <View style={styles.content}>
         {/* 펭귄 이미지 */}
         <View style={styles.imageContainer}>
@@ -174,5 +183,18 @@ const styles = StyleSheet.create({
   dotActive: {
     width: 24,
     backgroundColor: theme.colors.primary,
+  },
+  skipButton: {
+    position: 'absolute',
+    top: theme.spacing.xxxl + 16,
+    right: theme.spacing.xl,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    zIndex: 10,
+  },
+  skipButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
 });
