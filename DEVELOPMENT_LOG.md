@@ -180,6 +180,12 @@ All tests passed! Database models are working correctly.
 - [x] 비밀번호 해싱 함수 구현
 - [x] JWT 토큰 생성/검증 함수 구현
 
+**2단계: Pydantic 스키마 정의**
+- [x] app/schemas/auth.py 생성
+- [x] UserCreate, UserLogin, UserResponse 스키마 정의
+- [x] Token, TokenData 스키마 정의
+- [x] email-validator 의존성 추가
+
 ---
 
 ## 개발 환경 정보

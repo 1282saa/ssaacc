@@ -15,8 +15,11 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 
 from app.api.v1 import api_router
+
+load_dotenv()
 
 # FastAPI 앱 초기화
 app = FastAPI(
