@@ -13,8 +13,11 @@ from app.database import get_db
 class AuthService:
     def __init__(self):
         import os
-        self.google_client_id = os.getenv("GOOGLE_CLIENT_ID", "4468602791-45erjv17n54g65tcj8mbsdirkp0610p8.apps.googleusercontent.com")
-        self.google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "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")
+        self.google_client_id = os.getenv("GOOGLE_CLIENT_ID")
+        self.google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+        
+        if not self.google_client_id or not self.google_client_secret:
+            raise ValueError("Google OAuth 환경변수 (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)가 설정되지 않았습니다")
         
     async def verify_google_token(self, token: str) -> Optional[dict]:
         """구글 OAuth 토큰 검증"""
