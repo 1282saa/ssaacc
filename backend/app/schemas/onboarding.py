@@ -14,8 +14,6 @@ class OnboardingConsentRequest(BaseModel):
     push_notification: bool = False
     marketing_notification: bool = False
     reward_program: bool = False
-    privacy_policy: bool = True
-    terms_of_service: bool = True
 
 class OnboardingStatusResponse(BaseModel):
     onboarding_completed: bool

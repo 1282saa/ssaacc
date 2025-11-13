@@ -42,9 +42,9 @@ class OnboardingService:
             completion_rate += 25
             current_step = "consent"
         
-        # 동의 정보 완료 여부
+        # 동의 정보 완료 여부 (프론트엔드 기준 - 필수 동의 없음)
         user_consent = db.query(UserConsent).filter(UserConsent.user_id == user_uuid).first()
-        if user_consent and user_consent.privacy_policy and user_consent.terms_of_service:
+        if user_consent:
             completion_rate += 25
             current_step = "complete"
         
@@ -144,8 +144,8 @@ class OnboardingService:
                     push_notification=consent_request.push_notification,
                     marketing_notification=consent_request.marketing_notification,
                     reward_program=consent_request.reward_program,
-                    privacy_policy=consent_request.privacy_policy,
-                    terms_of_service=consent_request.terms_of_service
+                    privacy_policy=True,  # 기본값으로 설정
+                    terms_of_service=True  # 기본값으로 설정
                 )
                 db.add(user_consent)
             else:
@@ -153,8 +153,7 @@ class OnboardingService:
                 user_consent.push_notification = consent_request.push_notification
                 user_consent.marketing_notification = consent_request.marketing_notification
                 user_consent.reward_program = consent_request.reward_program
-                user_consent.privacy_policy = consent_request.privacy_policy
-                user_consent.terms_of_service = consent_request.terms_of_service
+                # privacy_policy, terms_of_service는 기본값 유지
             
             # 프로필 완성도 업데이트
             user_profile = db.query(UserProfile).filter(UserProfile.user_id == user_uuid).first()

@@ -269,26 +269,72 @@ export const socialLogin = async (
   provider: SocialProvider
 ): Promise<LoginResponse> => {
   try {
-    // TODO: 소셜 로그인 플로우 구현
-    // 1. OAuth 플로우 시작 (소셜 로그인 SDK 사용)
-    // 2. Authorization Code 받기
-    // 3. Code를 JWT 토큰으로 교환
-    // 4. 백엔드에 토큰 전달하여 인증
+    if (provider === 'google') {
+      // 구글 로그인: 백엔드 OAuth 플로우 사용
+      const backendUrl = 'http://localhost:8000/api/v1/auth/google/login';
+      
+      // 브라우저에서 OAuth 플로우 시작 (새 창 열기)
+      const authWindow = window.open(
+        backendUrl,
+        'google-auth',
+        'width=500,height=600,scrollbars=yes,resizable=yes'
+      );
 
+      // 메시지 리스너로 결과 받기
+      return new Promise((resolve) => {
+        const messageListener = (event: MessageEvent) => {
+          if (event.origin !== 'http://localhost:8081') return;
+          
+          if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+            window.removeEventListener('message', messageListener);
+            try {
+              authWindow?.close();
+            } catch (e) {
+              console.warn('Could not close auth window:', e);
+            }
+            resolve({
+              success: true,
+              token: event.data.token,
+              user: event.data.user
+            });
+          } else if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+            window.removeEventListener('message', messageListener);
+            try {
+              authWindow?.close();
+            } catch (e) {
+              console.warn('Could not close auth window:', e);
+            }
+            resolve({
+              success: false,
+              error: event.data.error || '구글 로그인에 실패했습니다.'
+            });
+          }
+        };
+
+        window.addEventListener('message', messageListener);
+
+        // 10초 후 타임아웃
+        setTimeout(() => {
+          window.removeEventListener('message', messageListener);
+          try {
+            authWindow?.close();
+          } catch (e) {
+            console.warn('Could not close auth window:', e);
+          }
+          resolve({
+            success: false,
+            error: '로그인 시간이 초과되었습니다.'
+          });
+        }, 10000);
+      });
+    }
+
+    // 다른 소셜 로그인 (카카오, 네이버)는 아직 미구현
     console.log(`Social login with ${provider} not yet implemented`);
-
-    // API 호출 시뮬레이션 (1.5초 지연)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // 개발용 더미 응답
+    
     return {
-      success: true,
-      token: `dummy_${provider}_token_12345`,
-      user: {
-        id: "1",
-        email: `user@${provider}.com`,
-        name: "은별",
-      },
+      success: false,
+      error: `${provider} 로그인은 아직 지원하지 않습니다.`,
     };
   } catch (error) {
     console.error(`${provider} login error:`, error);
