@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,6 +29,7 @@ import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
 import type { JobCategory, IncomeRange } from '../../types/onboarding';
+import { onboardingService } from '../../services';
 
 /**
  * 직업 카테고리 옵션 목록
@@ -126,6 +128,7 @@ export const OnboardingBasicInfoScreen: React.FC = () => {
    * @default ''
    */
   const [region, setRegion] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   // ============================================
   // Event Handlers
@@ -154,24 +157,35 @@ export const OnboardingBasicInfoScreen: React.FC = () => {
    * @returns {void}
    *
    * @description
-   * 입력된 기본 정보를 저장하고 다음 화면(알림 동의)으로 이동합니다.
-   *
-   * @todo
-   * - 입력된 정보를 Context 또는 AsyncStorage에 저장
-   * - 백엔드 API 연동 시 임시 저장 엔드포인트 호출
-   * - 입력 유효성 검사 (연령 범위 등)
+   * 입력된 기본 정보를 백엔드에 저장하고 다음 화면(알림 동의)으로 이동합니다.
    */
-  const handleNext = () => {
-    // TODO: Context 또는 AsyncStorage에 기본 정보 저장
-    const basicInfo = {
-      age: parseInt(age, 10),
-      jobCategory: jobCategory!,
-      incomeRange: incomeRange!,
-      region: region.trim(),
-    };
+  const handleNext = async () => {
+    if (loading) return;
 
-    console.log('Basic info:', basicInfo);
-    navigation.navigate('OnboardingConsent' as any);
+    setLoading(true);
+    
+    try {
+      const basicInfo = {
+        age: parseInt(age, 10),
+        jobCategory: jobCategory!,
+        incomeRange: incomeRange!,
+        region: region.trim(),
+      };
+
+      const response = await onboardingService.saveProfile(basicInfo);
+      
+      if (response.success) {
+        console.log('기본 정보 저장 성공:', basicInfo);
+        navigation.navigate('OnboardingConsent' as any);
+      } else {
+        Alert.alert('저장 실패', response.error || '기본 정보 저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('기본 정보 저장 오류:', error);
+      Alert.alert('오류', '기본 정보 저장 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ============================================
@@ -189,7 +203,8 @@ export const OnboardingBasicInfoScreen: React.FC = () => {
     age.length > 0 &&
     jobCategory !== null &&
     incomeRange !== null &&
-    region.trim().length > 0;
+    region.trim().length > 0 &&
+    !loading;
 
   // ============================================
   // Main Render
@@ -336,7 +351,7 @@ export const OnboardingBasicInfoScreen: React.FC = () => {
               !isNextButtonEnabled && styles.nextButtonTextDisabled,
             ]}
           >
-            다음
+            {loading ? '저장 중...' : '다음'}
           </Text>
         </TouchableOpacity>
 

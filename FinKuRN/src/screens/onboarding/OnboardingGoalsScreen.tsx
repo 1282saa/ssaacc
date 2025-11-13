@@ -13,7 +13,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BackgroundGradient } from '../../components/common/BackgroundGradient';
@@ -21,6 +21,7 @@ import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
 import type { UserGoal } from '../../types/onboarding';
+import { onboardingService } from '../../services';
 
 /**
  * 목표 옵션 인터페이스
@@ -115,6 +116,7 @@ export const OnboardingGoalsScreen: React.FC = () => {
    * 최대 3개까지 선택할 수 있습니다.
    */
   const [selectedGoals, setSelectedGoals] = useState<UserGoal[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // ============================================
   // Event Handlers
@@ -170,10 +172,26 @@ export const OnboardingGoalsScreen: React.FC = () => {
    * <TouchableOpacity onPress={handleNext}>
    * ```
    */
-  const handleNext = () => {
-    // TODO: Context 또는 AsyncStorage에 선택된 목표 저장
-    console.log('Selected goals:', selectedGoals);
-    navigation.navigate('OnboardingBasicInfo' as any);
+  const handleNext = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    
+    try {
+      const response = await onboardingService.saveGoals(selectedGoals);
+      
+      if (response.success) {
+        console.log('목표 저장 성공:', selectedGoals);
+        navigation.navigate('OnboardingBasicInfo' as any);
+      } else {
+        Alert.alert('저장 실패', response.error || '목표 저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('목표 저장 오류:', error);
+      Alert.alert('오류', '목표 저장 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ============================================
@@ -187,7 +205,7 @@ export const OnboardingGoalsScreen: React.FC = () => {
    * @description
    * 최소 1개 이상의 목표가 선택되었는지 확인합니다.
    */
-  const isNextButtonEnabled = selectedGoals.length > 0;
+  const isNextButtonEnabled = selectedGoals.length > 0 && !loading;
 
   // ============================================
   // Main Render
@@ -288,7 +306,7 @@ export const OnboardingGoalsScreen: React.FC = () => {
               !isNextButtonEnabled && styles.nextButtonTextDisabled,
             ]}
           >
-            다음
+            {loading ? '저장 중...' : '다음'}
           </Text>
         </TouchableOpacity>
 

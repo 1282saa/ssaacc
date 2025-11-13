@@ -48,10 +48,12 @@ export { chatService, DUMMY_CHAT_LIST, DUMMY_MESSAGES } from './chatService';
  * 인증 서비스 Export (Auth Service Export)
  *
  * 인증 관련 서비스를 export합니다.
- * authService.ts에서 이미 export되어 있으므로 필요시 추가할 수 있습니다.
- *
- * @example
- * ```typescript
- * export { authService } from './authService';
- * ```
  */
+export { authService } from './authService';
+
+/**
+ * 온보딩 서비스 Export (Onboarding Service Export)
+ *
+ * 온보딩 프로세스 관련 서비스를 export합니다.
+ */
+export { onboardingService } from './onboardingService';

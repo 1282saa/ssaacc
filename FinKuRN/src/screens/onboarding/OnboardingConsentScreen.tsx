@@ -14,13 +14,14 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BackgroundGradient } from '../../components/common/BackgroundGradient';
 import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
+import { onboardingService } from '../../services';
 
 /**
  * 동의 항목 인터페이스
@@ -115,6 +116,7 @@ export const OnboardingConsentScreen: React.FC = () => {
     marketingNotification: false,
     rewardProgram: false,
   });
+  const [loading, setLoading] = useState<boolean>(false);
 
   // ============================================
   // Event Handlers
@@ -166,26 +168,41 @@ export const OnboardingConsentScreen: React.FC = () => {
    * @returns {void}
    *
    * @description
-   * 동의 정보를 저장하고 완료 화면으로 이동합니다.
-   *
-   * @todo
-   * - 동의 정보를 Context 또는 AsyncStorage에 저장
-   * - 백엔드 API 연동 시 온보딩 데이터 전송
-   * - 필수 동의 항목 체크 검증 (현재는 모두 선택사항)
+   * 동의 정보를 백엔드에 저장하고 온보딩을 완료한 후 완료 화면으로 이동합니다.
    */
-  const handleComplete = () => {
-    // TODO: Context 또는 AsyncStorage에 동의 정보 저장
-    console.log('Consents:', consents);
+  const handleComplete = async () => {
+    if (loading) return;
 
-    // TODO: 백엔드에 온보딩 전체 데이터 전송
-    // const onboardingData = {
-    //   goals: [...],
-    //   basicInfo: {...},
-    //   consent: consents
-    // };
-    // await submitOnboardingData(onboardingData);
+    setLoading(true);
+    
+    try {
+      // 동의 정보 저장
+      const consentResponse = await onboardingService.saveConsent({
+        pushNotification: consents.pushNotification,
+        marketingNotification: consents.marketingNotification,
+        rewardProgram: consents.rewardProgram,
+      });
+      
+      if (!consentResponse.success) {
+        Alert.alert('저장 실패', consentResponse.error || '동의 정보 저장에 실패했습니다.');
+        return;
+      }
 
-    navigation.navigate('OnboardingComplete' as any);
+      // 온보딩 완료 처리
+      const completeResponse = await onboardingService.completeOnboarding();
+      
+      if (completeResponse && completeResponse.success) {
+        console.log('온보딩 완료 성공:', consents);
+        navigation.navigate('OnboardingComplete' as any);
+      } else {
+        Alert.alert('완료 실패', '온보딩 완료 처리에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('온보딩 완료 오류:', error);
+      Alert.alert('오류', '온보딩 완료 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ============================================
@@ -318,11 +335,17 @@ export const OnboardingConsentScreen: React.FC = () => {
       <View style={styles.footer}>
         {/* 완료 버튼 */}
         <TouchableOpacity
-          style={styles.completeButton}
+          style={[
+            styles.completeButton,
+            loading && styles.completeButtonDisabled,
+          ]}
           onPress={handleComplete}
+          disabled={loading}
           activeOpacity={0.8}
         >
-          <Text style={styles.completeButtonText}>완료</Text>
+          <Text style={styles.completeButtonText}>
+            {loading ? '완료 처리 중...' : '완료'}
+          </Text>
         </TouchableOpacity>
 
         {/* 진행 표시 */}
@@ -556,6 +579,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: theme.spacing.lg,
+  },
+  completeButtonDisabled: {
+    backgroundColor: '#D0D0D0',
   },
   completeButtonText: {
     fontSize: 18,
