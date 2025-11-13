@@ -63,6 +63,13 @@ data/*.json
 FinKuRN/.expo/
 FinKuRN/.expo-shared/
 
+# Claude Code
+CLAUDE.md
+.claude/
+claude-*
+.claude_history
+*claude*
+
 # Prototype builds
 prototypes/*/node_modules/
 prototypes/*/dist/
