@@ -23,13 +23,23 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=6, max_length=50, description="비밀번호")
 
 
+class UserUpdate(BaseModel):
+    """사용자 기본 정보 수정 요청"""
+    name: Optional[str] = Field(None, min_length=2, max_length=50, description="이름")
+    profile: Optional["UserProfileUpdate"] = Field(None, description="프로필 정보")
+    consents: Optional["UserConsentUpdate"] = Field(None, description="동의 정보")
+
+
 class UserResponse(UserBase):
     """사용자 정보 응답"""
     id: str = Field(..., description="사용자 ID")
     is_active: bool = Field(..., description="계정 활성화 상태")
     is_email_verified: bool = Field(..., description="이메일 인증 여부")
     created_at: datetime = Field(..., description="계정 생성 시간")
+    updated_at: datetime = Field(..., description="계정 업데이트 시간")
     last_login: Optional[datetime] = Field(None, description="마지막 로그인 시간")
+    profile: Optional["UserProfileResponse"] = Field(None, description="프로필 정보")
+    consents: Optional[Dict[str, bool]] = Field(None, description="동의 정보")
 
     model_config = {"from_attributes": True}
 
