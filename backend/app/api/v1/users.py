@@ -8,8 +8,9 @@ User Management API Endpoints
 """
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
+from typing import Annotated
 
 from app.core.database import get_db
 from app.models.user import User, UserProfile, UserConsent
@@ -20,7 +21,7 @@ router = APIRouter()
 
 
 def get_current_user(
-    authorization: str = Depends(lambda req: req.headers.get("Authorization")),
+    authorization: Annotated[str, Header(alias="Authorization")],
     db: Session = Depends(get_db)
 ) -> User:
     """

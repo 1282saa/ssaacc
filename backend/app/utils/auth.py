@@ -8,19 +8,15 @@ import os
 from datetime import datetime, timedelta
 from typing import Any, Union, Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 # JWT 설정 (환경변수에서 가져오기)
 SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key-change-in-production")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24시간
 
-# 비밀번호 해싱 컨텍스트  
-pwd_context = CryptContext(
-    schemes=["bcrypt"], 
-    deprecated="auto",
-    bcrypt__rounds=int(os.getenv("BCRYPT_ROUNDS", "12"))
-)
+# bcrypt 솔트 라운드 설정
+BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", "12"))
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
@@ -122,7 +118,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         bool: 비밀번호 일치 여부
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 
 def get_password_hash(password: str) -> str:
@@ -135,6 +131,8 @@ def get_password_hash(password: str) -> str:
     Returns:
         str: 해싱된 비밀번호
     """
-    # bcrypt는 최대 72바이트만 지원하므로 자동 잘라내기
-    password = password[:72]
-    return pwd_context.hash(password)
+    # bcrypt는 최대 72바이트만 지원하므로 UTF-8 바이트 기준으로 자동 잘라내기
+    password_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
