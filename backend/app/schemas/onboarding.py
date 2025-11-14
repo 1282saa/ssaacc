@@ -23,34 +23,29 @@ class OnboardingStep(str, Enum):
 
 class FinancialGoal(str, Enum):
     """금융 목표 옵션"""
-    SAVINGS = "적금"
-    INVESTMENT = "투자"
-    LOAN = "대출"
-    INSURANCE = "보험"
-    PENSION = "연금"
-    CARD = "카드"
-    BUDGET = "가계관리"
-    HOUSING = "주택자금"
+    SAVINGS = "저축"
+    STUDENT_LOAN = "학자금"
+    CREDIT_MANAGEMENT = "신용관리"
+    INVESTMENT_BASICS = "투자기초"
 
 
 class JobCategory(str, Enum):
     """직업 카테고리"""
     STUDENT = "학생"
+    JOB_SEEKER = "취업준비생"
     EMPLOYEE = "직장인"
-    SELF_EMPLOYED = "자영업"
     FREELANCER = "프리랜서"
-    UNEMPLOYED = "무직"
+    SELF_EMPLOYED = "자영업"
     OTHER = "기타"
 
 
 class IncomeRange(str, Enum):
     """소득 구간"""
-    NONE = "소득 없음"
-    UNDER_2000 = "2000만원 이하"
-    RANGE_2000_4000 = "2000-4000만원"
-    RANGE_4000_6000 = "4000-6000만원"
-    RANGE_6000_8000 = "6000-8000만원"
-    OVER_8000 = "8000만원 이상"
+    UNDER_100 = "100만원 미만"
+    RANGE_100_200 = "100-200만원"
+    RANGE_200_300 = "200-300만원"
+    RANGE_300_400 = "300-400만원"
+    OVER_400 = "400만원 이상"
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -184,8 +179,8 @@ class OnboardingStatusResponse(BaseModel):
                 "completed_steps": ["goals"],
                 "next_step": "profile",
                 "progress_data": {
-                    "goals": ["적금", "투자"],
-                    "priority_goal": "적금"
+                    "goals": ["저축", "투자기초"],
+                    "priority_goal": "저축"
                 }
             }
         }
@@ -206,8 +201,8 @@ class OnboardingStepRequest(BaseModel):
             "example": {
                 "step": "goals",
                 "data": {
-                    "goals": ["적금", "투자"],
-                    "priority_goal": "적금"
+                    "goals": ["저축", "투자기초"],
+                    "priority_goal": "저축"
                 }
             }
         }

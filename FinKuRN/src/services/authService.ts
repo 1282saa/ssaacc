@@ -4,9 +4,8 @@
  * 이 파일은 모든 사용자 인증 관련 기능을 제공하는 서비스 레이어입니다.
  * 로그인, 로그아웃, 회원가입, 토큰 관리 등 인증과 관련된 모든 API 호출을 담당합니다.
  *
- * UI와 백엔드 API 사이의 깔끔한 추상화 레이어를 제공하며,
- * 현재는 개발을 위해 더미 데이터를 사용하고 있습니다.
- * 백엔드가 준비되면 실제 API 호출로 교체할 수 있습니다.
+ * UI와 백엔드 API 사이의 깔끔한 추상화 레이어를 제공합니다.
+ * FastAPI 백엔드와 연동되어 실제 JWT 인증을 처리합니다.
  *
  * @module services/authService
  * @category Services
@@ -30,52 +29,76 @@
  * ```
  */
 
+import { API_ENDPOINTS } from '../config/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { 
+  LoginRequest, 
+  LoginResponse, 
+  RegisterRequest, 
+  RegisterResponse,
+  TokenResponse,
+  GoogleAuthRequest 
+} from '../types/auth';
+
 /**
- * 로그인 요청 인터페이스 (Login Request Interface)
- *
- * 이메일/비밀번호 로그인 시 서버로 전송할 데이터 구조입니다.
- *
- * @interface LoginRequest
- * @property {string} email - 사용자 이메일 주소
- * @property {string} password - 사용자 비밀번호
+ * HTTP 에러 응답 인터페이스
  */
-export interface LoginRequest {
-  /** 사용자 이메일 주소 (User email address) */
-  email: string;
-  /** 사용자 비밀번호 (User password) */
-  password: string;
+interface ErrorResponse {
+  detail: string;
 }
 
 /**
- * 로그인 응답 인터페이스 (Login Response Interface)
- *
- * 로그인 API 호출의 응답 데이터 구조입니다.
- * 성공 시 JWT 토큰과 사용자 정보를 포함하며, 실패 시 에러 메시지를 포함합니다.
- *
- * @interface LoginResponse
- * @property {boolean} success - 로그인 성공 여부
- * @property {string} [token] - JWT 인증 토큰 (성공 시)
- * @property {Object} [user] - 사용자 정보 (성공 시)
- * @property {string} user.id - 사용자 고유 식별자
- * @property {string} user.email - 사용자 이메일
- * @property {string} user.name - 사용자 이름
- * @property {string} [error] - 에러 메시지 (실패 시)
+ * API 요청 헤더 생성
  */
-export interface LoginResponse {
-  /** 로그인 성공 여부 (Login success status) */
-  success: boolean;
-  /** JWT 인증 토큰 (JWT authentication token) */
-  token?: string;
-  /** 사용자 정보 (User information) */
-  user?: {
-    /** 사용자 고유 식별자 */
-    id: string;
-    /** 사용자 이메일 */
-    email: string;
-    /** 사용자 이름 */
-    name: string;
+const createHeaders = (token?: string): Record<string, string> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
   };
-  /** 에러 메시지 (Error message if login failed) */
+  
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
+
+/**
+ * API 요청 래퍼 함수
+ */
+const apiRequest = async <T>(
+  url: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...createHeaders(),
+      ...options.headers,
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const errorData = data as ErrorResponse;
+    throw new Error(errorData.detail || '요청 실패');
+  }
+
+  return data as T;
+};
+
+/**
+ * 토큰 저장 키 상수
+ */
+const TOKEN_STORAGE_KEY = 'auth_token';
+const USER_STORAGE_KEY = 'user_info';
+
+/**
+ * 서비스 응답 인터페이스 (로컬 사용)
+ */
+interface ServiceResponse<T = any> {
+  success: boolean;
+  data?: T;
   error?: string;
 }
 
@@ -163,37 +186,77 @@ export type SocialProvider = "kakao" | "naver" | "google";
 export const login = async (
   email: string,
   password: string
-): Promise<LoginResponse> => {
+): Promise<ServiceResponse<{ user: any; token: TokenResponse }>> => {
   try {
-    // TODO: 실제 API 호출로 교체
-    // const response = await fetch('https://api.finkurn.com/api/auth/login', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ email, password }),
-    // });
-    // const data = await response.json();
-    // return data;
+    const requestData: LoginRequest = { email, password };
+    
+    const response = await apiRequest<LoginResponse>(
+      API_ENDPOINTS.AUTH.LOGIN,
+      {
+        method: 'POST',
+        body: JSON.stringify(requestData),
+      }
+    );
 
-    // API 호출 시뮬레이션 (1.5초 지연)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // 토큰과 사용자 정보 저장
+    await AsyncStorage.setItem(TOKEN_STORAGE_KEY, response.token.access_token);
+    await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(response.user));
 
-    // 개발용 더미 응답
     return {
       success: true,
-      token: "dummy_jwt_token_12345",
-      user: {
-        id: "1",
-        email: email,
-        name: "은별",
+      data: {
+        user: response.user,
+        token: response.token,
       },
     };
   } catch (error) {
     console.error("Login error:", error);
     return {
       success: false,
-      error: "로그인에 실패했습니다. 다시 시도해주세요.",
+      error: error instanceof Error ? error.message : "로그인에 실패했습니다.",
+    };
+  }
+};
+
+/**
+ * 회원가입 (Register new user)
+ *
+ * 새로운 사용자를 등록합니다.
+ * 이메일, 비밀번호, 이름을 받아서 계정을 생성합니다.
+ *
+ * @async
+ * @param {string} email - 사용자 이메일 주소
+ * @param {string} password - 사용자 비밀번호
+ * @param {string} name - 사용자 이름
+ * @returns {Promise<ServiceResponse>} 회원가입 응답을 담은 Promise
+ */
+export const register = async (
+  email: string,
+  password: string,
+  name: string
+): Promise<ServiceResponse<{ user: any }>> => {
+  try {
+    const requestData: RegisterRequest = { email, password, name };
+    
+    const response = await apiRequest<RegisterResponse>(
+      API_ENDPOINTS.AUTH.REGISTER,
+      {
+        method: 'POST',
+        body: JSON.stringify(requestData),
+      }
+    );
+
+    return {
+      success: true,
+      data: {
+        user: response.user,
+      },
+    };
+  } catch (error) {
+    console.error("Register error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "회원가입에 실패했습니다.",
     };
   }
 };
@@ -266,35 +329,46 @@ export const login = async (
  * @see {@link LoginResponse} 반환 데이터 타입
  */
 export const socialLogin = async (
-  provider: SocialProvider
-): Promise<LoginResponse> => {
+  provider: SocialProvider,
+  accessToken: string
+): Promise<ServiceResponse<{ user: any; token: TokenResponse }>> => {
   try {
-    // TODO: 소셜 로그인 플로우 구현
-    // 1. OAuth 플로우 시작 (소셜 로그인 SDK 사용)
-    // 2. Authorization Code 받기
-    // 3. Code를 JWT 토큰으로 교환
-    // 4. 백엔드에 토큰 전달하여 인증
+    // Google OAuth의 경우 구현된 엔드포인트 사용
+    if (provider === 'google') {
+      const requestData: GoogleAuthRequest = { access_token: accessToken };
+      
+      const response = await apiRequest<LoginResponse>(
+        API_ENDPOINTS.AUTH.GOOGLE,
+        {
+          method: 'POST',
+          body: JSON.stringify(requestData),
+        }
+      );
 
-    console.log(`Social login with ${provider} not yet implemented`);
+      // 토큰과 사용자 정보 저장
+      await AsyncStorage.setItem(TOKEN_STORAGE_KEY, response.token.access_token);
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(response.user));
 
-    // API 호출 시뮬레이션 (1.5초 지연)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // 개발용 더미 응답
+      return {
+        success: true,
+        data: {
+          user: response.user,
+          token: response.token,
+        },
+      };
+    }
+    
+    // 카카오, 네이버는 아직 미구현
+    console.log(`${provider} login not yet implemented`);
     return {
-      success: true,
-      token: `dummy_${provider}_token_12345`,
-      user: {
-        id: "1",
-        email: `user@${provider}.com`,
-        name: "은별",
-      },
+      success: false,
+      error: `${provider} 로그인은 아직 지원되지 않습니다.`,
     };
   } catch (error) {
     console.error(`${provider} login error:`, error);
     return {
       success: false,
-      error: `${provider} 로그인에 실패했습니다.`,
+      error: error instanceof Error ? error.message : `${provider} 로그인에 실패했습니다.`,
     };
   }
 };
@@ -357,21 +431,174 @@ export const socialLogin = async (
  * @todo 실제 API 엔드포인트로 교체 필요
  * @note 서버 측 로그아웃이 실패해도 클라이언트 토큰은 삭제해야 합니다
  */
-export const logout = async (): Promise<void> => {
+export const logout = async (): Promise<ServiceResponse> => {
   try {
-    // TODO: 실제 API 호출로 교체
-    // const token = await SecureStore.getItemAsync('authToken');
-    // await fetch('https://api.finkurn.com/api/auth/logout', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${token}`,
-    //   },
-    // });
+    const token = await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+    
+    if (token) {
+      // 백엔드에 로그아웃 요청 (토큰 무효화)
+      await apiRequest(
+        API_ENDPOINTS.AUTH.LOGOUT,
+        {
+          method: 'POST',
+          headers: createHeaders(token),
+        }
+      );
+    }
+    
+    // 로컬 저장소에서 토큰과 사용자 정보 삭제
+    await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+    await AsyncStorage.removeItem(USER_STORAGE_KEY);
 
-    console.log("User logged out");
+    return { success: true };
   } catch (error) {
     console.error("Logout error:", error);
-    // 에러가 발생해도 클라이언트 측 토큰은 삭제해야 함
+    
+    // 서버 에러가 발생해도 로컬 토큰은 삭제
+    await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+    await AsyncStorage.removeItem(USER_STORAGE_KEY);
+    
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "로그아웃 처리 중 오류가 발생했습니다.",
+    };
+  }
+};
+
+/**
+ * 저장된 토큰 조회
+ *
+ * AsyncStorage에서 저장된 인증 토큰을 가져옵니다.
+ *
+ * @async
+ * @returns {Promise<string | null>} 저장된 토큰 또는 null
+ */
+export const getStoredToken = async (): Promise<string | null> => {
+  try {
+    return await AsyncStorage.getItem(TOKEN_STORAGE_KEY);
+  } catch (error) {
+    console.error("Token retrieval error:", error);
+    return null;
+  }
+};
+
+/**
+ * 저장된 사용자 정보 조회
+ *
+ * AsyncStorage에서 저장된 사용자 정보를 가져옵니다.
+ *
+ * @async
+ * @returns {Promise<any | null>} 저장된 사용자 정보 또는 null
+ */
+export const getStoredUser = async (): Promise<any | null> => {
+  try {
+    const userString = await AsyncStorage.getItem(USER_STORAGE_KEY);
+    return userString ? JSON.parse(userString) : null;
+  } catch (error) {
+    console.error("User info retrieval error:", error);
+    return null;
+  }
+};
+
+/**
+ * 현재 사용자 정보 조회
+ *
+ * 백엔드에서 최신 사용자 정보를 가져옵니다.
+ *
+ * @async
+ * @returns {Promise<ServiceResponse>} 사용자 정보 조회 결과
+ */
+export const getCurrentUser = async (): Promise<ServiceResponse<any>> => {
+  try {
+    const token = await getStoredToken();
+    
+    if (!token) {
+      return {
+        success: false,
+        error: "인증 토큰이 없습니다.",
+      };
+    }
+
+    const user = await apiRequest(
+      API_ENDPOINTS.USERS.ME,
+      {
+        method: 'GET',
+        headers: createHeaders(token),
+      }
+    );
+
+    // 최신 사용자 정보로 업데이트
+    await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+
+    return {
+      success: true,
+      data: user,
+    };
+  } catch (error) {
+    console.error("Get current user error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "사용자 정보 조회에 실패했습니다.",
+    };
+  }
+};
+
+/**
+ * 토큰 유효성 확인
+ *
+ * 현재 토큰이 유효한지 확인합니다.
+ *
+ * @async
+ * @returns {Promise<boolean>} 토큰 유효성 여부
+ */
+export const isTokenValid = async (): Promise<boolean> => {
+  const userResult = await getCurrentUser();
+  return userResult.success;
+};
+
+/**
+ * 자동 로그인 확인
+ *
+ * 저장된 토큰으로 자동 로그인이 가능한지 확인합니다.
+ *
+ * @async
+ * @returns {Promise<ServiceResponse>} 자동 로그인 결과
+ */
+export const checkAutoLogin = async (): Promise<ServiceResponse<any>> => {
+  try {
+    const token = await getStoredToken();
+    
+    if (!token) {
+      return {
+        success: false,
+        error: "저장된 토큰이 없습니다.",
+      };
+    }
+
+    // 토큰으로 사용자 정보 조회
+    const userResult = await getCurrentUser();
+    
+    if (!userResult.success) {
+      // 토큰이 유효하지 않은 경우 삭제
+      await AsyncStorage.removeItem(TOKEN_STORAGE_KEY);
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      
+      return {
+        success: false,
+        error: "토큰이 만료되었습니다.",
+      };
+    }
+
+    return {
+      success: true,
+      data: userResult.data,
+    };
+  } catch (error) {
+    console.error("Auto login check error:", error);
+    return {
+      success: false,
+      error: "자동 로그인 확인 중 오류가 발생했습니다.",
+    };
   }
 };
 
@@ -403,6 +630,12 @@ export const logout = async (): Promise<void> => {
  */
 export const authService = {
   login,
+  register,
   socialLogin,
   logout,
+  getStoredToken,
+  getStoredUser,
+  getCurrentUser,
+  isTokenValid,
+  checkAutoLogin,
 };
