@@ -110,10 +110,6 @@ export const SpendingSection: React.FC<SpendingSectionProps> = ({
               <View style={styles.divider} />
               <Text style={styles.infoValue}>식비  🍱</Text>
             </View>
-
-            <Text style={styles.description}>
-              최근 3일 중 오늘 오전 소비가 가장 활발했어요
-            </Text>
           </View>
         </>
       )}

@@ -214,10 +214,6 @@ export const HomeScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <SavingsSection savingsFilters={savingsFilters} />
-
-        <SpendingSection spendingFilters={spendingFilters} />
-
         <View style={{ height: 120 }} />
       </ScrollView>
     </View>
