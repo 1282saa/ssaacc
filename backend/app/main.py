@@ -6,7 +6,7 @@ FinKuRN Backend - FastAPI Main Application
 - Supervisor Agent → 5개 전문 에이전트 → Synthesizer
 - FastMCP를 통한 Tool 추상화
 - LangGraph를 통한 Multi-Agent 오케스트레이션
-- Milvus(Vector DB) + Neo4j(Graph DB)
+- PostgreSQL + pgvector (Vector DB) + Neo4j(Graph DB)
 """
 
 from fastapi import FastAPI, Request
@@ -52,7 +52,7 @@ async def root():
         "components": {
             "orchestration": "LangGraph",
             "tools": "FastMCP",
-            "vector_db": "Milvus",
+            "vector_db": "PostgreSQL + pgvector",
             "graph_db": "Neo4j",
             "llm": "Claude 3.5 Sonnet (AWS Bedrock)",
         },
@@ -73,13 +73,14 @@ async def health_check():
         "services": {},
     }
 
-    # TODO: Milvus 연결 확인
+    # PostgreSQL + pgvector 연결 확인
     try:
-        # from app.db.milvus_client import check_connection
-        # milvus_healthy = check_connection()
-        health_status["services"]["milvus"] = "not_implemented"
+        from app.core.database import get_db
+        db = next(get_db())
+        db.execute("SELECT 1")
+        health_status["services"]["postgresql"] = "healthy"
     except Exception as e:
-        health_status["services"]["milvus"] = f"error: {str(e)}"
+        health_status["services"]["postgresql"] = f"error: {str(e)}"
 
     # TODO: Neo4j 연결 확인
     try:
@@ -108,7 +109,7 @@ async def api_status():
         "environment": {
             "anthropic_api_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
             "openai_api_configured": bool(os.getenv("OPENAI_API_KEY")),
-            "milvus_host": os.getenv("MILVUS_HOST", "localhost"),
+            "postgresql_host": os.getenv("POSTGRES_HOST", "localhost"),
             "neo4j_uri": os.getenv("NEO4J_URI", "bolt://localhost:7687"),
         },
         "features": {
@@ -232,16 +233,17 @@ async def startup_event():
     logger.info("📋 Architecture: 메이크리 AI 워크플로우")
     logger.info("🔧 Orchestration: LangGraph")
     logger.info("🛠️  Tools: FastMCP")
-    logger.info("🗄️  Vector DB: Milvus")
+    logger.info("🗄️  Vector DB: PostgreSQL + pgvector")
     logger.info("🕸️  Graph DB: Neo4j")
 
     # 데이터베이스 연결 초기화
     try:
-        from app.db.milvus_client import init_milvus
-        await init_milvus()
-        logger.info("✅ Milvus initialized successfully")
+        from app.core.database import get_db
+        db = next(get_db())
+        db.execute("SELECT 1")
+        logger.info("✅ PostgreSQL initialized successfully")
     except Exception as e:
-        logger.warning(f"⚠️  Milvus initialization skipped: {str(e)}")
+        logger.warning(f"⚠️  PostgreSQL initialization skipped: {str(e)}")
 
     # TODO Phase 2: Neo4j 초기화
     # await init_neo4j()
