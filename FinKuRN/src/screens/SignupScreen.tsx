@@ -18,6 +18,7 @@ import { HOME_GRADIENTS } from '../constants/gradients';
 import { theme } from '../constants/theme';
 import type { AppNavigation } from '../types/navigation';
 import { authService } from '../services/authService';
+import { signInWithGoogle, initializeGoogleSignIn } from '../services/googleAuthService';
 
 /**
  * 회원가입 화면 (Signup Screen)
@@ -136,13 +137,17 @@ export const SignupScreen: React.FC = () => {
     setLoading(true);
 
     try {
-      // TODO: Implement signup API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 실제 회원가입 API 호출
+      const response = await authService.register(email, password, name);
 
-      console.log('Signup successful:', { name, email });
-
-      // 회원가입 성공 시 온보딩 화면으로 이동
-      navigation.navigate('OnboardingWelcome' as any);
+      if (response.success) {
+        console.log('Signup successful:', response.data?.user);
+        
+        // 회원가입 성공 시 온보딩 화면으로 이동
+        navigation.navigate('OnboardingWelcome' as any);
+      } else {
+        setError(response.error || '회원가입에 실패했습니다.');
+      }
     } catch (err) {
       setError('회원가입에 실패했습니다. 다시 시도해주세요.');
       console.error('Signup error:', err);
@@ -180,12 +185,27 @@ export const SignupScreen: React.FC = () => {
     setError(null);
 
     try {
-      const response = await authService.socialLogin(provider);
-      if (response.success && response.token) {
-        // 소셜 회원가입 성공 시 온보딩 화면으로 이동
-        navigation.navigate('OnboardingWelcome' as any);
+      if (provider === 'google') {
+        // 실제 Google OAuth 처리
+        const googleResult = await signInWithGoogle();
+        
+        if (!googleResult.success) {
+          setError(googleResult.error || 'Google 회원가입에 실패했습니다.');
+          return;
+        }
+
+        // 백엔드에 Google 액세스 토큰 전달
+        const response = await authService.socialLogin('google', googleResult.accessToken || '');
+        
+        if (response.success && response.data?.token) {
+          console.log('Google signup successful:', response.data.user);
+          navigation.navigate('OnboardingWelcome' as any);
+        } else {
+          setError(response.error || 'Google 회원가입에 실패했습니다.');
+        }
       } else {
-        setError(response.error || `${provider} 회원가입에 실패했습니다.`);
+        // 카카오, 네이버는 아직 구현 중
+        setError(`${provider} 회원가입은 준비 중입니다. 이메일 회원가입을 이용해주세요.`);
       }
     } catch (err) {
       setError('소셜 회원가입에 실패했습니다.');

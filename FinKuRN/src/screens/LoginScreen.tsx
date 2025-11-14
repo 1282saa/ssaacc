@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { HOME_GRADIENTS } from '../constants/gradients';
 import { theme } from '../constants/theme';
 import type { AppNavigation } from '../types/navigation';
 import { authService } from '../services/authService';
+import { signInWithGoogle, initializeGoogleSignIn } from '../services/googleAuthService';
 
 /**
  * 로그인 화면 (Login Screen)
@@ -67,6 +68,11 @@ export const LoginScreen: React.FC = () => {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
 
+  // Google Sign-In 초기화
+  useEffect(() => {
+    initializeGoogleSignIn();
+  }, []);
+
   /**
    * 로그인 처리 핸들러 (Login Handler)
    *
@@ -114,8 +120,8 @@ export const LoginScreen: React.FC = () => {
     try {
       const response = await authService.login(email, password);
 
-      if (response.success && response.token) {
-        console.log('Login successful:', response.user);
+      if (response.success && response.data?.token) {
+        console.log('Login successful:', response.data.user);
 
         // TODO: 실제 구현 시 checkOnboardingStatus API로 확인
         // const status = await checkOnboardingStatus(response.user.id);
@@ -167,13 +173,27 @@ export const LoginScreen: React.FC = () => {
     setError(null);
 
     try {
-      const response = await authService.socialLogin(provider);
-      if (response.success && response.token) {
-        // TODO: 실제 구현 시 checkOnboardingStatus API로 확인
-        // 임시: 소셜 로그인 시 온보딩으로 이동
-        navigation.navigate('OnboardingWelcome' as any);
+      if (provider === 'google') {
+        // 실제 Google OAuth 처리
+        const googleResult = await signInWithGoogle();
+        
+        if (!googleResult.success) {
+          setError(googleResult.error || 'Google 로그인에 실패했습니다.');
+          return;
+        }
+
+        // 백엔드에 Google 액세스 토큰 전달
+        const response = await authService.socialLogin('google', googleResult.accessToken || '');
+        
+        if (response.success && response.data?.token) {
+          console.log('Google login successful:', response.data.user);
+          navigation.navigate('OnboardingWelcome' as any);
+        } else {
+          setError(response.error || 'Google 로그인에 실패했습니다.');
+        }
       } else {
-        setError(response.error || `${provider} 로그인에 실패했습니다.`);
+        // 카카오, 네이버는 아직 구현 중
+        setError(`${provider} 로그인은 준비 중입니다. 이메일 로그인을 이용해주세요.`);
       }
     } catch (err) {
       setError('소셜 로그인에 실패했습니다.');
