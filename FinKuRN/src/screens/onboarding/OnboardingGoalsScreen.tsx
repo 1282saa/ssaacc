@@ -206,6 +206,15 @@ export const OnboardingGoalsScreen: React.FC = () => {
         <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
       </TouchableOpacity>
 
+      {/* Skip Button */}
+      <TouchableOpacity
+        style={styles.skipButton}
+        onPress={() => navigation.navigate('Main')}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.skipButtonText}>건너뛰기</Text>
+      </TouchableOpacity>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -507,5 +516,22 @@ const styles = StyleSheet.create({
   dotActive: {
     width: 24,
     backgroundColor: theme.colors.primary,
+  },
+
+  /**
+   * Skip Button: 건너뛰기 버튼
+   */
+  skipButton: {
+    position: 'absolute',
+    top: theme.spacing.xxxl + 10,
+    right: theme.spacing.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    zIndex: 10,
+  },
+  skipButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
 });

@@ -27,6 +27,7 @@
  */
 
 import type { Message, ChatItem } from '../types/chat';
+import { API_ENDPOINTS } from '../config/api';
 
 /**
  * 더미 채팅 목록 데이터 (Dummy Chat List Data)
@@ -278,6 +279,7 @@ class ChatService {
    * @async
    * @param {string} chatId - 채팅 대화의 고유 식별자
    * @param {string} messageText - 전송할 메시지 텍스트
+   * @param {object} context - 사용자 컨텍스트 (나이, 지역 등)
    * @returns {Promise<[Message, Message]>} [사용자 메시지, AI 응답] 튜플을 담은 Promise
    *
    * @example
@@ -294,7 +296,8 @@ class ChatService {
    *     try {
    *       const [userMsg, aiResponse] = await chatService.sendMessage(
    *         chatId,
-   *         inputText
+   *         inputText,
+   *         { age: 25, region: '서울' }
    *       );
    *
    *       // 사용자 메시지와 AI 응답을 한 번에 추가
@@ -321,21 +324,13 @@ class ChatService {
    * };
    * ```
    *
-   * @todo 실제 AI API 또는 WebSocket으로 교체 필요
    * @see {@link Message} 반환 데이터 타입
    */
-  async sendMessage(chatId: string, messageText: string): Promise<[Message, Message]> {
-    // TODO: 실제 API 호출 또는 WebSocket 메시지 전송으로 교체
-    // const response = await fetch(`/api/chats/${chatId}/messages`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ text: messageText }),
-    // });
-    // return response.json();
-
-    // 네트워크 지연 시뮬레이션 (실제 AI 응답 대기 시간 모방)
-    await new Promise(resolve => setTimeout(resolve, 500));
-
+  async sendMessage(
+    chatId: string,
+    messageText: string,
+    context: Record<string, any> = {}
+  ): Promise<[Message, Message]> {
     // 사용자 메시지 생성
     const userMessage: Message = {
       id: Date.now(),
@@ -344,15 +339,55 @@ class ChatService {
       timestamp: new Date(),
     };
 
-    // AI 응답 메시지 생성
-    const aiResponse: Message = {
-      id: Date.now() + 1,
-      text: this.generateDummyResponse(messageText),
-      isUser: false,
-      timestamp: new Date(Date.now() + 1000),
-    };
+    try {
+      console.log('🚀 Sending message to backend:', {
+        url: API_ENDPOINTS.CHAT_MESSAGES(chatId),
+        message: messageText,
+      });
 
-    return Promise.resolve([userMessage, aiResponse]);
+      // AWS Bedrock 백엔드 API 호출
+      const response = await fetch(API_ENDPOINTS.CHAT_MESSAGES(chatId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: messageText,
+          context: context,
+        }),
+      });
+
+      console.log('📡 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Received AI response:', data);
+
+      // AI 응답 메시지 생성
+      const aiResponse: Message = {
+        id: Date.now() + 1,
+        text: data.content || data.response || '응답을 받지 못했습니다.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      return [userMessage, aiResponse];
+    } catch (error) {
+      console.error('❌ Failed to send message to backend:', error);
+
+      // 에러 발생 시 더미 응답 반환 (fallback)
+      const fallbackResponse: Message = {
+        id: Date.now() + 1,
+        text: '죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      return [userMessage, fallbackResponse];
+    }
   }
 
   /**

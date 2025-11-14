@@ -23,6 +23,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# API 라우터 등록
+from app.api.v1 import api_router
+app.include_router(api_router, prefix="/api/v1")
+
 # CORS 설정 (React Native에서 접근 가능하도록)
 app.add_middleware(
     CORSMiddleware,

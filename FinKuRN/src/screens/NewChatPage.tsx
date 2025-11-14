@@ -63,6 +63,7 @@ import type { AppNavigation } from '../types/navigation';
  */
 export const NewChatPage: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
+  const [inputText, setInputText] = React.useState('');
 
   const suggestedQuestions = [
     '청년 월세 지원금 받을 수 있을까?',
@@ -89,6 +90,23 @@ export const NewChatPage: React.FC = () => {
    */
   const handleQuestionPress = (question: string) => {
     navigation.navigate('ChatConversation', { chatTitle: question });
+  };
+
+  /**
+   * 메시지 전송 핸들러 (Message Send Handler)
+   *
+   * 입력창에 입력한 텍스트로 새 대화를 시작합니다.
+   *
+   * @function handleSend
+   *
+   * @description
+   * 입력 텍스트를 ChatConversation 페이지로 전달하여 대화를 시작합니다.
+   */
+  const handleSend = () => {
+    if (inputText.trim()) {
+      navigation.navigate('ChatConversation', { chatTitle: inputText.trim() });
+      setInputText('');
+    }
   };
 
   return (
@@ -164,6 +182,9 @@ export const NewChatPage: React.FC = () => {
           style={styles.input}
           placeholder="무엇이든 질문해주세요"
           placeholderTextColor={theme.colors.textPlaceholder}
+          value={inputText}
+          onChangeText={setInputText}
+          onSubmitEditing={handleSend}
         />
         <TouchableOpacity style={styles.micButton}>
           <Image
@@ -172,7 +193,7 @@ export const NewChatPage: React.FC = () => {
             resizeMode="contain"
           />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.sendButton}>
+        <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
           <Image
             source={{ uri: 'https://c.animaapp.com/d4bI3vUH/img/-----.svg' }}
             style={styles.sendIcon}

@@ -197,6 +197,15 @@ export const LoginScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Skip Button */}
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={() => navigation.navigate('Main')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.skipButtonText}>건너뛰기</Text>
+          </TouchableOpacity>
+
           {/* Header with Logo and Penguin */}
           <View style={styles.header}>
             <Text style={styles.logo}>FinKuRN</Text>
@@ -584,6 +593,20 @@ const styles = StyleSheet.create({
   signupLink: {
     fontFamily: 'Pretendard Variable',
     fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  skipButton: {
+    position: 'absolute',
+    top: theme.layout.statusBarHeight + 16,
+    right: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    zIndex: 10,
+  },
+  skipButtonText: {
+    fontFamily: 'Pretendard Variable',
+    fontSize: 14,
     fontWeight: '600',
     color: theme.colors.primary,
   },
