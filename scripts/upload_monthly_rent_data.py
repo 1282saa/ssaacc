@@ -22,7 +22,7 @@ DB_CONFIG = {
     'port': '5432',
     'database': 'finkurn',
     'user': 'postgres',
-    'password': 'finkurn2024'
+    'password': os.getenv('DB_PASSWORD', 'your-password')
 }
 
 # AWS Bedrock client for embeddings

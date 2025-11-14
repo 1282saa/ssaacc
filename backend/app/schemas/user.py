@@ -61,7 +61,7 @@ class UserProfileBase(BaseModel):
     @classmethod
     def validate_job_category(cls, v):
         if v is not None:
-            allowed = ["학생", "직장인", "무직", "자영업", "프리랜서", "기타"]
+            allowed = ["학생", "취업준비생", "직장인", "프리랜서", "자영업", "기타"]
             if v not in allowed:
                 raise ValueError(f"직업 카테고리는 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
@@ -80,8 +80,8 @@ class UserProfileBase(BaseModel):
     def validate_income_range(cls, v):
         if v is not None:
             allowed = [
-                "2000만원 이하", "2000-4000만원", "4000-6000만원", 
-                "6000-8000만원", "8000만원 이상", "소득 없음"
+                "100만원 미만", "100-200만원", "200-300만원", 
+                "300-400만원", "400만원 이상"
             ]
             if v not in allowed:
                 raise ValueError(f"소득 구간은 다음 중 하나여야 합니다: {', '.join(allowed)}")
