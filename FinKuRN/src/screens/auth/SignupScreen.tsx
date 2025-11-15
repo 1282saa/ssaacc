@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -10,15 +10,18 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { StatusBar } from '../../components/common/StatusBar';
-import { BackgroundGradient } from '../../components/common/BackgroundGradient';
-import { HOME_GRADIENTS } from '../../constants/gradients';
-import { theme } from '../../constants/theme';
-import type { AppNavigation } from '../../types/navigation';
-import { authService} from '../../services/authService';
-import { signInWithGoogle, initializeGoogleSignIn } from '../../services/googleAuthService';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StatusBar } from "../../components/common/StatusBar";
+import { BackgroundGradient } from "../../components/common/BackgroundGradient";
+import { HOME_GRADIENTS } from "../../constants/gradients";
+import { theme } from "../../constants/theme";
+import type { AppNavigation } from "../../types/navigation";
+import { authService } from "../../services/authService";
+import {
+  signInWithGoogle,
+  initializeGoogleSignIn,
+} from "../../services/googleAuthService";
 
 /**
  * 회원가입 화면 (Signup Screen)
@@ -67,10 +70,10 @@ import { signInWithGoogle, initializeGoogleSignIn } from '../../services/googleA
 export const SignupScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,27 +113,27 @@ export const SignupScreen: React.FC = () => {
 
     // Validation
     if (!name || !email || !password || !passwordConfirm) {
-      setError('모든 항목을 입력해주세요');
+      setError("모든 항목을 입력해주세요");
       return;
     }
 
     if (name.length < 2) {
-      setError('이름은 2자 이상 입력해주세요');
+      setError("이름은 2자 이상 입력해주세요");
       return;
     }
 
-    if (!email.includes('@')) {
-      setError('올바른 이메일 주소를 입력해주세요');
+    if (!email.includes("@")) {
+      setError("올바른 이메일 주소를 입력해주세요");
       return;
     }
 
     if (password.length < 6) {
-      setError('비밀번호는 6자 이상이어야 합니다');
+      setError("비밀번호는 6자 이상이어야 합니다");
       return;
     }
 
     if (password !== passwordConfirm) {
-      setError('비밀번호가 일치하지 않습니다');
+      setError("비밀번호가 일치하지 않습니다");
       return;
     }
 
@@ -141,16 +144,16 @@ export const SignupScreen: React.FC = () => {
       const response = await authService.register(email, password, name);
 
       if (response.success) {
-        console.log('Signup successful:', response.data?.user);
-        
+        console.log("Signup successful:", response.data?.user);
+
         // 회원가입 성공 시 온보딩 화면으로 이동
-        navigation.navigate('OnboardingWelcome' as any);
+        navigation.navigate("OnboardingWelcome" as any);
       } else {
-        setError(response.error || '회원가입에 실패했습니다.');
+        setError(response.error || "회원가입에 실패했습니다.");
       }
     } catch (err) {
-      setError('회원가입에 실패했습니다. 다시 시도해주세요.');
-      console.error('Signup error:', err);
+      setError("회원가입에 실패했습니다. 다시 시도해주세요.");
+      console.error("Signup error:", err);
     } finally {
       setLoading(false);
     }
@@ -180,36 +183,41 @@ export const SignupScreen: React.FC = () => {
    *
    * @see {@link authService.socialLogin}
    */
-  const handleSocialSignup = async (provider: 'kakao' | 'naver' | 'google') => {
+  const handleSocialSignup = async (provider: "kakao" | "naver" | "google") => {
     setLoading(true);
     setError(null);
 
     try {
-      if (provider === 'google') {
+      if (provider === "google") {
         // 실제 Google OAuth 처리
         const googleResult = await signInWithGoogle();
-        
+
         if (!googleResult.success) {
-          setError(googleResult.error || 'Google 회원가입에 실패했습니다.');
+          setError(googleResult.error || "Google 회원가입에 실패했습니다.");
           return;
         }
 
         // 백엔드에 Google 액세스 토큰 전달
-        const response = await authService.socialLogin('google', googleResult.accessToken || '');
-        
+        const response = await authService.socialLogin(
+          "google",
+          googleResult.accessToken || ""
+        );
+
         if (response.success && response.data?.token) {
-          console.log('Google signup successful:', response.data.user);
-          navigation.navigate('OnboardingWelcome' as any);
+          console.log("Google signup successful:", response.data.user);
+          navigation.navigate("OnboardingWelcome" as any);
         } else {
-          setError(response.error || 'Google 회원가입에 실패했습니다.');
+          setError(response.error || "Google 회원가입에 실패했습니다.");
         }
       } else {
         // 카카오, 네이버는 아직 구현 중
-        setError(`${provider} 회원가입은 준비 중입니다. 이메일 회원가입을 이용해주세요.`);
+        setError(
+          `${provider} 회원가입은 준비 중입니다. 이메일 회원가입을 이용해주세요.`
+        );
       }
     } catch (err) {
-      setError('소셜 회원가입에 실패했습니다.');
-      console.error('Social signup error:', err);
+      setError("소셜 회원가입에 실패했습니다.");
+      console.error("Social signup error:", err);
     } finally {
       setLoading(false);
     }
@@ -221,7 +229,7 @@ export const SignupScreen: React.FC = () => {
       <StatusBar />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <ScrollView
@@ -235,7 +243,7 @@ export const SignupScreen: React.FC = () => {
             <Text style={styles.tagline}>금융 지식과 자원 내비게이터</Text>
 
             <Image
-              source={{ uri: 'https://c.animaapp.com/FwW9Xg6K/img/--@2x.png' }}
+              source={{ uri: "https://c.animaapp.com/FwW9Xg6K/img/--@2x.png" }}
               style={styles.penguinImage}
               resizeMode="contain"
             />
@@ -371,7 +379,10 @@ export const SignupScreen: React.FC = () => {
 
             {/* Signup Button */}
             <TouchableOpacity
-              style={[styles.primaryButton, loading && styles.primaryButtonDisabled]}
+              style={[
+                styles.primaryButton,
+                loading && styles.primaryButtonDisabled,
+              ]}
               onPress={handleSignup}
               disabled={loading}
               activeOpacity={0.85}
@@ -394,7 +405,7 @@ export const SignupScreen: React.FC = () => {
             <View style={styles.socialButtonsContainer}>
               <TouchableOpacity
                 style={[styles.socialButton, styles.kakaoButton]}
-                onPress={() => handleSocialSignup('kakao')}
+                onPress={() => handleSocialSignup("kakao")}
                 disabled={loading}
                 activeOpacity={0.85}
               >
@@ -403,7 +414,7 @@ export const SignupScreen: React.FC = () => {
 
               <TouchableOpacity
                 style={[styles.socialButton, styles.naverButton]}
-                onPress={() => handleSocialSignup('naver')}
+                onPress={() => handleSocialSignup("naver")}
                 disabled={loading}
                 activeOpacity={0.85}
               >
@@ -412,7 +423,7 @@ export const SignupScreen: React.FC = () => {
 
               <TouchableOpacity
                 style={[styles.socialButton, styles.googleButton]}
-                onPress={() => handleSocialSignup('google')}
+                onPress={() => handleSocialSignup("google")}
                 disabled={loading}
                 activeOpacity={0.85}
               >
@@ -422,9 +433,11 @@ export const SignupScreen: React.FC = () => {
 
             {/* Login Link */}
             <View style={styles.loginPrompt}>
-              <Text style={styles.loginPromptText}>이미 계정이 있으신가요? </Text>
+              <Text style={styles.loginPromptText}>
+                이미 계정이 있으신가요?{" "}
+              </Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate("Login")}
                 disabled={loading}
               >
                 <Text style={styles.loginLink}>로그인</Text>
@@ -452,22 +465,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 12,
     paddingBottom: 16,
   },
   logo: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.primary,
     letterSpacing: -0.5,
     marginBottom: 2,
   },
   tagline: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 12,
-    fontWeight: '400',
+    fontWeight: "400",
     color: theme.colors.textSecondary,
     marginBottom: 8,
   },
@@ -481,7 +494,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 28,
     paddingBottom: 24,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 16,
@@ -491,76 +504,76 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   formTitle: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.textPrimary,
     marginBottom: 4,
     letterSpacing: -0.3,
   },
   welcomeText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 13,
-    fontWeight: '400',
+    fontWeight: "400",
     color: theme.colors.textSecondary,
   },
   inputGroup: {
     marginBottom: 12,
   },
   label: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.textPrimary,
     marginBottom: 6,
     paddingLeft: 2,
   },
   inputWrapper: {
-    backgroundColor: '#F5F5F7',
+    backgroundColor: "#F5F5F7",
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: "transparent",
   },
   inputWrapperFocused: {
     borderColor: theme.colors.primary,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: "#FAFAFA",
   },
   inputWrapperError: {
     borderColor: theme.colors.error,
-    backgroundColor: '#FFF9F9',
+    backgroundColor: "#FFF9F9",
   },
   input: {
     paddingHorizontal: 14,
     paddingVertical: 13,
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: "400",
     color: theme.colors.textPrimary,
   },
   errorBanner: {
-    backgroundColor: '#FFF1F1',
+    backgroundColor: "#FFF1F1",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginTop: 4,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#FFD6D6',
+    borderColor: "#FFD6D6",
   },
   errorText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
     color: theme.colors.error,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 16,
   },
   primaryButton: {
     backgroundColor: theme.colors.primary,
     borderRadius: 14,
     height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -571,88 +584,88 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   primaryButtonText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 15,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     letterSpacing: -0.2,
   },
   dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 20,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: "#E5E5E5",
   },
   dividerText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 12,
-    fontWeight: '400',
-    color: '#999',
+    fontWeight: "400",
+    color: "#999",
     marginHorizontal: 12,
   },
   socialButtonsContainer: {
     gap: 10,
   },
   socialButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     height: 50,
     borderRadius: 14,
     borderWidth: 1,
   },
   kakaoButton: {
-    backgroundColor: '#FEE500',
-    borderColor: '#FEE500',
+    backgroundColor: "#FEE500",
+    borderColor: "#FEE500",
   },
   kakaoText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 14,
-    fontWeight: '600',
-    color: '#3C1E1E',
+    fontWeight: "600",
+    color: "#3C1E1E",
     letterSpacing: -0.2,
   },
   naverButton: {
-    backgroundColor: '#03C75A',
-    borderColor: '#03C75A',
+    backgroundColor: "#03C75A",
+    borderColor: "#03C75A",
   },
   naverText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: "600",
+    color: "#fff",
     letterSpacing: -0.2,
   },
   googleButton: {
-    backgroundColor: '#fff',
-    borderColor: '#DADCE0',
+    backgroundColor: "#fff",
+    borderColor: "#DADCE0",
   },
   googleText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.textPrimary,
     letterSpacing: -0.2,
   },
   loginPrompt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 20,
   },
   loginPromptText: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 13,
-    fontWeight: '400',
-    color: '#666',
+    fontWeight: "400",
+    color: "#666",
   },
   loginLink: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable",
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.primary,
   },
 });

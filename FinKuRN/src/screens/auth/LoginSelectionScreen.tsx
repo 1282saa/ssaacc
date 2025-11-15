@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Svg, { Path, G, Defs, ClipPath, Rect } from 'react-native-svg';
@@ -13,6 +15,8 @@ import { BackgroundGradient } from '../../components/common/BackgroundGradient';
 import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
+import { authService } from '../../services/authService';
+import { signInWithGoogle, initializeGoogleSignIn } from '../../services/googleAuthService';
 
 /**
  * 로그인 선택 화면 (Login Selection Screen)
@@ -25,6 +29,56 @@ import type { AppNavigation } from '../../types/navigation';
  */
 export const LoginSelectionScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Google Sign-In 초기화
+  useEffect(() => {
+    initializeGoogleSignIn();
+  }, []);
+
+  /**
+   * 소셜 로그인 처리 핸들러
+   */
+  const handleSocialLogin = async (provider: 'kakao' | 'google' | 'apple') => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (provider === 'google') {
+        // Google OAuth 처리
+        const googleResult = await signInWithGoogle();
+
+        if (!googleResult.success) {
+          setError(googleResult.error || 'Google 로그인에 실패했습니다.');
+          Alert.alert('로그인 실패', googleResult.error || 'Google 로그인에 실패했습니다.');
+          return;
+        }
+
+        // 백엔드에 Google 액세스 토큰 전달
+        const response = await authService.socialLogin('google', googleResult.accessToken || '');
+
+        if (response.success && response.data?.token) {
+          console.log('Google login successful:', response.data.user);
+          navigation.navigate('OnboardingWelcome' as any);
+        } else {
+          setError(response.error || 'Google 로그인에 실패했습니다.');
+          Alert.alert('로그인 실패', response.error || 'Google 로그인에 실패했습니다.');
+        }
+      } else {
+        // 카카오, 애플은 아직 구현 중
+        const message = `${provider === 'kakao' ? '카카오' : '애플'} 로그인은 준비 중입니다. 이메일 로그인을 이용해주세요.`;
+        Alert.alert('준비 중', message);
+      }
+    } catch (err) {
+      const errorMessage = '소셜 로그인에 실패했습니다.';
+      setError(errorMessage);
+      Alert.alert('로그인 실패', errorMessage);
+      console.error('Social login error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -44,7 +98,12 @@ export const LoginSelectionScreen: React.FC = () => {
         {/* Social Login Buttons */}
         <View style={styles.socialButtonsContainer}>
           {/* Kakao Login */}
-          <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={[styles.socialButton, loading && styles.socialButtonDisabled]}
+            activeOpacity={0.8}
+            onPress={() => handleSocialLogin('kakao')}
+            disabled={loading}
+          >
             <View style={styles.socialIcon}>
               {/* Kakao icon placeholder */}
             </View>
@@ -52,15 +111,29 @@ export const LoginSelectionScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* Google Login */}
-          <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={[styles.socialButton, loading && styles.socialButtonDisabled]}
+            activeOpacity={0.8}
+            onPress={() => handleSocialLogin('google')}
+            disabled={loading}
+          >
             <View style={styles.socialIcon}>
               {/* Google icon placeholder */}
             </View>
-            <Text style={styles.socialButtonText}>구글로 로그인</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color={theme.colors.textPrimary} style={{ marginLeft: 12 }} />
+            ) : (
+              <Text style={styles.socialButtonText}>구글로 로그인</Text>
+            )}
           </TouchableOpacity>
 
           {/* Apple Login */}
-          <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={[styles.socialButton, loading && styles.socialButtonDisabled]}
+            activeOpacity={0.8}
+            onPress={() => handleSocialLogin('apple')}
+            disabled={loading}
+          >
             <View style={styles.socialIcon}>
               {/* Apple icon placeholder */}
             </View>
@@ -70,9 +143,10 @@ export const LoginSelectionScreen: React.FC = () => {
 
         {/* Email Login Button */}
         <TouchableOpacity
-          style={styles.loginButton}
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
           onPress={() => navigation.navigate('Login')}
           activeOpacity={0.8}
+          disabled={loading}
         >
           <Text style={styles.loginButtonText}>로그인</Text>
         </TouchableOpacity>
@@ -148,6 +222,9 @@ const styles = StyleSheet.create({
     color: theme.colors.black,
     letterSpacing: -0.4,
   },
+  socialButtonDisabled: {
+    opacity: 0.5,
+  },
   loginButton: {
     backgroundColor: theme.colors.primary,
     borderRadius: 20,
@@ -155,6 +232,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+  },
+  loginButtonDisabled: {
+    opacity: 0.5,
   },
   loginButtonText: {
     fontFamily: 'Pretendard',
