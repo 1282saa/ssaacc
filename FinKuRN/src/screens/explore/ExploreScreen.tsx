@@ -68,11 +68,11 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import { ArrowIcon } from '../components/ArrowIcon';
-import { StatusBar } from '../components/common/StatusBar';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { EXPLORE_GRADIENTS } from '../constants/gradients';
-import { theme } from '../constants/theme';
+import { ArrowIcon } from '../../components/ArrowIcon';
+import { StatusBar } from '../../components/common/StatusBar';
+import { BackgroundGradient } from '../../components/common/BackgroundGradient';
+import { EXPLORE_GRADIENTS } from '../../constants/gradients';
+import { theme } from '../../constants/theme';
 
 const { width } = Dimensions.get('window');
 

@@ -11,11 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StatusBar } from '../components/common/StatusBar';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { CHAT_GRADIENTS_LARGE } from '../constants/gradients';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+import { StatusBar } from '../../components/common/StatusBar';
+import { BackgroundGradient } from '../../components/common/BackgroundGradient';
+import { CHAT_GRADIENTS_LARGE } from '../../constants/gradients';
+import { theme } from '../../constants/theme';
+import type { AppNavigation } from '../../types/navigation';
 
 /**
  * 새 채팅 페이지 (New Chat Page)

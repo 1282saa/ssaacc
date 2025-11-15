@@ -48,18 +48,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, StyleSheet } from 'react-native';
-import { LoginScreen } from '../screens/LoginScreen';
-import { LoginSelectionScreen } from '../screens/LoginSelectionScreen';
-import { SignupScreen } from '../screens/SignupScreen';
-import { HomeScreen } from '../screens/HomeScreen';
-import { ChatScreen } from '../screens/ChatScreen';
-import { ExploreScreen } from '../screens/ExploreScreen';
-import { PlanUpgradePage } from '../screens/PlanUpgradePage';
-import { NewChatPage } from '../screens/NewChatPage';
-import { ChatConversationPage } from '../screens/ChatConversationPage';
-import { TodayListScreen } from '../screens/TodayListScreen';
-import { PlanScreen } from '../screens/PlanScreen';
-import { QuizScreen } from '../screens/QuizScreen';
+import { LoginScreen, LoginSelectionScreen, SignupScreen } from '../screens/auth';
+import { HomeScreen, TodayListScreen } from '../screens/home';
+import { ChatScreen, ChatConversationPage, NewChatPage } from '../screens/chat';
+import { ExploreScreen } from '../screens/explore';
+import { PlanScreen, PlanUpgradePage } from '../screens/plan';
+import { QuizScreen } from '../screens/quiz';
 import {
   OnboardingWelcomeScreen,
   OnboardingGoalsScreen,

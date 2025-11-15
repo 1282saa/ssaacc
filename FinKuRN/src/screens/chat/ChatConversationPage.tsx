@@ -12,15 +12,15 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { StatusBar } from "../components/common/StatusBar";
-import { BackgroundGradient } from "../components/common/BackgroundGradient";
-import { CHAT_GRADIENTS_LARGE } from "../constants/gradients";
-import { theme } from "../constants/theme";
-import type { Message } from "../types/chat";
-import type { AppNavigation, RootStackParamList } from "../types/navigation";
-import { websocketService } from "../services/websocketService";
+import { StatusBar } from "../../components/common/StatusBar";
+import { BackgroundGradient } from "../../components/common/BackgroundGradient";
+import { CHAT_GRADIENTS_LARGE } from "../../constants/gradients";
+import { theme } from "../../constants/theme";
+import type { Message } from "../../types/chat";
+import type { AppNavigation, RootStackParamList } from "../../types/navigation";
+import { websocketService } from "../../services/websocketService";
 import { API_ENDPOINTS } from "../config/api";
-import { PolicyComparisonCard, PolicyCardData } from "../components/PolicyComparisonCard";
+import { PolicyComparisonCard, PolicyCardData } from "../../components/PolicyComparisonCard";
 import Markdown from 'react-native-markdown-display';
 
 /**

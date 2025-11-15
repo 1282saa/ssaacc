@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from '../components/common/StatusBar';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { HOME_GRADIENTS } from '../constants/gradients';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+import { StatusBar } from '../../components/common/StatusBar';
+import { BackgroundGradient } from '../../components/common/BackgroundGradient';
+import { HOME_GRADIENTS } from '../../constants/gradients';
+import { theme } from '../../constants/theme';
+import type { AppNavigation } from '../../types/navigation';
 
 /**
  * 회원가입 화면 (Signup Screen) - Anima Design

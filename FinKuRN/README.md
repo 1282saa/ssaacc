@@ -72,10 +72,10 @@ FinKuRN/
 │   │   ├── 📄 README.md         ← Component creation guide
 │   │   ├── common/              ← Shared components (3)
 │   │   ├── home/                ← HomeScreen components (4)
-│   │   └── plan/                ← PlanScreen components (4) (NEW!)
+│   │   └── plan/                ← PlanScreen components (4)
 │   │       └── 📄 README.md     ← Plan components guide
 │   │
-│   ├── api/                     ← API layer (NEW!)
+│   ├── api/                     ← API layer
 │   │   ├── planApi.ts           ← Plan/Todo API
 │   │   └── onboardingApi.ts     ← Onboarding API
 │   │
@@ -87,20 +87,54 @@ FinKuRN/
 │   ├── types/                   ← TypeScript type definitions
 │   │   ├── home.ts              ← Home data types
 │   │   ├── chat.ts              ← Chat data types
-│   │   ├── plan.ts              ← Plan/Todo data types (NEW!)
-│   │   ├── onboarding.ts        ← Onboarding data types (NEW!)
+│   │   ├── plan.ts              ← Plan/Todo data types
+│   │   ├── onboarding.ts        ← Onboarding data types
 │   │   └── navigation.ts        ← Navigation types
 │   │
 │   ├── constants/               ← Theme & design tokens
 │   │   ├── theme.ts             ← Colors, typography, spacing
 │   │   └── gradients.ts         ← Gradient configs
 │   │
-│   ├── screens/                 ← 13 screens (all refactored)
-│   │   ├── onboarding/          ← 5 onboarding screens (NEW!)
-│   │   │   └── 📄 README.md     ← Onboarding flow guide
-│   │   └── PlanScreen.tsx       ← Todo/Checklist screen (NEW!)
+│   ├── screens/                 ← 16 screens organized by feature (v3-refactor)
+│   │   ├── auth/                ← Authentication screens (3)
+│   │   │   ├── LoginScreen.tsx
+│   │   │   ├── LoginSelectionScreen.tsx
+│   │   │   ├── SignupScreen.tsx
+│   │   │   └── index.ts         ← Barrel exports
+│   │   │
+│   │   ├── onboarding/          ← Onboarding flow (3 screens)
+│   │   │   ├── OnboardingWelcomeScreen.tsx
+│   │   │   ├── OnboardingGoalsScreen.tsx
+│   │   │   ├── OnboardingBasicInfoScreen.tsx
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── home/                ← Home & Today screens (2)
+│   │   │   ├── HomeScreen.tsx
+│   │   │   ├── TodayListScreen.tsx
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── chat/                ← Chat & AI screens (3)
+│   │   │   ├── ChatScreen.tsx
+│   │   │   ├── ChatConversationPage.tsx
+│   │   │   ├── NewChatPage.tsx
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── explore/             ← Explore screen (1)
+│   │   │   ├── ExploreScreen.tsx
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── plan/                ← Plan/Todo screens (2)
+│   │   │   ├── PlanScreen.tsx
+│   │   │   ├── PlanUpgradePage.tsx
+│   │   │   └── index.ts
+│   │   │
+│   │   └── quiz/                ← Quiz & Chatbot screens (2)
+│   │       ├── QuizScreen.tsx
+│   │       ├── ChatbotScreenV2.tsx
+│   │       └── index.ts
 │   │
 │   └── navigation/              ← Navigation config
+│       └── MainNavigator.tsx    ← Uses barrel imports from screens/*/index.ts
 │
 └── App.tsx                      ← Entry point
 ```
@@ -322,12 +356,20 @@ Centralized theme in `src/constants/theme.ts`:
 ### ✅ Completed (Latest Updates - 2025-01-15)
 
 **Core Features**
-- [x] 13 screens fully refactored (7 main + 5 onboarding + 1 plan)
-- [x] **5-step onboarding flow** (Welcome → Goals → BasicInfo → Consent → Complete)
+- [x] 16 screens fully refactored and organized by feature
+- [x] **Feature-based folder structure** (auth, onboarding, home, chat, explore, plan, quiz)
+- [x] **3-step onboarding flow** (Welcome → Goals → BasicInfo)
 - [x] **Plan/Todo screen** with 4 reusable card components
 - [x] Theme system implemented
 - [x] Service layer with dummy data
 - [x] Type definitions for all data
+
+**Architecture (v3-refactor)**
+- [x] Screen files organized into 7 feature folders
+- [x] Barrel exports (index.ts) for clean imports
+- [x] All import paths updated to use correct relative paths (../../)
+- [x] Navigation refactored to use barrel imports
+- [x] Zero code duplication in imports
 
 **Components**
 - [x] HomeScreen component breakdown (818 → 384 lines)
@@ -348,6 +390,7 @@ Centralized theme in `src/constants/theme.ts`:
 - [x] src/components/plan/README.md (plan components)
 - [x] Backend API specification
 - [x] 100% JSDoc coverage
+- [x] README.md updated with v3-refactor structure
 
 ### 🔄 Ready for Backend Integration
 
@@ -368,12 +411,15 @@ return response.json();
 
 - **Lines of code reduced**: 347 lines (via refactoring)
 - **Code duplication**: Eliminated 200+ lines
-- **Components**: 36 TypeScript files (13 screens + 11 components + 12 support files)
+- **Screens**: 16 screens organized into 7 feature folders
+  - auth (3), onboarding (3), home (2), chat (3), explore (1), plan (2), quiz (2)
+- **Components**: Modular architecture with barrel exports
 - **Documentation**: 6,000+ lines
-- **Features**: Onboarding (5 screens), Plan (4 components), Home, Explore, Chat, Profile
+- **Architecture**: Feature-based folder structure (v3-refactor)
 - **TypeScript errors**: 0 (all resolved)
 - **SRP violations**: 0
 - **Hardcoded values**: 0
+- **Import organization**: Clean barrel exports from all screen folders
 
 ---
 

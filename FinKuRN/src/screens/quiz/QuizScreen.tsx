@@ -7,9 +7,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from '../components/common/StatusBar';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+import { StatusBar } from '../../components/common/StatusBar';
+import { theme } from '../../constants/theme';
+import type { AppNavigation } from '../../types/navigation';
 
 const QUIZ_LEVELS = [
   { id: 1, title: 'LV 1. 새싹 금융러', color: '#C9D5F4' },

@@ -9,10 +9,10 @@ import {
   Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StatusBar } from '../components/common/StatusBar';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+import { StatusBar } from '../../components/common/StatusBar';
+import { BackgroundGradient } from '../../components/common/BackgroundGradient';
+import { theme } from '../../constants/theme';
+import type { AppNavigation } from '../../types/navigation';
 
 /**
  * 챗봇 접속 화면 (Chat Screen)

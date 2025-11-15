@@ -8,13 +8,13 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { StatusBar } from '../components/common/StatusBar';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { ChatItem } from '../components/ChatItem';
-import { CHAT_GRADIENTS_LARGE } from '../constants/gradients';
-import { theme } from '../constants/theme';
-import { ArrowIcon } from '../components/ArrowIcon';
-import type { AppNavigation } from '../types/navigation';
+import { StatusBar } from '../../components/common/StatusBar';
+import { BackgroundGradient } from '../../components/common/BackgroundGradient';
+import { ChatItem } from '../../components/ChatItem';
+import { CHAT_GRADIENTS_LARGE } from '../../constants/gradients';
+import { theme } from '../../constants/theme';
+import { ArrowIcon } from '../../components/ArrowIcon';
+import type { AppNavigation } from '../../types/navigation';
 
 /**
  * 챗봇 메인 화면 V2 (Chatbot Main Screen V2)

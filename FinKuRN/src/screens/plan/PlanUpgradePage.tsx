@@ -42,8 +42,8 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+import { theme } from '../../constants/theme';
+import type { AppNavigation } from '../../types/navigation';
 
 /**
  * 플랜 업그레이드 페이지 컴포넌트 (Plan Upgrade Page Component)
