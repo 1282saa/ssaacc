@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from '../components/common/StatusBar';
 import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { TodayItem, SavingsSection, SpendingSection } from '../components/home';
+import { SavingsSection, SpendingSection } from '../components/home';
 import { HOME_GRADIENTS } from '../constants/gradients';
 import { theme } from '../constants/theme';
 import { ArrowIcon } from '../components/ArrowIcon';
@@ -64,7 +64,6 @@ import type { AppNavigation } from '../types/navigation';
  */
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
-  const [showAllTodayItems, setShowAllTodayItems] = useState(false);
 
   const savingsFilters = ['전체', '내 집 마련 적금', '여름 여행', '비상금'];
   const spendingFilters = ['오늘', '이번 주', '이번 달'];
@@ -107,75 +106,44 @@ export const HomeScreen: React.FC = () => {
             <View style={styles.todayTitleRow}>
               <Text style={styles.todayTitle}>Today</Text>
               <View style={styles.todayBadge}>
-                <Text style={styles.todayBadgeText}>5</Text>
+                <Text style={styles.todayBadgeText}>2</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={() => setShowAllTodayItems(!showAllTodayItems)}>
-              <Text style={styles.viewAllText}>
-                {showAllTodayItems ? '접기' : '전체 목록 보기'}
-              </Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAllText}>전체 목록 보기</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.todayItemContainer}>
-            <TodayItem
-              title="공과금 납부"
-              dday="D-DAY"
-              detail={
-                <>
-                  <Text style={styles.normalText}>이번 달 전기요금 </Text>
-                  <Text style={styles.highlightText}>43,200원</Text>
-                </>
-              }
-              description="오늘 납부하지 않으면 연체료 2%가 부가돼요"
-            />
+            {/* 첫 번째 항목 */}
+            <View style={styles.todayItem}>
+              <View style={styles.todayItemHeader}>
+                <View style={styles.todayItemTitleRow}>
+                  <Text style={styles.todayItemTitle}>청년도약계좌 서류 제출 마감</Text>
+                  <Text style={styles.todayItemDday}>D-2</Text>
+                </View>
+                <View style={styles.todayDivider} />
+                <Text style={styles.todayItemDetail}>남은 서류 2개</Text>
+              </View>
+              <Text style={styles.todayItemDescription}>
+                이번 주 안에 제출해야 정부 지원금 받을 수 있어요
+              </Text>
+            </View>
 
-            <TodayItem
-              title="청년도약계좌 서류 제출 마감"
-              dday="D-2"
-              detail={<Text style={styles.normalText}>남은 서류 2개</Text>}
-              description="이번 주 안에 제출해야 정부 지원금 받을 수 있어요"
-            />
-
-            {showAllTodayItems && (
-              <>
-                <TodayItem
-                  title="통신비 자동이체"
-                  dday="D-3"
-                  detail={
-                    <>
-                      <Text style={styles.normalText}>SK텔레콤 </Text>
-                      <Text style={styles.highlightText}>55,000원</Text>
-                    </>
-                  }
-                  description="3일 후 자동 출금 예정이에요"
-                />
-
-                <TodayItem
-                  title="적금 납입일"
-                  dday="D-5"
-                  detail={
-                    <>
-                      <Text style={styles.normalText}>내 집 마련 적금 </Text>
-                      <Text style={styles.highlightText}>500,000원</Text>
-                    </>
-                  }
-                  description="5일 후 자동 납입 예정이에요"
-                />
-
-                <TodayItem
-                  title="구독료 결제"
-                  dday="D-7"
-                  detail={
-                    <>
-                      <Text style={styles.normalText}>넷플릭스 프리미엄 </Text>
-                      <Text style={styles.highlightText}>17,000원</Text>
-                    </>
-                  }
-                  description="일주일 후 자동 결제 예정이에요"
-                />
-              </>
-            )}
+            {/* 두 번째 항목 */}
+            <View style={styles.todayItem}>
+              <View style={styles.todayItemHeader}>
+                <View style={styles.todayItemTitleRow}>
+                  <Text style={styles.todayItemTitle}>청년도약계좌 서류 제출 마감</Text>
+                  <Text style={styles.todayItemDday}>D-2</Text>
+                </View>
+                <View style={styles.todayDivider} />
+                <Text style={styles.todayItemDetail}>남은 서류 2개</Text>
+              </View>
+              <Text style={styles.todayItemDescription}>
+                이번 주 안에 제출해야 정부 지원금 받을 수 있어요
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -284,23 +252,27 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 21,
     backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.xxxl,
+    borderRadius: 32,
     padding: 20,
+    height: 162,
+    overflow: 'hidden',
   },
   todayHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 43,
+    marginBottom: 23,
   },
   todayTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.xs,
+    gap: 4,
   },
   todayTitle: {
-    ...theme.typography.heading3,
-    color: theme.colors.textPrimary,
+    fontFamily: 'Pretendard Variable',
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.black,
   },
   todayBadge: {
     width: 16,
@@ -311,17 +283,61 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   todayBadgeText: {
-    fontFamily: 'System',
+    fontFamily: 'Pretendard Variable',
     fontWeight: '600',
     fontSize: 9,
     color: theme.colors.white,
   },
   viewAllText: {
-    ...theme.typography.body3,
-    color: theme.colors.textTertiary,
+    fontFamily: 'Pretendard Variable',
+    fontSize: 12,
+    fontWeight: '400',
+    color: '#767676',
   },
   todayItemContainer: {
     gap: 11,
+  },
+  todayItem: {
+    gap: 4,
+  },
+  todayItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  todayItemTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  todayItemTitle: {
+    fontFamily: 'Pretendard Variable',
+    fontSize: 14,
+    fontWeight: '400',
+    color: theme.colors.black,
+  },
+  todayItemDday: {
+    fontFamily: 'Pretendard Variable',
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.primary,
+  },
+  todayDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: '#e5e7eb',
+  },
+  todayItemDetail: {
+    fontFamily: 'Pretendard Variable',
+    fontSize: 14,
+    fontWeight: '400',
+    color: theme.colors.black,
+  },
+  todayItemDescription: {
+    fontFamily: 'Pretendard Variable',
+    fontSize: 11,
+    fontWeight: '400',
+    color: '#767676',
   },
   normalText: {
     color: theme.colors.textPrimary,
