@@ -48,6 +48,7 @@
 ### Project Status (January 2025)
 
 ✅ **Completed**:
+
 - 7 screens fully implemented and refactored
 - Complete theme system (colors, typography, spacing)
 - Service layer ready for backend integration
@@ -56,9 +57,11 @@
 - ExploreScreen refined to pixel-perfect design match
 
 🔄 **In Progress**:
+
 - Backend API integration (service layer ready, waiting for endpoints)
 
 ❌ **Not Started**:
+
 - User authentication
 - Real-time data synchronization
 - Push notifications
@@ -141,21 +144,21 @@ expo-blur: ~15.0.7
 **Responsibility**: Display data, handle user interaction
 
 **Rules**:
+
 - NEVER fetch data directly
 - ALWAYS use services for data
 - ONLY handle UI state (loading, errors, etc.)
 - Use theme system for all styling
 
 **Example**:
+
 ```typescript
 // ✅ CORRECT
 const HomeScreen = () => {
   const [data, setData] = useState<HomeData | null>(null);
 
   useEffect(() => {
-    homeService.getHomeData()
-      .then(setData)
-      .catch(console.error);
+    homeService.getHomeData().then(setData).catch(console.error);
   }, []);
 
   return <View>{/* Render data */}</View>;
@@ -166,8 +169,8 @@ const HomeScreen = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch('https://api.example.com/home')  // ❌ Direct fetch
-      .then(res => res.json())
+    fetch("https://api.example.com/home") // ❌ Direct fetch
+      .then((res) => res.json())
       .then(setData);
   }, []);
 };
@@ -178,12 +181,14 @@ const HomeScreen = () => {
 **Responsibility**: Abstract data fetching, provide clean API to UI
 
 **Rules**:
+
 - Return typed Promise objects
 - Handle errors gracefully
 - Currently returns dummy data (switch to real API later)
 - One service per domain (home, chat, etc.)
 
 **Example**:
+
 ```typescript
 // src/services/homeService.ts
 export const homeService = {
@@ -203,12 +208,14 @@ export const homeService = {
 **Responsibility**: Define all data structures
 
 **Rules**:
+
 - Every API response has a type
 - No `any` types
 - Export from `src/types/index.ts`
 - Document with JSDoc
 
 **Example**:
+
 ```typescript
 // src/types/home.ts
 /**
@@ -291,13 +298,13 @@ FinKuRN/
 
 ### File Naming Conventions
 
-| Type | Convention | Example |
-|------|-----------|---------|
-| Screens | PascalCase + `Screen` or `Page` | `HomeScreen.tsx` |
-| Components | PascalCase | `FilterChips.tsx` |
-| Services | camelCase + `Service` | `homeService.ts` |
-| Types | camelCase (file), PascalCase (interface) | `home.ts` → `HomeData` |
-| Constants | camelCase | `theme.ts`, `gradients.ts` |
+| Type       | Convention                               | Example                    |
+| ---------- | ---------------------------------------- | -------------------------- |
+| Screens    | PascalCase + `Screen` or `Page`          | `HomeScreen.tsx`           |
+| Components | PascalCase                               | `FilterChips.tsx`          |
+| Services   | camelCase + `Service`                    | `homeService.ts`           |
+| Types      | camelCase (file), PascalCase (interface) | `home.ts` → `HomeData`     |
+| Constants  | camelCase                                | `theme.ts`, `gradients.ts` |
 
 ---
 
@@ -310,47 +317,47 @@ FinKuRN/
 #### Colors
 
 ```typescript
-import { theme } from '../constants/theme';
+import { theme } from "../constants/theme";
 
 // Available colors
-theme.colors.primary        // #3060f1 (blue)
-theme.colors.background     // #f3f6fb (light blue-gray)
-theme.colors.surface        // #ffffff (white)
-theme.colors.black          // #000000
-theme.colors.white          // #ffffff
+theme.colors.primary; // #3060f1 (blue)
+theme.colors.background; // #f3f6fb (light blue-gray)
+theme.colors.surface; // #ffffff (white)
+theme.colors.black; // #000000
+theme.colors.white; // #ffffff
 
 // Text colors
-theme.colors.textPrimary    // #111111 (dark)
-theme.colors.textSecondary  // #767676 (gray)
-theme.colors.textTertiary   // #cbcbcb (light gray)
-theme.colors.textPlaceholder // #a3a3a3
+theme.colors.textPrimary; // #111111 (dark)
+theme.colors.textSecondary; // #767676 (gray)
+theme.colors.textTertiary; // #cbcbcb (light gray)
+theme.colors.textPlaceholder; // #a3a3a3
 
 // Semantic colors
-theme.colors.success        // #34c759 (green)
-theme.colors.warning        // #ffcc00 (yellow)
-theme.colors.error          // #ff3b30 (red)
-theme.colors.info           // #007aff (blue)
+theme.colors.success; // #34c759 (green)
+theme.colors.warning; // #ffcc00 (yellow)
+theme.colors.error; // #ff3b30 (red)
+theme.colors.info; // #007aff (blue)
 
 // UI colors
-theme.colors.border         // #e5e7eb
-theme.colors.inputBackground // rgba(0,0,0,0.05)
-theme.colors.cardBackground // #ffffff
+theme.colors.border; // #e5e7eb
+theme.colors.inputBackground; // rgba(0,0,0,0.05)
+theme.colors.cardBackground; // #ffffff
 ```
 
 #### Typography
 
 ```typescript
 // Headings
-theme.typography.heading1  // 24px, 700
-theme.typography.heading2  // 22px, 700
-theme.typography.heading3  // 18px, 600
-theme.typography.heading4  // 16px, 600
+theme.typography.heading1; // 24px, 700
+theme.typography.heading2; // 22px, 700
+theme.typography.heading3; // 18px, 600
+theme.typography.heading4; // 16px, 600
 
 // Body text
-theme.typography.body1     // 16px, 400
-theme.typography.body2     // 14px, 400
-theme.typography.body3     // 12px, 500
-theme.typography.caption   // 11px, 400
+theme.typography.body1; // 16px, 400
+theme.typography.body2; // 14px, 400
+theme.typography.body3; // 12px, 500
+theme.typography.caption; // 11px, 400
 
 // Usage example
 const styles = StyleSheet.create({
@@ -364,29 +371,29 @@ const styles = StyleSheet.create({
 #### Spacing
 
 ```typescript
-theme.spacing.xs    // 4px
-theme.spacing.sm    // 8px
-theme.spacing.md    // 16px
-theme.spacing.lg    // 18px
-theme.spacing.xl    // 24px
-theme.spacing.xxl   // 32px
-theme.spacing.xxxl  // 40px
+theme.spacing.xs; // 4px
+theme.spacing.sm; // 8px
+theme.spacing.md; // 16px
+theme.spacing.lg; // 18px
+theme.spacing.xl; // 24px
+theme.spacing.xxl; // 32px
+theme.spacing.xxxl; // 40px
 
 // Layout specific
-theme.layout.statusBarHeight  // 64px
-theme.layout.tabBarHeight     // 83px
+theme.layout.statusBarHeight; // 64px
+theme.layout.tabBarHeight; // 83px
 ```
 
 #### Border Radius
 
 ```typescript
-theme.borderRadius.sm    // 8px
-theme.borderRadius.md    // 12px
-theme.borderRadius.lg    // 16px
-theme.borderRadius.xl    // 20px
-theme.borderRadius.xxl   // 24px
-theme.borderRadius.xxxl  // 32px
-theme.borderRadius.full  // 9999px
+theme.borderRadius.sm; // 8px
+theme.borderRadius.md; // 12px
+theme.borderRadius.lg; // 16px
+theme.borderRadius.xl; // 20px
+theme.borderRadius.xxl; // 24px
+theme.borderRadius.xxxl; // 32px
+theme.borderRadius.full; // 9999px
 ```
 
 ### Styling Patterns
@@ -394,8 +401,8 @@ theme.borderRadius.full  // 9999px
 #### ✅ CORRECT Styling
 
 ```typescript
-import { StyleSheet } from 'react-native';
-import { theme } from '../constants/theme';
+import { StyleSheet } from "react-native";
+import { theme } from "../constants/theme";
 
 const styles = StyleSheet.create({
   container: {
@@ -453,10 +460,10 @@ const styles = StyleSheet.create({
 
 ### Component Structure Template
 
-```typescript
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { theme } from '../constants/theme';
+````typescript
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { theme } from "../constants/theme";
 
 /**
  * ComponentName Component
@@ -498,7 +505,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
 });
-```
+````
 
 ### Common Component Types
 
@@ -539,7 +546,8 @@ export const HomeScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    homeService.getHomeData()
+    homeService
+      .getHomeData()
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -548,11 +556,7 @@ export const HomeScreen: React.FC = () => {
   if (loading) return <LoadingSpinner />;
   if (!data) return <ErrorView />;
 
-  return (
-    <View style={styles.container}>
-      {/* Render with data */}
-    </View>
-  );
+  return <View style={styles.container}>{/* Render with data */}</View>;
 };
 ```
 
@@ -564,7 +568,7 @@ interface FilterChipsProps {
   filters: string[];
   selectedFilter: string | null;
   onFilterPress: (filter: string | null) => void;
-  scrollable?: boolean;  // Optional customization
+  scrollable?: boolean; // Optional customization
 }
 
 export const FilterChips: React.FC<FilterChipsProps> = ({
@@ -578,10 +582,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
   return (
     <Container {...containerProps}>
       {filters.map((filter) => (
-        <TouchableOpacity
-          key={filter}
-          onPress={() => onFilterPress(filter)}
-        >
+        <TouchableOpacity key={filter} onPress={() => onFilterPress(filter)}>
           <Text>{filter}</Text>
         </TouchableOpacity>
       ))}
@@ -624,9 +625,10 @@ export const HomeScreen = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    homeService.getHomeData()
+    homeService
+      .getHomeData()
       .then(setData)
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -654,7 +656,8 @@ const [error, setError] = useState<Error | null>(null);
 
 useEffect(() => {
   setLoading(true);
-  service.getData()
+  service
+    .getData()
     .then(setData)
     .catch(setError)
     .finally(() => setLoading(false));
@@ -682,7 +685,7 @@ interface UserData {
 }
 
 // ✅ Use type aliases for unions
-type Status = 'pending' | 'success' | 'error';
+type Status = "pending" | "success" | "error";
 
 // ✅ Use generics for reusable types
 interface ApiResponse<T> {
@@ -692,10 +695,10 @@ interface ApiResponse<T> {
 }
 
 // ❌ Never use 'any'
-const badFunction = (data: any) => { };  // ❌
+const badFunction = (data: any) => {}; // ❌
 
 // ✅ Use specific types
-const goodFunction = (data: UserData) => { };  // ✅
+const goodFunction = (data: UserData) => {}; // ✅
 ```
 
 ### Component Props
@@ -705,8 +708,8 @@ const goodFunction = (data: UserData) => { };  // ✅
 interface MyComponentProps {
   title: string;
   count: number;
-  onPress?: () => void;  // Optional prop
-  children?: React.ReactNode;  // For nested content
+  onPress?: () => void; // Optional prop
+  children?: React.ReactNode; // For nested content
 }
 
 // ✅ Use React.FC with props
@@ -745,11 +748,11 @@ export const homeService = {
 
 ```typescript
 // 1. Create file: src/screens/MyNewScreen.tsx
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { theme } from '../constants/theme';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { StatusBar } from '../components/common/StatusBar';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { theme } from "../constants/theme";
+import { BackgroundGradient } from "../components/common/BackgroundGradient";
+import { StatusBar } from "../components/common/StatusBar";
 
 /**
  * MyNewScreen Component
@@ -759,7 +762,13 @@ import { StatusBar } from '../components/common/StatusBar';
 export const MyNewScreen: React.FC = () => {
   return (
     <View style={styles.container}>
-      <BackgroundGradient layers={[/* gradient config */]} />
+      <BackgroundGradient
+        layers={
+          [
+            /* gradient config */
+          ]
+        }
+      />
       <StatusBar />
 
       <Text style={styles.title}>My New Screen</Text>
@@ -780,25 +789,25 @@ const styles = StyleSheet.create({
 });
 
 // 2. Add to navigation: src/navigation/MainNavigator.tsx
-import { MyNewScreen } from '../screens/MyNewScreen';
+import { MyNewScreen } from "../screens/MyNewScreen";
 
 // Add to stack navigator
-<Stack.Screen name="MyNew" component={MyNewScreen} />
+<Stack.Screen name="MyNew" component={MyNewScreen} />;
 
 // 3. Add to navigation types: src/types/navigation.ts
 export type RootStackParamList = {
   // ... existing screens
-  MyNew: undefined;  // undefined if no params
+  MyNew: undefined; // undefined if no params
 };
 ```
 
 ### Task 2: Create a Reusable Component
 
-```typescript
+````typescript
 // 1. Create file: src/components/common/MyComponent.tsx
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { theme } from '../../constants/theme';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { theme } from "../../constants/theme";
 
 /**
  * MyComponent Component
@@ -818,10 +827,7 @@ interface MyComponentProps {
   onPress?: () => void;
 }
 
-export const MyComponent: React.FC<MyComponentProps> = ({
-  title,
-  onPress,
-}) => {
+export const MyComponent: React.FC<MyComponentProps> = ({ title, onPress }) => {
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.title}>{title}</Text>
@@ -842,13 +848,13 @@ const styles = StyleSheet.create({
 });
 
 // 2. Export from barrel: src/components/common/index.ts
-export { MyComponent } from './MyComponent';
+export { MyComponent } from "./MyComponent";
 
 // 3. Use in screen
-import { MyComponent } from '../components/common';
+import { MyComponent } from "../components/common";
 
-<MyComponent title="Click me" onPress={() => alert('Clicked!')} />
-```
+<MyComponent title="Click me" onPress={() => alert("Clicked!")} />;
+````
 
 ### Task 3: Add a New Service
 
@@ -861,14 +867,14 @@ export interface MyFeatureData {
 }
 
 // 2. Export from barrel: src/types/index.ts
-export * from './myFeature';
+export * from "./myFeature";
 
 // 3. Create service: src/services/myFeatureService.ts
-import { MyFeatureData } from '../types';
+import { MyFeatureData } from "../types";
 
 const DUMMY_DATA: MyFeatureData[] = [
-  { id: '1', name: 'Item 1', value: 100 },
-  { id: '2', name: 'Item 2', value: 200 },
+  { id: "1", name: "Item 1", value: 100 },
+  { id: "2", name: "Item 2", value: 200 },
 ];
 
 export const myFeatureService = {
@@ -877,7 +883,7 @@ export const myFeatureService = {
    */
   async getFeatureData(): Promise<MyFeatureData[]> {
     // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return Promise.resolve(DUMMY_DATA);
   },
 
@@ -885,23 +891,21 @@ export const myFeatureService = {
    * Get single item by ID
    */
   async getFeatureItem(id: string): Promise<MyFeatureData | null> {
-    const item = DUMMY_DATA.find(d => d.id === id);
+    const item = DUMMY_DATA.find((d) => d.id === id);
     return Promise.resolve(item || null);
   },
 };
 
 // 4. Export from barrel: src/services/index.ts
-export { myFeatureService } from './myFeatureService';
+export { myFeatureService } from "./myFeatureService";
 
 // 5. Use in component
-import { myFeatureService } from '../services';
+import { myFeatureService } from "../services";
 
 const [data, setData] = useState<MyFeatureData[]>([]);
 
 useEffect(() => {
-  myFeatureService.getFeatureData()
-    .then(setData)
-    .catch(console.error);
+  myFeatureService.getFeatureData().then(setData).catch(console.error);
 }, []);
 ```
 
@@ -949,14 +953,14 @@ export const homeService = {
 };
 
 // AFTER (real API)
-const API_BASE_URL = 'https://api.finkurn.com';
+const API_BASE_URL = "https://api.finkurn.com";
 
 export const homeService = {
   async getHomeData(): Promise<HomeData> {
     const response = await fetch(`${API_BASE_URL}/api/home`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         // Add auth header if needed
         // 'Authorization': `Bearer ${token}`,
       },
@@ -976,10 +980,11 @@ export const homeService = {
 ```typescript
 // UI layer should handle errors from service
 useEffect(() => {
-  homeService.getHomeData()
+  homeService
+    .getHomeData()
     .then(setData)
-    .catch(error => {
-      console.error('Failed to fetch home data:', error);
+    .catch((error) => {
+      console.error("Failed to fetch home data:", error);
       setError(error.message);
     })
     .finally(() => setLoading(false));
@@ -992,12 +997,12 @@ useEffect(() => {
 // Create src/config/api.ts
 export const API_CONFIG = {
   BASE_URL: __DEV__
-    ? 'http://localhost:3000'  // Development
-    : 'https://api.finkurn.com',  // Production
+    ? "http://localhost:3000" // Development
+    : "https://api.finkurn.com", // Production
 };
 
 // Use in services
-import { API_CONFIG } from '../config/api';
+import { API_CONFIG } from "../config/api";
 
 const response = await fetch(`${API_CONFIG.BASE_URL}/api/home`);
 ```
@@ -1006,17 +1011,17 @@ const response = await fetch(`${API_CONFIG.BASE_URL}/api/home`);
 
 ```typescript
 // Type-safe navigation
-import { useNavigation } from '@react-navigation/native';
-import type { AppNavigation } from '../types/navigation';
+import { useNavigation } from "@react-navigation/native";
+import type { AppNavigation } from "../types/navigation";
 
 const MyComponent = () => {
   const navigation = useNavigation<AppNavigation>();
 
   const handlePress = () => {
     // Navigate to ChatConversation with params
-    navigation.navigate('ChatConversation', {
-      chatId: '123',
-      chatTitle: 'My Chat',
+    navigation.navigate("ChatConversation", {
+      chatId: "123",
+      chatTitle: "My Chat",
     });
   };
 
@@ -1033,11 +1038,13 @@ const MyComponent = () => {
 The following TypeScript errors exist but don't affect runtime:
 
 1. **`@expo/vector-icons` type errors**
+
    - **Issue**: Missing type declarations
    - **Impact**: None (works at runtime)
    - **Workaround**: Ignore or add `// @ts-ignore` if needed
 
 2. **LinearGradient type mismatch**
+
    - **File**: `src/components/common/BackgroundGradient.tsx:71`
    - **Issue**: Color array type not matching required tuple
    - **Impact**: None (works at runtime)
@@ -1068,27 +1075,33 @@ The following TypeScript errors exist but don't affect runtime:
 ### MUST Follow
 
 1. ✅ **Single Responsibility Principle**
+
    - Each component/function does ONE thing
    - Break large components into smaller ones
 
 2. ✅ **DRY (Don't Repeat Yourself)**
+
    - Extract repeated code into reusable components
    - Use theme system instead of repeating values
 
 3. ✅ **Type Safety**
+
    - ZERO `any` types
    - All props, state, and function returns must be typed
    - Use strict TypeScript
 
 4. ✅ **Theme System**
+
    - NEVER hardcode colors, spacing, or typography
    - ALWAYS use `theme.colors.*`, `theme.spacing.*`, etc.
 
 5. ✅ **Documentation**
+
    - Add JSDoc comments to all components and functions
    - Include `@param`, `@returns`, and `@example`
 
 6. ✅ **Component Size**
+
    - Keep components under 400 lines (including styles)
    - Split large components
 
@@ -1101,10 +1114,12 @@ The following TypeScript errors exist but don't affect runtime:
 ### NEVER Do
 
 1. ❌ **Never use emojis in code**
+
    - OK in markdown docs
    - NOT OK in TypeScript/JSX
 
 2. ❌ **Never hardcode values**
+
    ```typescript
    // ❌ WRONG
    backgroundColor: '#f3f6fb'
@@ -1118,24 +1133,27 @@ The following TypeScript errors exist but don't affect runtime:
    ```
 
 3. ❌ **Never use `any` type**
+
    ```typescript
    // ❌ WRONG
-   const myFunction = (data: any) => { }
+   const myFunction = (data: any) => {};
 
    // ✅ CORRECT
-   const myFunction = (data: MyDataType) => { }
+   const myFunction = (data: MyDataType) => {};
    ```
 
 4. ❌ **Never fetch data directly in components**
+
    ```typescript
    // ❌ WRONG
-   fetch('https://api.example.com/data')
+   fetch("https://api.example.com/data");
 
    // ✅ CORRECT
-   myService.getData()
+   myService.getData();
    ```
 
 5. ❌ **Never skip error handling**
+
    ```typescript
    // ❌ WRONG
    useEffect(() => {
@@ -1144,7 +1162,8 @@ The following TypeScript errors exist but don't affect runtime:
 
    // ✅ CORRECT
    useEffect(() => {
-     service.getData()
+     service
+       .getData()
        .then(setData)
        .catch(setError)
        .finally(() => setLoading(false));
@@ -1154,6 +1173,7 @@ The following TypeScript errors exist but don't affect runtime:
 ### Best Practices
 
 1. **Always handle loading states**
+
    ```typescript
    if (loading) return <ActivityIndicator />;
    if (error) return <ErrorView error={error} />;
@@ -1162,21 +1182,23 @@ The following TypeScript errors exist but don't affect runtime:
    ```
 
 2. **Always use barrel exports**
+
    ```typescript
    // components/common/index.ts
-   export { StatusBar } from './StatusBar';
-   export { BackgroundGradient } from './BackgroundGradient';
+   export { StatusBar } from "./StatusBar";
+   export { BackgroundGradient } from "./BackgroundGradient";
 
    // Usage
-   import { StatusBar, BackgroundGradient } from '../components/common';
+   import { StatusBar, BackgroundGradient } from "../components/common";
    ```
 
 3. **Always clean up effects**
+
    ```typescript
    useEffect(() => {
      let isMounted = true;
 
-     fetchData().then(data => {
+     fetchData().then((data) => {
        if (isMounted) setData(data);
      });
 
@@ -1194,30 +1216,31 @@ The following TypeScript errors exist but don't affect runtime:
 
 ```typescript
 // Theme
-import { theme } from '../constants/theme';
+import { theme } from "../constants/theme";
 
 // Services
-import { homeService, chatService } from '../services';
+import { homeService, chatService } from "../services";
 
 // Types
-import type { HomeData, ChatMessage } from '../types';
+import type { HomeData, ChatMessage } from "../types";
 
 // Components
-import { StatusBar, BackgroundGradient } from '../components/common';
-import { FilterChips, TodayItem } from '../components/home';
+import { StatusBar, BackgroundGradient } from "../components/common";
+import { FilterChips, TodayItem } from "../components/home";
 
 // Navigation
-import { useNavigation } from '@react-navigation/native';
-import type { AppNavigation } from '../types/navigation';
+import { useNavigation } from "@react-navigation/native";
+import type { AppNavigation } from "../types/navigation";
 ```
 
 ### Code Snippets
 
 #### Basic Component
+
 ```typescript
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { theme } from '../constants/theme';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { theme } from "../constants/theme";
 
 interface Props {
   title: string;
@@ -1244,15 +1267,17 @@ const styles = StyleSheet.create({
 ```
 
 #### Data Fetching
+
 ```typescript
 const [data, setData] = useState<DataType | null>(null);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState<string | null>(null);
 
 useEffect(() => {
-  myService.getData()
+  myService
+    .getData()
     .then(setData)
-    .catch(err => setError(err.message))
+    .catch((err) => setError(err.message))
     .finally(() => setLoading(false));
 }, []);
 ```
@@ -1262,6 +1287,7 @@ useEffect(() => {
 ## Summary for AI
 
 **This project is**:
+
 - React Native + Expo + TypeScript
 - Well-structured with clear separation of concerns
 - Fully typed (no `any`)
@@ -1270,6 +1296,7 @@ useEffect(() => {
 - Comprehensively documented
 
 **When coding**:
+
 1. Read component JSDoc first
 2. Use theme system for all styling
 3. Follow existing patterns
@@ -1278,6 +1305,7 @@ useEffect(() => {
 6. Never use `any` or hardcode values
 
 **Quick checks**:
+
 - ✅ Used `theme.*` for all styling?
 - ✅ Added TypeScript types?
 - ✅ Wrote JSDoc comments?

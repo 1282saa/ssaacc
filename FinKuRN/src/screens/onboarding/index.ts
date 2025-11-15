@@ -14,7 +14,6 @@
  *   OnboardingWelcomeScreen,
  *   OnboardingGoalsScreen,
  *   OnboardingBasicInfoScreen,
- *   OnboardingConsentScreen,
  *   OnboardingCompleteScreen
  * } from '@/screens/onboarding';
  * ```
@@ -23,5 +22,3 @@
 export { OnboardingWelcomeScreen } from './OnboardingWelcomeScreen';
 export { OnboardingGoalsScreen } from './OnboardingGoalsScreen';
 export { OnboardingBasicInfoScreen } from './OnboardingBasicInfoScreen';
-export { OnboardingConsentScreen } from './OnboardingConsentScreen';
-export { OnboardingCompleteScreen } from './OnboardingCompleteScreen';
