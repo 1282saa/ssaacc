@@ -1,18 +1,3 @@
-"""
-FinKuRN Database Models
+from .user import User, UserProfile, UserSocialAccount, UserConsent
 
-SQLAlchemy 모델들:
-- 사용자 관리: User, UserProfile, UserConsent, UserSocialAccount
-- 청년 정책: YouthPolicy (기존)
-"""
-
-from .user import User, UserProfile, UserConsent, UserSocialAccount
-from .youth_policy import YouthPolicy
-
-__all__ = [
-    "User",
-    "UserProfile", 
-    "UserConsent",
-    "UserSocialAccount",
-    "YouthPolicy"
-]
+__all__ = ["User", "UserProfile", "UserSocialAccount", "UserConsent"]

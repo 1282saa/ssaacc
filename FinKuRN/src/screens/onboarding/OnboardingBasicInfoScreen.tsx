@@ -1,117 +1,227 @@
 /**
  * 온보딩 기본 정보 입력 화면
- * Anima 디자인 (온보딩3)을 React Native로 픽셀-퍼펙트 변환
+ *
+ * @module Screens/Onboarding/OnboardingBasicInfoScreen
+ * @category UI/Screens/Onboarding
+ * @since 1.0.0
+ *
+ * @description
+ * 온보딩 프로세스의 세 번째 화면입니다.
+ * - 사용자의 기본 정보를 수집합니다
+ * - 연령, 직업, 소득, 거주 지역 정보 입력
+ * - 맞춤형 금융 정보 제공을 위한 필수 정보
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Alert,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BackgroundGradient } from '../../components/common/BackgroundGradient';
-import { StatusBar } from '../../components/common/StatusBar';
+import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
+import type { JobCategory, IncomeRange } from '../../types/onboarding';
+import { onboardingService } from '../../services';
 
-const GENDER_OPTIONS = ['남성', '여성'];
-
-const EMPLOYMENT_OPTIONS = [
-  ['학생', '취업준비생'],
-  ['정규직', '프리랜서'],
-  ['자영업', '기타'],
+/**
+ * 직업 카테고리 옵션 목록
+ *
+ * @constant JOB_CATEGORIES
+ */
+const JOB_CATEGORIES: { value: JobCategory; label: string }[] = [
+  { value: '학생', label: '학생' },
+  { value: '취업준비생', label: '취업준비생' },
+  { value: '직장인', label: '직장인' },
+  { value: '프리랜서', label: '프리랜서' },
+  { value: '자영업', label: '자영업' },
+  { value: '기타', label: '기타' },
 ];
 
-const INCOME_OPTIONS = [
-  '100만 원 이상 200만 원 미만',
-  '200만 원 이상 300만 원 미만',
-  '300만 원 이상 400만 원 미만',
-  '400만 원 이상',
+/**
+ * 소득 구간 옵션 목록
+ *
+ * @constant INCOME_RANGES
+ */
+const INCOME_RANGES: { value: IncomeRange; label: string }[] = [
+  { value: '100만원 미만', label: '100만원 미만' },
+  { value: '100-200만원', label: '100~200만원' },
+  { value: '200-300만원', label: '200~300만원' },
+  { value: '300-400만원', label: '300~400만원' },
+  { value: '400만원 이상', label: '400만원 이상' },
 ];
 
+/**
+ * 온보딩 기본 정보 입력 화면 컴포넌트
+ *
+ * @component
+ * @returns {JSX.Element} 기본 정보 입력 화면
+ *
+ * @example
+ * ```tsx
+ * <OnboardingBasicInfoScreen />
+ * ```
+ *
+ * @hooks
+ * - useState: 입력된 정보 상태 관리
+ * - useNavigation: 다음 화면으로 네비게이션
+ *
+ * @state
+ * - age: 사용자 연령
+ * - jobCategory: 직업 카테고리
+ * - incomeRange: 소득 구간
+ * - region: 거주 지역
+ *
+ * @features
+ * - 연령 입력 (숫자만 입력 가능)
+ * - 직업 선택 (단일 선택)
+ * - 소득 구간 선택 (단일 선택)
+ * - 지역 입력 (텍스트 입력)
+ * - 모든 필드 입력 시 다음 버튼 활성화
+ */
 export const OnboardingBasicInfoScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
-  const [age, setAge] = useState<string>('24');
-  const [gender, setGender] = useState<string | null>(null);
-  const [employment, setEmployment] = useState<string | null>(null);
-  const [income, setIncome] = useState<number | null>(null);
 
-  const handleNext = () => {
-    // 메인 화면으로 이동 (네비게이션 스택 리셋)
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' as any }],
-    });
+  // ============================================
+  // State Management
+  // ============================================
+
+  /**
+   * 사용자 연령 상태
+   *
+   * @state
+   * @type {string}
+   * @default ''
+   */
+  const [age, setAge] = useState<string>('');
+
+  /**
+   * 직업 카테고리 상태
+   *
+   * @state
+   * @type {JobCategory | null}
+   * @default null
+   */
+  const [jobCategory, setJobCategory] = useState<JobCategory | null>(null);
+
+  /**
+   * 소득 구간 상태
+   *
+   * @state
+   * @type {IncomeRange | null}
+   * @default null
+   */
+  const [incomeRange, setIncomeRange] = useState<IncomeRange | null>(null);
+
+  /**
+   * 거주 지역 상태
+   *
+   * @state
+   * @type {string}
+   * @default ''
+   */
+  const [region, setRegion] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // ============================================
+  // Event Handlers
+  // ============================================
+
+  /**
+   * 연령 입력 핸들러
+   *
+   * @function handleAgeChange
+   * @param {string} value - 입력된 값
+   * @returns {void}
+   *
+   * @description
+   * 숫자만 입력되도록 필터링합니다.
+   */
+  const handleAgeChange = (value: string) => {
+    // 숫자만 허용
+    const numericValue = value.replace(/[^0-9]/g, '');
+    setAge(numericValue);
   };
 
-  const handleSkip = () => {
-    // 메인 화면으로 이동 (네비게이션 스택 리셋)
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' as any }],
-    });
+  /**
+   * 다음 버튼 클릭 핸들러
+   *
+   * @function handleNext
+   * @returns {void}
+   *
+   * @description
+   * 입력된 기본 정보를 백엔드에 저장하고 다음 화면(알림 동의)으로 이동합니다.
+   */
+  const handleNext = async () => {
+    if (loading) return;
+
+    setLoading(true);
+    
+    try {
+      const basicInfo = {
+        age: parseInt(age, 10),
+        jobCategory: jobCategory!,
+        incomeRange: incomeRange!,
+        region: region.trim(),
+      };
+
+      const response = await onboardingService.saveProfile(basicInfo);
+      
+      if (response.success) {
+        console.log('기본 정보 저장 성공:', basicInfo);
+        navigation.navigate('OnboardingConsent' as any);
+      } else {
+        Alert.alert('저장 실패', response.error || '기본 정보 저장에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('기본 정보 저장 오류:', error);
+      Alert.alert('오류', '기본 정보 저장 중 문제가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // ============================================
+  // Computed Values
+  // ============================================
+
+  /**
+   * 다음 버튼 활성화 여부
+   *
+   * @computed
+   * @description
+   * 모든 필드가 입력되었는지 확인합니다.
+   */
+  const isNextButtonEnabled =
+    age.length > 0 &&
+    jobCategory !== null &&
+    incomeRange !== null &&
+    region.trim().length > 0 &&
+    !loading;
+
+  // ============================================
+  // Main Render
+  // ============================================
 
   return (
     <View style={styles.container}>
-      {/* 배경 그라디언트 4개 */}
-      <BackgroundGradient
-        layers={[
-          {
-            top: 12,
-            left: 112,
-            opacity: 1,
-            colors: [
-              'rgba(66, 0, 255, 0.2)',
-              'rgba(223, 127, 127, 0.2)',
-              'rgba(255, 229, 0, 0.2)',
-            ],
-          },
-          {
-            top: 349,
-            left: -188,
-            opacity: 1,
-            colors: [
-              'rgba(66, 0, 255, 0.2)',
-              'rgba(223, 127, 127, 0.2)',
-              'rgba(255, 229, 0, 0.2)',
-            ],
-          },
-          {
-            top: 704,
-            left: 112,
-            opacity: 1,
-            colors: [
-              'rgba(66, 0, 255, 0.2)',
-              'rgba(223, 127, 127, 0.2)',
-              'rgba(255, 229, 0, 0.2)',
-            ],
-          },
-          {
-            top: 972,
-            left: -77,
-            opacity: 1,
-            colors: [
-              'rgba(66, 0, 255, 0.2)',
-              'rgba(223, 127, 127, 0.2)',
-              'rgba(255, 229, 0, 0.2)',
-            ],
-          },
-        ]}
-        size={[330, 607]}
-      />
+      <BackgroundGradient layers={HOME_GRADIENTS} />
 
-      <StatusBar />
-
-      {/* 상단 네비게이션 */}
-      <View style={styles.topNav}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Image
-            source={{ uri: 'https://c.animaapp.com/5WZrwabW/img/icon-cheveron-left-1.svg' }}
-            style={styles.backIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleSkip}>
-          <Text style={styles.skipText}>SKIP</Text>
-        </TouchableOpacity>
-      </View>
+      {/* 뒤로가기 버튼 */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
+      </TouchableOpacity>
 
       <ScrollView
         style={styles.scrollView}
@@ -119,367 +229,361 @@ export const OnboardingBasicInfoScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* 타이틀 */}
-        <Text style={styles.title}>기본 정보를{'\n'}입력해주세요</Text>
+        <View style={styles.content}>
+          {/* 헤더 섹션 */}
+          <View style={styles.headerSection}>
+            <Text style={styles.title}>기본 정보를{'\n'}입력해주세요</Text>
+            <Text style={styles.subtitle}>
+              맞춤형 금융 정보 제공을 위해 필요해요
+            </Text>
+          </View>
 
-        {/* 서브타이틀 */}
-        <Text style={styles.subtitle}>
-          맞춤형 금융 정보 제공을 위해 필요한 내용이에요! 정보는 추후 수정 가능해요
-        </Text>
-
-        {/* 연령 */}
-        <Text style={styles.sectionLabel}>연령</Text>
-        <View style={styles.ageInputContainer}>
-          <TextInput
-            style={styles.ageInput}
-            value={age}
-            onChangeText={setAge}
-            keyboardType="number-pad"
-            maxLength={2}
-          />
-        </View>
-
-        {/* 성별 */}
-        <Text style={styles.sectionLabel2}>성별</Text>
-        <View style={styles.genderRow}>
-          {GENDER_OPTIONS.map((option) => {
-            const isSelected = gender === option;
-            return (
-              <TouchableOpacity
-                key={option}
-                style={[styles.genderButton, isSelected && styles.selectedButton]}
-                onPress={() => setGender(option)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.genderText, isSelected && styles.selectedText]}>
-                  {option}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* 근로 형태 */}
-        <Text style={styles.sectionLabel3}>근로 형태</Text>
-        <View style={styles.employmentGrid}>
-          {EMPLOYMENT_OPTIONS.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.employmentRow}>
-              {row.map((option) => {
-                const isSelected = employment === option;
-                return (
-                  <TouchableOpacity
-                    key={option}
-                    style={[styles.employmentButton, isSelected && styles.selectedButton]}
-                    onPress={() => setEmployment(option)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.employmentText, isSelected && styles.selectedText]}>
-                      {option}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+          {/* 입력 폼 */}
+          <View style={styles.form}>
+            {/* 연령 입력 */}
+            <View style={styles.field}>
+              <Text style={styles.label}>연령</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="만 나이를 입력해주세요"
+                placeholderTextColor="#999999"
+                value={age}
+                onChangeText={handleAgeChange}
+                keyboardType="number-pad"
+                maxLength={2}
+              />
             </View>
-          ))}
-        </View>
 
-        {/* 월 소득 */}
-        <Text style={styles.sectionLabel4}>월 소득</Text>
-        <View style={styles.incomeList}>
-          {INCOME_OPTIONS.map((option, index) => {
-            const isSelected = income === index;
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[styles.incomeButton, isSelected && styles.selectedButton]}
-                onPress={() => setIncome(index)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.incomeText, isSelected && styles.selectedText]}>
-                  {option}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+            {/* 직업 선택 */}
+            <View style={styles.field}>
+              <Text style={styles.label}>직업</Text>
+              <View style={styles.optionsGrid}>
+                {JOB_CATEGORIES.map((option) => {
+                  const isSelected = jobCategory === option.value;
 
-        {/* 프로그레스 바 */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBarBg} />
-          <View style={styles.progressBarFill} />
+                  return (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.optionButton,
+                        isSelected && styles.optionButtonSelected,
+                      ]}
+                      onPress={() => setJobCategory(option.value)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.optionText,
+                          isSelected && styles.optionTextSelected,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* 소득 구간 선택 */}
+            <View style={styles.field}>
+              <Text style={styles.label}>월 소득</Text>
+              <View style={styles.optionsColumn}>
+                {INCOME_RANGES.map((option) => {
+                  const isSelected = incomeRange === option.value;
+
+                  return (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.optionButtonFull,
+                        isSelected && styles.optionButtonSelected,
+                      ]}
+                      onPress={() => setIncomeRange(option.value)}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={[
+                          styles.optionText,
+                          isSelected && styles.optionTextSelected,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* 지역 입력 */}
+            <View style={styles.field}>
+              <Text style={styles.label}>거주 지역</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="예: 서울특별시 강남구"
+                placeholderTextColor="#999999"
+                value={region}
+                onChangeText={setRegion}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+          </View>
         </View>
       </ScrollView>
 
-      {/* 다음 버튼 */}
+      {/* 하단 버튼 영역 */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          <Text style={styles.nextButtonText}>핀큐 시작하기</Text>
+        {/* 다음 버튼 */}
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            !isNextButtonEnabled && styles.nextButtonDisabled,
+          ]}
+          onPress={handleNext}
+          disabled={!isNextButtonEnabled}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={[
+              styles.nextButtonText,
+              !isNextButtonEnabled && styles.nextButtonTextDisabled,
+            ]}
+          >
+            {loading ? '저장 중...' : '다음'}
+          </Text>
         </TouchableOpacity>
+
+        {/* 진행 표시 */}
+        <View style={styles.progressDots}>
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.dot} />
+        </View>
       </View>
     </View>
   );
 };
 
+// ============================================
+// Styles
+// ============================================
+
 const styles = StyleSheet.create({
+  /**
+   * Container: 전체 화면 컨테이너
+   */
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    width: '100%',
+    backgroundColor: theme.colors.background,
   },
+
+  /**
+   * Back Button: 뒤로가기 버튼
+   */
+  backButton: {
+    position: 'absolute',
+    top: theme.spacing.xxxl + 10,
+    left: theme.spacing.lg,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
+  /**
+   * ScrollView: 스크롤 가능한 영역
+   */
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 140,
+    flexGrow: 1,
   },
-  topNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    height: 56,
-    marginTop: theme.layout.statusBarHeight,
-    paddingHorizontal: 0,
-    width: '100%',
+
+  /**
+   * Content: 메인 콘텐츠 영역
+   */
+  content: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xxxl * 2,
   },
-  backButton: {
-    width: 32,
-    height: 32,
-    marginLeft: 16,
-    marginTop: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backIcon: {
-    width: 32,
-    height: 32,
-  },
-  skipText: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#A0A0A0',
-    letterSpacing: -0.5,
-    lineHeight: 26,
-    marginRight: 16,
-    marginTop: 15,
+
+  /**
+   * Header Section: 제목 및 설명 섹션
+   */
+  headerSection: {
+    marginBottom: theme.spacing.xxl,
   },
   title: {
-    fontFamily: 'Pretendard-SemiBold',
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#000000',
-    letterSpacing: -0.8,
-    lineHeight: 44.8,
-    marginLeft: 16,
-    marginTop: 11,
-    width: 246,
+    fontSize: 28,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    marginBottom: theme.spacing.md,
   },
   subtitle: {
-    fontFamily: 'Pretendard-Medium',
-    fontSize: 20,
-    fontWeight: '500',
-    color: '#767676',
-    letterSpacing: -0.5,
-    lineHeight: 28,
-    marginLeft: 16,
-    marginTop: 8,
-    width: 328,
+    fontSize: 16,
+    fontWeight: '400',
+    color: theme.colors.textSecondary,
   },
-  sectionLabel: {
-    fontFamily: 'Pretendard Variable-SemiBold',
+
+  /**
+   * Form: 입력 폼
+   */
+  form: {
+    gap: theme.spacing.xxl,
+  },
+
+  /**
+   * Field: 개별 입력 필드
+   */
+  field: {
+    gap: theme.spacing.md,
+  },
+  label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#000000',
-    letterSpacing: 0,
-    lineHeight: 16,
-    marginLeft: 18,
-    marginTop: 40,
+    color: theme.colors.textPrimary,
   },
-  ageInputContainer: {
-    marginLeft: 16,
-    marginTop: 11,
-  },
-  ageInput: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    height: 50,
-    width: 328,
-    paddingLeft: 20,
-    fontFamily: 'Pretendard-Medium',
+
+  /**
+   * Text Input: 텍스트 입력 필드
+   */
+  textInput: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.lg,
     fontSize: 16,
-    fontWeight: '500',
-    color: '#373737',
-    letterSpacing: -0.4,
-    lineHeight: 22.4,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
+    fontWeight: '400',
+    color: theme.colors.textPrimary,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
   },
-  sectionLabel2: {
-    fontFamily: 'Pretendard Variable-SemiBold',
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    letterSpacing: 0,
-    lineHeight: 16,
-    marginLeft: 18,
-    marginTop: 60,
-  },
-  genderRow: {
+
+  /**
+   * Options Grid: 옵션 그리드 레이아웃 (2열)
+   */
+  optionsGrid: {
     flexDirection: 'row',
-    gap: 20,
-    marginLeft: 17,
-    marginTop: 11,
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
   },
-  genderButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    height: 50,
-    width: 153,
-    justifyContent: 'center',
+
+  /**
+   * Options Column: 옵션 세로 레이아웃 (1열)
+   */
+  optionsColumn: {
+    gap: theme.spacing.sm,
+  },
+
+  /**
+   * Option Button: 옵션 버튼 (그리드용)
+   */
+  optionButton: {
+    flex: 1,
+    minWidth: '48%',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.md,
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
   },
-  genderText: {
-    fontFamily: 'Pretendard Variable-SemiBold',
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#767676',
-    letterSpacing: 0,
-    lineHeight: 16,
-  },
-  sectionLabel3: {
-    fontFamily: 'Pretendard Variable-SemiBold',
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    letterSpacing: 0,
-    lineHeight: 16,
-    marginLeft: 18,
-    marginTop: 60,
-  },
-  employmentGrid: {
-    marginLeft: 17,
-    marginTop: 11,
-    gap: 16,
-  },
-  employmentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: 327,
-  },
-  employmentButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    height: 50,
-    width: 153,
-    justifyContent: 'center',
+
+  /**
+   * Option Button Full: 옵션 버튼 (전체 너비)
+   */
+  optionButtonFull: {
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.md,
+    borderWidth: 2,
+    borderColor: '#E5E5E5',
     alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
   },
-  employmentText: {
-    fontFamily: 'Pretendard Variable-SemiBold',
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#767676',
-    letterSpacing: 0,
-    lineHeight: 16,
+
+  /**
+   * Option Button Selected: 선택된 옵션 버튼
+   */
+  optionButtonSelected: {
+    borderColor: theme.colors.primary,
+    backgroundColor: '#F0F6FF',
   },
-  sectionLabel4: {
-    fontFamily: 'Pretendard Variable-SemiBold',
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    letterSpacing: 0,
-    lineHeight: 16,
-    marginLeft: 18,
-    marginTop: 44,
-  },
-  incomeList: {
-    marginLeft: 16,
-    marginTop: 11,
-    gap: 16,
-    width: 328,
-  },
-  incomeButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    height: 50,
-    width: 328,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  incomeText: {
-    fontFamily: 'Pretendard-Medium',
-    fontSize: 16,
+
+  /**
+   * Option Text: 옵션 텍스트
+   */
+  optionText: {
+    fontSize: 14,
     fontWeight: '500',
-    color: '#373737',
-    letterSpacing: -0.4,
-    lineHeight: 22.4,
+    color: theme.colors.textSecondary,
   },
-  selectedButton: {
-    backgroundColor: '#3060F1',
+  optionTextSelected: {
+    color: theme.colors.primary,
+    fontWeight: '600',
   },
-  selectedText: {
-    color: '#FFFFFF',
-  },
-  progressContainer: {
-    alignItems: 'center',
-    marginTop: 78,
-  },
-  progressBarBg: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 100,
-    height: 8,
-    width: 196,
-    position: 'absolute',
-  },
-  progressBarFill: {
-    backgroundColor: '#3060F1',
-    borderRadius: 100,
-    height: 8,
-    width: 49,
-    position: 'absolute',
-  },
+
+  /**
+   * Footer: 하단 고정 영역
+   */
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 17,
-    paddingBottom: 40,
-    backgroundColor: 'transparent',
+    paddingHorizontal: theme.spacing.xl,
+    paddingBottom: theme.spacing.xxxl,
+    paddingTop: theme.spacing.lg,
+    backgroundColor: theme.colors.background,
   },
+
+  /**
+   * Next Button: 다음 버튼
+   */
   nextButton: {
-    backgroundColor: '#3060F1',
-    borderRadius: 20,
-    height: 60,
-    width: 326,
+    width: '100%',
+    height: 56,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    alignSelf: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  nextButtonDisabled: {
+    backgroundColor: '#D0D0D0',
   },
   nextButtonText: {
-    fontFamily: 'Pretendard-SemiBold',
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
-    letterSpacing: -0.45,
-    lineHeight: 26,
+    color: theme.colors.white,
+  },
+  nextButtonTextDisabled: {
+    color: '#909090',
+  },
+
+  /**
+   * Progress Dots: 진행 표시 점
+   */
+  progressDots: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    justifyContent: 'center',
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#D0D0D0',
+  },
+  dotActive: {
+    width: 24,
+    backgroundColor: theme.colors.primary,
   },
 });

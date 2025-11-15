@@ -1,269 +1,227 @@
 /**
  * 온보딩 서비스 (Onboarding Service)
  *
- * 사용자 온보딩 과정 관련 모든 기능을 제공하는 서비스 레이어입니다.
- * 목표 선택, 기본 정보 입력, 동의 사항 처리 등 온보딩 관련 API 호출을 담당합니다.
+ * 온보딩 프로세스의 모든 단계를 관리하는 서비스입니다.
+ * 사용자의 목표, 기본 정보, 동의 사항을 백엔드에 저장하고
+ * 온보딩 상태를 추적합니다.
  *
- * @module services/onboardingService
+ * @module services/onboardingService  
  * @category Services
  * @since 1.0.0
  */
 
-import { API_ENDPOINTS } from '../config/api';
-import { authService } from './authService';
-import { 
+import type { 
   UserGoal, 
   JobCategory, 
-  IncomeRange, 
-  GoalSelectionData, 
-  BasicInfoData, 
-  ConsentData,
-  OnboardingStep 
+  IncomeRange,
+  GoalSelectionData,
+  BasicInfoData,
+  ConsentData 
 } from '../types/onboarding';
 
+const API_BASE_URL = 'http://localhost:8000/api/v1';
+
 /**
- * HTTP 에러 응답 인터페이스
+ * 온보딩 상태 응답 인터페이스
  */
-interface ErrorResponse {
-  detail: string;
+export interface OnboardingStatusResponse {
+  onboarding_completed: boolean;
+  profile_completion_rate: number;
+  current_step: string;
 }
 
 /**
- * 서비스 응답 인터페이스
+ * 기본 API 응답 인터페이스
  */
-interface ServiceResponse<T = any> {
+export interface ApiResponse {
   success: boolean;
-  data?: T;
+  message?: string;
   error?: string;
 }
 
 /**
- * API 요청 헤더 생성
+ * 온보딩 완료 응답 인터페이스
  */
-const createHeaders = (token: string): Record<string, string> => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`,
-});
+export interface OnboardingCompleteResponse extends ApiResponse {
+  user_id: string;
+}
 
 /**
- * API 요청 래퍼 함수
+ * 인증 토큰 가져오기 (AsyncStorage에서)
  */
-const apiRequest = async <T>(
-  url: string,
-  options: RequestInit,
-  token: string
-): Promise<T> => {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...createHeaders(token),
-      ...options.headers,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    const errorData = data as ErrorResponse;
-    throw new Error(errorData.detail || '요청 실패');
+const getAuthToken = async (): Promise<string | null> => {
+  try {
+    // React Native 환경에서 AsyncStorage 사용
+    if (typeof window === 'undefined') {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      return await AsyncStorage.getItem('authToken');
+    }
+    
+    // 웹 환경에서는 localStorage 사용
+    return localStorage.getItem('authToken');
+  } catch (error) {
+    console.error('토큰 가져오기 실패:', error);
+    return null;
   }
+};
 
-  return data as T;
+/**
+ * API 헤더 생성
+ */
+const getApiHeaders = async () => {
+  const token = await getAuthToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
+
+/**
+ * 온보딩 상태 조회
+ */
+export const getOnboardingStatus = async (): Promise<OnboardingStatusResponse | null> => {
+  try {
+    const headers = await getApiHeaders();
+    
+    const response = await fetch(`${API_BASE_URL}/onboarding/status`, {
+      method: 'GET',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`API 오류: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('온보딩 상태 조회 실패:', error);
+    return null;
+  }
 };
 
 /**
  * 목표 선택 저장
- *
- * 사용자가 선택한 금융 목표를 백엔드에 저장합니다.
- *
- * @async
- * @param {UserGoal[]} goals - 선택된 목표 배열
- * @param {UserGoal} [priorityGoal] - 최우선 목표
- * @returns {Promise<ServiceResponse>} 목표 저장 결과
  */
-export const saveGoals = async (
-  goals: UserGoal[],
-  priorityGoal?: UserGoal
-): Promise<ServiceResponse> => {
+export const saveGoals = async (goals: UserGoal[]): Promise<ApiResponse> => {
   try {
-    const token = await authService.getStoredToken();
+    const headers = await getApiHeaders();
     
-    if (!token) {
-      return {
-        success: false,
-        error: "인증이 필요합니다.",
-      };
+    const response = await fetch(`${API_BASE_URL}/onboarding/goals`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ goals }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || `API 오류: ${response.status}`);
     }
 
-    const requestData = {
-      goals,
-      priority_goal: priorityGoal,
-    };
-
-    const response = await apiRequest(
-      API_ENDPOINTS.ONBOARDING.GOALS,
-      {
-        method: 'POST',
-        body: JSON.stringify(requestData),
-      },
-      token
-    );
-
-    return {
-      success: true,
-      data: response,
-    };
+    return data;
   } catch (error) {
-    console.error("Save goals error:", error);
+    console.error('목표 저장 실패:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "목표 저장에 실패했습니다.",
+      error: error instanceof Error ? error.message : '목표 저장에 실패했습니다.'
     };
   }
 };
 
 /**
  * 기본 정보 저장
- *
- * 사용자의 기본 정보(나이, 지역, 직업, 소득 등)를 백엔드에 저장합니다.
- *
- * @async
- * @param {BasicInfoData} profileData - 기본 정보 데이터
- * @returns {Promise<ServiceResponse>} 기본 정보 저장 결과
  */
-export const saveProfile = async (
-  profileData: BasicInfoData
-): Promise<ServiceResponse> => {
+export const saveProfile = async (profile: BasicInfoData): Promise<ApiResponse> => {
   try {
-    const token = await authService.getStoredToken();
+    const headers = await getApiHeaders();
     
-    if (!token) {
-      return {
-        success: false,
-        error: "인증이 필요합니다.",
-      };
+    const requestData = {
+      age: profile.age,
+      region: profile.region,
+      job_category: profile.jobCategory,
+      income_range: profile.incomeRange,
+    };
+    
+    const response = await fetch(`${API_BASE_URL}/onboarding/profile`, {
+      method: 'POST', 
+      headers,
+      body: JSON.stringify(requestData),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || `API 오류: ${response.status}`);
     }
 
-    const requestData = {
-      age: profileData.age,
-      region: profileData.region,
-      job_category: profileData.jobCategory,
-      employment_status: profileData.jobCategory, // 기본값으로 job_category 사용
-      income_range: profileData.incomeRange,
-      education_level: "대졸", // 기본값
-    };
-
-    const response = await apiRequest(
-      API_ENDPOINTS.ONBOARDING.PROFILE,
-      {
-        method: 'POST',
-        body: JSON.stringify(requestData),
-      },
-      token
-    );
-
-    return {
-      success: true,
-      data: response,
-    };
+    return data;
   } catch (error) {
-    console.error("Save profile error:", error);
+    console.error('기본 정보 저장 실패:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "기본 정보 저장에 실패했습니다.",
+      error: error instanceof Error ? error.message : '기본 정보 저장에 실패했습니다.'
     };
   }
 };
 
 /**
  * 동의 사항 저장
- *
- * 사용자의 동의 사항을 백엔드에 저장합니다.
- *
- * @async
- * @param {ConsentData} consentData - 동의 사항 데이터
- * @returns {Promise<ServiceResponse>} 동의 사항 저장 결과
  */
-export const saveConsent = async (
-  consentData: ConsentData
-): Promise<ServiceResponse> => {
+export const saveConsent = async (consent: ConsentData): Promise<ApiResponse> => {
   try {
-    const token = await authService.getStoredToken();
+    const headers = await getApiHeaders();
     
-    if (!token) {
-      return {
-        success: false,
-        error: "인증이 필요합니다.",
-      };
+    const requestData = {
+      push_notification: consent.pushNotification,
+      marketing_notification: consent.marketingNotification, 
+      reward_program: consent.rewardProgram,
+    };
+    
+    const response = await fetch(`${API_BASE_URL}/onboarding/consent`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(requestData),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || `API 오류: ${response.status}`);
     }
 
-    const requestData = {
-      push_notification: consentData.pushNotification,
-      marketing_notification: consentData.marketingNotification,
-      data_analytics: consentData.rewardProgram, // rewardProgram을 data_analytics로 매핑
-      personalized_ads: false, // 기본값
-      ai_personality: "친근한", // 기본값
-    };
-
-    const response = await apiRequest(
-      API_ENDPOINTS.ONBOARDING.CONSENT,
-      {
-        method: 'POST',
-        body: JSON.stringify(requestData),
-      },
-      token
-    );
-
-    return {
-      success: true,
-      data: response,
-    };
+    return data;
   } catch (error) {
-    console.error("Save consent error:", error);
+    console.error('동의 사항 저장 실패:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "동의 사항 저장에 실패했습니다.",
+      error: error instanceof Error ? error.message : '동의 사항 저장에 실패했습니다.'
     };
   }
 };
 
 /**
- * 온보딩 상태 조회
- *
- * 사용자의 온보딩 진행 상태를 조회합니다.
- *
- * @async
- * @returns {Promise<ServiceResponse>} 온보딩 상태 조회 결과
+ * 온보딩 완료
  */
-export const getOnboardingStatus = async (): Promise<ServiceResponse> => {
+export const completeOnboarding = async (): Promise<OnboardingCompleteResponse | null> => {
   try {
-    const token = await authService.getStoredToken();
+    const headers = await getApiHeaders();
     
-    if (!token) {
-      return {
-        success: false,
-        error: "인증이 필요합니다.",
-      };
+    const response = await fetch(`${API_BASE_URL}/onboarding/complete`, {
+      method: 'POST',
+      headers,
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || `API 오류: ${response.status}`);
     }
 
-    const response = await apiRequest(
-      API_ENDPOINTS.ONBOARDING.STATUS,
-      {
-        method: 'GET',
-      },
-      token
-    );
-
-    return {
-      success: true,
-      data: response,
-    };
+    return data;
   } catch (error) {
-    console.error("Get onboarding status error:", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "온보딩 상태 조회에 실패했습니다.",
-    };
+    console.error('온보딩 완료 처리 실패:', error);
+    return null;
   }
 };
 
@@ -271,8 +229,9 @@ export const getOnboardingStatus = async (): Promise<ServiceResponse> => {
  * 온보딩 서비스 객체 Export
  */
 export const onboardingService = {
+  getOnboardingStatus,
   saveGoals,
   saveProfile,
   saveConsent,
-  getOnboardingStatus,
+  completeOnboarding,
 };

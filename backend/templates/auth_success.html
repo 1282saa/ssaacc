@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>로그인 성공</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container { 
+            text-align: center; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .success { color: #4CAF50; font-size: 24px; margin-bottom: 20px; }
+        .token { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            word-break: break-all; 
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="success">✅ 구글 로그인 성공!</h2>
+        <p>로그인이 완료되었습니다.</p>
+        <p>이 창은 자동으로 닫힙니다...</p>
+        <div class="token">토큰: {{token}}</div>
+    </div>
+
+    <script>
+        // React Native 앱으로 인증 결과 전송
+        const token = "{{token}}";
+        const user = {{{user_json}}};
+        
+        if (window.opener) {
+            window.opener.postMessage({
+                type: 'GOOGLE_AUTH_SUCCESS',
+                token: token,
+                user: user
+            }, 'http://localhost:8081');
+            window.close();
+        }
+        
+        // 3초 후 자동으로 창 닫기
+        setTimeout(() => {
+            window.close();
+        }, 3000);
+    </script>
+</body>
+</html>

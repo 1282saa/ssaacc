@@ -27,7 +27,6 @@
  * - homeService: 홈 화면 데이터 관리
  * - chatService: 채팅 및 메시지 관리
  * - authService: 사용자 인증 관리
- * - onboardingService: 온보딩 프로세스 관리
  * - DUMMY_*: 개발/테스트용 더미 데이터
  */
 
@@ -48,7 +47,7 @@ export { chatService, DUMMY_CHAT_LIST, DUMMY_MESSAGES } from './chatService';
 /**
  * 인증 서비스 Export (Auth Service Export)
  *
- * 사용자 인증 관련 서비스를 export합니다.
+ * 인증 관련 서비스를 export합니다.
  */
 export { authService } from './authService';
 
