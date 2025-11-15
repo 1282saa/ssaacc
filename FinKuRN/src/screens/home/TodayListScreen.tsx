@@ -57,10 +57,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { TODAY_GRADIENTS } from '../constants/gradients';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+import { BackgroundGradient } from '../../components/common/BackgroundGradient';
+import { TODAY_GRADIENTS } from '../../constants/gradients';
+import { theme } from '../../constants/theme';
+import type { AppNavigation } from '../../types/navigation';
 
 /**
  * 오늘의 할 일 목록 화면 컴포넌트 (Today List Screen Component)

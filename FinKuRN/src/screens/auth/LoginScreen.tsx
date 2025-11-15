@@ -13,9 +13,9 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "../components/common/StatusBar";
-import { theme } from "../constants/theme";
-import type { AppNavigation } from "../types/navigation";
+import { StatusBar } from "../../components/common/StatusBar";
+import { theme } from "../../constants/theme";
+import type { AppNavigation } from "../../types/navigation";
 
 /**
  * 로그인 화면 (Login Screen) - Anima Design
