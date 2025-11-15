@@ -28,14 +28,37 @@ src/
 ├── navigation/          # Navigation configuration
 │   └── MainNavigator.tsx # Main app navigation structure
 │
-├── screens/            # Application screens/pages
-│   ├── HomeScreen.tsx            # Main dashboard (384 lines, REFACTORED)
-│   ├── ExploreScreen.tsx         # Browse financial benefits and policies
-│   ├── ChatbotScreenV2.tsx       # Chatbot main interface
-│   ├── NewChatPage.tsx           # New conversation page
-│   ├── ChatConversationPage.tsx  # Active chat conversation
-│   ├── PlanUpgradePage.tsx       # Premium plan upgrade
-│   └── TodayListScreen.tsx       # Full today items list
+├── screens/            # Application screens/pages (v3-refactor: feature-based folders)
+│   ├── auth/                      # Authentication screens (3)
+│   │   ├── LoginScreen.tsx
+│   │   ├── LoginSelectionScreen.tsx
+│   │   ├── SignupScreen.tsx
+│   │   └── index.ts              # Barrel exports
+│   ├── onboarding/               # Onboarding flow (3)
+│   │   ├── OnboardingWelcomeScreen.tsx
+│   │   ├── OnboardingGoalsScreen.tsx
+│   │   ├── OnboardingBasicInfoScreen.tsx
+│   │   └── index.ts
+│   ├── home/                     # Home & Today screens (2)
+│   │   ├── HomeScreen.tsx        # Main dashboard (384 lines, REFACTORED)
+│   │   ├── TodayListScreen.tsx   # Full today items list
+│   │   └── index.ts
+│   ├── chat/                     # Chat & AI screens (3)
+│   │   ├── ChatScreen.tsx
+│   │   ├── ChatConversationPage.tsx
+│   │   ├── NewChatPage.tsx
+│   │   └── index.ts
+│   ├── explore/                  # Explore screen (1)
+│   │   ├── ExploreScreen.tsx     # Browse financial benefits
+│   │   └── index.ts
+│   ├── plan/                     # Plan/Todo screens (2)
+│   │   ├── PlanScreen.tsx
+│   │   ├── PlanUpgradePage.tsx   # Premium plan upgrade
+│   │   └── index.ts
+│   └── quiz/                     # Quiz & Chatbot screens (2)
+│       ├── QuizScreen.tsx
+│       ├── ChatbotScreenV2.tsx   # Chatbot main interface
+│       └── index.ts
 │
 └── types/              # TypeScript type definitions
     ├── navigation.ts    # Navigation types
@@ -132,12 +155,25 @@ import { SpendingSection } from '../components/home';
 
 ### Screen Components (`screens/`)
 
+**v3-refactor: Feature-Based Organization**
+
+All screens are organized into 7 feature folders with barrel exports:
+
+- **auth/** - Authentication flows (Login, LoginSelection, Signup)
+- **onboarding/** - User onboarding flow (Welcome, Goals, BasicInfo)
+- **home/** - Dashboard and today items (Home, TodayList)
+- **chat/** - Chat and AI interactions (Chat, ChatConversation, NewChat)
+- **explore/** - Policy discovery (Explore)
+- **plan/** - Todo and task management (Plan, PlanUpgrade)
+- **quiz/** - Quiz and chatbot features (Quiz, ChatbotV2)
+
 Each screen follows the Single Responsibility Principle:
 - One screen = one primary user task
 - Clear separation of concerns
 - Comprehensive JSDoc comments
 - Type-safe navigation
 - Components should NOT exceed 400 lines (extract to smaller components if needed)
+- Import from barrel exports: `import { LoginScreen } from '@/screens/auth'`
 
 ## Design System
 
@@ -305,16 +341,41 @@ Code duplication eliminated:
 - Before: 5 identical Today item structures (200+ lines)
 - After: Single TodayItem component reused 5 times
 
-### All Screens Completed
+### All Screens Completed (v3-refactor)
+
+**16 screens organized into 7 feature folders:**
+
+**Authentication (auth/)**
+- LoginScreen.tsx - Anima design, email/password login
+- LoginSelectionScreen.tsx - Login method selection
+- SignupScreen.tsx - User registration
+
+**Onboarding (onboarding/)**
+- OnboardingWelcomeScreen.tsx - Welcome screen with penguin mascot
+- OnboardingGoalsScreen.tsx - Goal selection flow
+- OnboardingBasicInfoScreen.tsx - User info collection
+
+**Home (home/)**
+- HomeScreen.tsx - Component breakdown complete with HOME_GRADIENTS (384 lines)
+- TodayListScreen.tsx - Fully refactored with TODAY_GRADIENTS
+
+**Chat (chat/)**
+- ChatScreen.tsx - Chat list view
 - ChatConversationPage.tsx - Uses theme, common components, proper types, CHAT_GRADIENTS_LARGE
 - NewChatPage.tsx - Fully refactored with CHAT_GRADIENTS_LARGE
-- ChatbotScreenV2.tsx - Fully refactored with ChatItem component, CHAT_GRADIENTS_LARGE
-- HomeScreen.tsx - Component breakdown complete with HOME_GRADIENTS (384 lines)
+
+**Explore (explore/)**
 - ExploreScreen.tsx - Fully refactored with EXPLORE_GRADIENTS
-- TodayListScreen.tsx - Fully refactored with TODAY_GRADIENTS
+
+**Plan (plan/)**
+- PlanScreen.tsx - Todo/task management with 4 card components
 - PlanUpgradePage.tsx - Fully refactored with theme system
 
-All 7 screens now follow consistent patterns and use the centralized theme system with zero hardcoded values.
+**Quiz (quiz/)**
+- QuizScreen.tsx - Quiz interface
+- ChatbotScreenV2.tsx - Fully refactored with ChatItem component, CHAT_GRADIENTS_LARGE
+
+All 16 screens follow consistent patterns, use the centralized theme system with zero hardcoded values, and are organized by feature for improved maintainability.
 
 ## Collaboration Notes for Backend Developers
 
