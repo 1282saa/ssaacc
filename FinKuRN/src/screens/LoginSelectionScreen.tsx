@@ -7,6 +7,7 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Svg, { Path, G, Defs, ClipPath, Rect } from 'react-native-svg';
 import { StatusBar } from '../components/common/StatusBar';
 import { BackgroundGradient } from '../components/common/BackgroundGradient';
 import { HOME_GRADIENTS } from '../constants/gradients';
@@ -30,55 +31,59 @@ export const LoginSelectionScreen: React.FC = () => {
       <BackgroundGradient layers={HOME_GRADIENTS} />
       <StatusBar />
 
-      {/* Penguin Mascot */}
-      <Image
-        source={{ uri: 'https://c.animaapp.com/vhvaNRX0/img/------@2x.png' }}
-        style={styles.penguinImage}
-        resizeMode="contain"
-      />
+      <View style={styles.contentContainer}>
+        {/* Penguin Mascot */}
+        <View style={styles.penguinContainer}>
+          <Image
+            source={{ uri: 'https://c.animaapp.com/vhvaNRX0/img/------@2x.png' }}
+            style={styles.penguinImage}
+            resizeMode="contain"
+          />
+        </View>
 
-      {/* Social Login Buttons */}
-      <View style={styles.socialButtonsContainer}>
-        {/* Kakao Login */}
-        <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
-          <View style={styles.socialIcon}>
-            {/* Kakao icon placeholder */}
-          </View>
-          <Text style={styles.socialButtonText}>카카오 로그인</Text>
+        {/* Social Login Buttons */}
+        <View style={styles.socialButtonsContainer}>
+          {/* Kakao Login */}
+          <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+            <View style={styles.socialIcon}>
+              {/* Kakao icon placeholder */}
+            </View>
+            <Text style={styles.socialButtonText}>카카오 로그인</Text>
+          </TouchableOpacity>
+
+          {/* Google Login */}
+          <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+            <View style={styles.socialIcon}>
+              {/* Google icon placeholder */}
+            </View>
+            <Text style={styles.socialButtonText}>구글로 로그인</Text>
+          </TouchableOpacity>
+
+          {/* Apple Login */}
+          <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
+            <View style={styles.socialIcon}>
+              {/* Apple icon placeholder */}
+            </View>
+            <Text style={styles.socialButtonText}>애플로 로그인</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Email Login Button */}
+        <TouchableOpacity
+          style={styles.loginButton}
+          onPress={() => navigation.navigate('Login')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.loginButtonText}>로그인</Text>
         </TouchableOpacity>
 
-        {/* Google Login */}
-        <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
-          <View style={styles.socialIcon}>
-            {/* Google icon placeholder */}
-          </View>
-          <Text style={styles.socialButtonText}>구글로 로그인</Text>
-        </TouchableOpacity>
-
-        {/* Apple Login */}
-        <TouchableOpacity style={styles.socialButton} activeOpacity={0.8}>
-          <View style={styles.socialIcon}>
-            {/* Apple icon placeholder */}
-          </View>
-          <Text style={styles.socialButtonText}>애플로 로그인</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Email Login Button */}
-      <TouchableOpacity
-        style={styles.loginButton}
-        onPress={() => navigation.navigate('Login')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.loginButtonText}>로그인</Text>
-      </TouchableOpacity>
-
-      {/* Signup Prompt */}
-      <View style={styles.signupPrompt}>
-        <Text style={styles.signupPromptText}>아직 회원이 아니신가요?</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-          <Text style={styles.signupLink}>회원가입</Text>
-        </TouchableOpacity>
+        {/* Signup Prompt */}
+        <View style={styles.signupPrompt}>
+          <Text style={styles.signupPromptText}>아직 회원이 아니신가요?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+            <Text style={styles.signupLink}>회원가입</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Home Indicator */}
@@ -94,24 +99,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.white,
   },
+  contentContainer: {
+    flex: 1,
+    marginTop: theme.layout.statusBarHeight,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 40,
+    justifyContent: 'space-between',
+  },
+  penguinContainer: {
+    flex: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 200,
+  },
   penguinImage: {
-    width: 220,
-    height: 220,
-    alignSelf: 'center',
-    marginTop: 104,
+    width: '70%',
+    aspectRatio: 1,
+    maxWidth: 280,
   },
   socialButtonsContainer: {
-    marginHorizontal: 17,
-    marginTop: 40,
     gap: 12,
+    marginBottom: 16,
   },
   socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: theme.colors.white,
     borderRadius: 20,
-    height: 60,
-    paddingHorizontal: 100,
+    height: 56,
+    paddingHorizontal: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -131,13 +149,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   loginButton: {
-    marginHorizontal: 17,
-    marginTop: 48,
     backgroundColor: theme.colors.primary,
     borderRadius: 20,
-    height: 60,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 16,
   },
   loginButtonText: {
     fontFamily: 'Pretendard',
@@ -150,19 +167,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 28,
+    paddingBottom: 20,
     gap: 6,
   },
   signupPromptText: {
     fontFamily: 'Pretendard',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '400',
     color: '#9EA3B2',
     letterSpacing: -0.35,
   },
   signupLink: {
     fontFamily: 'Pretendard',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: theme.colors.primary,
     letterSpacing: -0.35,

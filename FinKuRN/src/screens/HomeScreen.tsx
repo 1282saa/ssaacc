@@ -166,7 +166,11 @@ export const HomeScreen: React.FC = () => {
           </TouchableOpacity>
 
           {/* 오늘의 금융 퀴즈 카드 */}
-          <TouchableOpacity style={styles.policyCardWhite} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.policyCardWhite}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Quiz' as any)}
+          >
             <Text style={styles.policyCardTitleBlack}>오늘의 금융 퀴즈</Text>
             <Text style={styles.policyCardDescBlack}>
               예금과 적금의 차이,{'\n'}함께 확인해보실래요?

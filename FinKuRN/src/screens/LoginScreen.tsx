@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,14 +8,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from '../components/common/StatusBar';
-import { BackgroundGradient } from '../components/common/BackgroundGradient';
-import { HOME_GRADIENTS } from '../constants/gradients';
-import { theme } from '../constants/theme';
-import type { AppNavigation } from '../types/navigation';
+  Image,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "../components/common/StatusBar";
+import { theme } from "../constants/theme";
+import type { AppNavigation } from "../types/navigation";
 
 /**
  * 로그인 화면 (Login Screen) - Anima Design
@@ -28,23 +28,28 @@ import type { AppNavigation } from '../types/navigation';
  */
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = () => {
-    // TODO: Implement login logic
-    console.log('Login:', { email, password, rememberMe });
+    // TODO: Implement actual login logic with API
+    console.log("Login:", { email, password, rememberMe });
+    // Navigate to Onboarding flow after login
+    navigation.navigate("OnboardingWelcome" as any);
   };
 
   return (
-    <View style={styles.container}>
-      <BackgroundGradient layers={HOME_GRADIENTS} />
+    <LinearGradient
+      colors={['#E8EAF6', '#F3F4FB', '#FFFFFF']}
+      locations={[0, 0.3, 1]}
+      style={styles.container}
+    >
       <StatusBar />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <ScrollView
@@ -58,7 +63,10 @@ export const LoginScreen: React.FC = () => {
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
-              <Ionicons name="chevron-back" size={24} color={theme.colors.black} />
+              <Image
+                source={{ uri: 'https://c.animaapp.com/21ceIo4I/img/icon-cheveron-left-1.svg' }}
+                style={styles.backIcon}
+              />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>로그인</Text>
           </View>
@@ -106,7 +114,7 @@ export const LoginScreen: React.FC = () => {
                     onPress={() => setShowPassword(!showPassword)}
                   >
                     <Ionicons
-                      name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
                       size={20}
                       color="#92A3B2"
                     />
@@ -121,9 +129,15 @@ export const LoginScreen: React.FC = () => {
               onPress={() => setRememberMe(!rememberMe)}
               activeOpacity={0.7}
             >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+              <View
+                style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
+              >
                 {rememberMe && (
-                  <Ionicons name="checkmark" size={16} color={theme.colors.white} />
+                  <Ionicons
+                    name="checkmark"
+                    size={16}
+                    color={theme.colors.white}
+                  />
                 )}
               </View>
               <Text style={styles.rememberMeText}>아이디 저장</Text>
@@ -131,7 +145,9 @@ export const LoginScreen: React.FC = () => {
 
             {/* Forgot Password Link */}
             <TouchableOpacity style={styles.forgotPasswordLink}>
-              <Text style={styles.forgotPasswordText}>아이디/비밀번호 찾기</Text>
+              <Text style={styles.forgotPasswordText}>
+                아이디/비밀번호 찾기
+              </Text>
             </TouchableOpacity>
 
             {/* Login Button */}
@@ -150,14 +166,14 @@ export const LoginScreen: React.FC = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.white,
+    width: '100%',
   },
   keyboardView: {
     flex: 1,
@@ -166,64 +182,87 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     height: 56,
     marginTop: theme.layout.statusBarHeight,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     gap: 106,
+    width: '100%',
   },
   backButton: {
     width: 32,
     height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginLeft: 16,
+    marginTop: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  backIcon: {
+    width: 32,
+    height: 32,
   },
   headerTitle: {
-    fontFamily: 'Pretendard Variable',
+    fontFamily: "Pretendard Variable-SemiBold",
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.black,
+    marginTop: 16,
   },
   cardContainer: {
     backgroundColor: theme.colors.white,
     borderRadius: 40,
     marginTop: 88,
-    paddingTop: 40,
-    paddingHorizontal: 17,
+    marginHorizontal: 0,
+    marginBottom: 0,
+    paddingTop: 0,
+    paddingHorizontal: 0,
     paddingBottom: 40,
-    height: 612,
+    minHeight: 612,
+    width: '100%',
   },
   logo: {
-    fontFamily: 'Almarai',
+    fontFamily: "Almarai",
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.primary,
-    textAlign: 'center',
-    marginBottom: 36,
+    textAlign: "center",
+    position: "absolute",
+    top: 40,
+    left: 0,
+    right: 0,
   },
   inputContainer: {
     gap: 20,
+    position: "absolute",
+    top: 116,
+    left: 17,
+    width: 326,
   },
   inputGroup: {
     height: 90,
   },
   label: {
-    fontFamily: 'SF Pro Text',
+    fontFamily: "SF Pro Text",
     fontSize: 14,
-    fontWeight: '400',
-    color: '#45474C',
-    marginBottom: 8,
-    paddingLeft: 8,
+    fontWeight: "400",
+    color: "#45474C",
+    position: "absolute",
+    top: 0,
+    left: 8,
   },
   inputWrapper: {
     backgroundColor: theme.colors.white,
     borderRadius: 16,
     height: 60,
+    width: 326,
     paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    top: 30,
+    left: 0,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -231,23 +270,24 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: 'SF Pro Text',
+    fontFamily: "SF Pro Text",
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: "400",
     color: theme.colors.black,
     letterSpacing: -0.35,
   },
   eyeIcon: {
     width: 32,
     height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 17,
-    paddingLeft: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    position: "absolute",
+    top: 337,
+    left: 19,
     gap: 8,
   },
   checkbox: {
@@ -255,56 +295,59 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 4,
     borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
   },
   checkboxChecked: {
     backgroundColor: theme.colors.primary,
     borderColor: theme.colors.primary,
   },
   rememberMeText: {
-    fontFamily: 'SF Pro Text',
+    fontFamily: "SF Pro Text",
     fontSize: 14,
-    fontWeight: '400',
-    color: '#92A3B2',
+    fontWeight: "400",
+    color: "#92A3B2",
     letterSpacing: -0.35,
   },
   forgotPasswordLink: {
-    position: 'absolute',
-    right: 20,
-    top: 337,
+    position: "absolute",
+    top: 336,
+    left: 220,
   },
   forgotPasswordText: {
-    fontFamily: 'SF Pro Text',
+    fontFamily: "SF Pro Text",
     fontSize: 14,
-    fontWeight: '400',
-    color: '#92A3B2',
+    fontWeight: "400",
+    color: "#92A3B2",
     letterSpacing: -0.35,
   },
   loginButton: {
     backgroundColor: theme.colors.primary,
     borderRadius: 20,
     height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 79,
+    width: 326,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    top: 416,
+    left: 17,
   },
   loginButtonText: {
-    fontFamily: 'Pretendard',
+    fontFamily: "Pretendard",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.white,
     letterSpacing: -0.45,
   },
   homeIndicatorWrapper: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     height: 34,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    alignItems: "center",
+    justifyContent: "flex-end",
   },
   homeIndicator: {
     width: 134,

@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingHorizontal: 16,
     paddingBottom: 40,
-    height: 673,
+    flex: 1,
   },
   logo: {
     fontFamily: 'Almarai',

@@ -49,21 +49,21 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View, StyleSheet } from 'react-native';
 import { LoginScreen } from '../screens/LoginScreen';
+import { LoginSelectionScreen } from '../screens/LoginSelectionScreen';
 import { SignupScreen } from '../screens/SignupScreen';
 import { HomeScreen } from '../screens/HomeScreen';
-import { ChatbotScreenV2 } from '../screens/ChatbotScreenV2';
+import { ChatScreen } from '../screens/ChatScreen';
 import { ExploreScreen } from '../screens/ExploreScreen';
 import { PlanUpgradePage } from '../screens/PlanUpgradePage';
 import { NewChatPage } from '../screens/NewChatPage';
 import { ChatConversationPage } from '../screens/ChatConversationPage';
 import { TodayListScreen } from '../screens/TodayListScreen';
 import { PlanScreen } from '../screens/PlanScreen';
+import { QuizScreen } from '../screens/QuizScreen';
 import {
   OnboardingWelcomeScreen,
   OnboardingGoalsScreen,
   OnboardingBasicInfoScreen,
-  OnboardingConsentScreen,
-  OnboardingCompleteScreen,
 } from '../screens/onboarding';
 import { theme } from '../constants/theme';
 import {
@@ -177,7 +177,7 @@ const TabNavigator = () => {
       })}
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} />
-      <Tab.Screen name="ChatTab" component={ChatbotScreenV2} />
+      <Tab.Screen name="ChatTab" component={ChatScreen} />
       <Tab.Screen name="Page3" component={ExploreScreen} />
       <Tab.Screen name="Page4" component={PlanScreen} />
       <Tab.Screen
@@ -241,6 +241,7 @@ const TabNavigator = () => {
 export const MainNavigator = () => {
   return (
     <Stack.Navigator
+      initialRouteName="LoginSelection"
       screenOptions={{
         headerShown: true,
         headerStyle: {
@@ -252,6 +253,11 @@ export const MainNavigator = () => {
         },
       }}
     >
+      <Stack.Screen
+        name="LoginSelection"
+        component={LoginSelectionScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -278,16 +284,6 @@ export const MainNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="OnboardingConsent"
-        component={OnboardingConsentScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="OnboardingComplete"
-        component={OnboardingCompleteScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
         name="Main"
         component={TabNavigator}
         options={{ headerShown: false }}
@@ -311,6 +307,11 @@ export const MainNavigator = () => {
         name="TodayList"
         component={TodayListScreen}
         options={{ title: '오늘의 할 일' }}
+      />
+      <Stack.Screen
+        name="Quiz"
+        component={QuizScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

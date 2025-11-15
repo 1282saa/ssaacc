@@ -1,22 +1,13 @@
 /**
  * 온보딩 환영 화면
- *
- * @module Screens/Onboarding/OnboardingWelcomeScreen
- * @category UI/Screens/Onboarding
- * @since 1.0.0
- *
- * @description
- * 온보딩 프로세스의 첫 번째 화면입니다.
- * - 핀쿠(FinKu) 인사
- * - 서비스 소개
- * - 시작하기 버튼
+ * Anima 디자인 (온보딩1)을 React Native로 픽셀-퍼펙트 변환
  */
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BackgroundGradient } from '../../components/common/BackgroundGradient';
-import { HOME_GRADIENTS } from '../../constants/gradients';
+import { StatusBar } from '../../components/common/StatusBar';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
 
@@ -29,49 +20,65 @@ export const OnboardingWelcomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <BackgroundGradient layers={HOME_GRADIENTS} />
+      {/* 배경 그라디언트 2개 */}
+      <BackgroundGradient
+        layers={[
+          {
+            top: 70,
+            left: 18,
+            opacity: 1,
+            colors: [
+              'rgba(66, 0, 255, 0.2)',
+              'rgba(223, 127, 127, 0.2)',
+              'rgba(255, 229, 0, 0.2)',
+            ],
+          },
+          {
+            top: 159,
+            left: -231,
+            opacity: 1,
+            colors: [
+              'rgba(66, 0, 255, 0.2)',
+              'rgba(223, 127, 127, 0.2)',
+              'rgba(255, 229, 0, 0.2)',
+            ],
+          },
+        ]}
+        size={[330, 607]}
+      />
 
-      {/* Skip Button */}
-      <TouchableOpacity
-        style={styles.skipButton}
-        onPress={() => navigation.navigate('Main')}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.skipButtonText}>건너뛰기</Text>
-      </TouchableOpacity>
+      <StatusBar />
 
       <View style={styles.content}>
         {/* 펭귄 이미지 */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: 'https://c.animaapp.com/FwW9Xg6K/img/--@2x.png' }}
-            style={styles.penguinImage}
-            resizeMode="contain"
-          />
-        </View>
+        <Image
+          source={{ uri: 'https://c.animaapp.com/nsD5OMDL/img/------@2x.png' }}
+          style={styles.penguinImage}
+          resizeMode="cover"
+        />
 
         {/* 인사말 */}
-        <View style={styles.textContainer}>
-          <Text style={styles.title}>안녕하세요!{'\n'}핀쿠입니다</Text>
+        <Text style={styles.title}>만나서 반가워요!{'\n'}저는 핀쿠예요</Text>
 
-          <Text style={styles.subtitle}>
-            Financial Knowledge & Resource Navigator
+        {/* 서비스 소개 카드 */}
+        <View style={styles.featureCard}>
+          <Text style={styles.cardTitle}>
+            AI 금융 코치 핀쿠와 함께{'\n'}정책을 찾고, 계획하고, 실천하세요.
           </Text>
-        </View>
 
-        {/* 서비스 소개 */}
-        <View style={styles.features}>
-          <View style={styles.featureItem}>
-            <View style={styles.featureBullet} />
-            <Text style={styles.featureText}>맞춤형 금융 정보</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <View style={styles.featureBullet} />
-            <Text style={styles.featureText}>실천 가능한 체크리스트</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <View style={styles.featureBullet} />
-            <Text style={styles.featureText}>목표 달성 리워드</Text>
+          <View style={styles.features}>
+            <View style={styles.featureItem}>
+              <View style={styles.featureBullet} />
+              <Text style={styles.featureText}>AI 금융 챗봇 핀쿠</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <View style={styles.featureBullet} />
+              <Text style={styles.featureText}>맞춤형 정책 큐레이션</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <View style={styles.featureBullet} />
+              <Text style={styles.featureText}>실천을 돕는 투두리스트</Text>
+            </View>
           </View>
         </View>
 
@@ -79,14 +86,6 @@ export const OnboardingWelcomeScreen: React.FC = () => {
         <TouchableOpacity style={styles.button} onPress={handleStart}>
           <Text style={styles.buttonText}>시작하기</Text>
         </TouchableOpacity>
-
-        {/* 진행 표시 */}
-        <View style={styles.progressDots}>
-          <View style={[styles.dot, styles.dotActive]} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-        </View>
       </View>
     </View>
   );
@@ -95,106 +94,98 @@ export const OnboardingWelcomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#FFFFFF',
+    width: '100%',
   },
   content: {
     flex: 1,
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.xxxl + 40,
-    paddingBottom: theme.spacing.xxxl,
-    justifyContent: 'space-between',
+    marginTop: theme.layout.statusBarHeight,
     alignItems: 'center',
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
   },
   penguinImage: {
-    width: 200,
-    height: 200,
-  },
-  textContainer: {
-    alignItems: 'center',
-    marginBottom: theme.spacing.xxl,
+    aspectRatio: 1,
+    height: 220,
+    width: 220,
+    marginTop: 74,
   },
   title: {
-    ...theme.typography.heading1,
-    color: theme.colors.textPrimary,
+    fontFamily: 'Pretendard Variable',
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#000000',
+    letterSpacing: -0.8,
+    lineHeight: 44.8,
     textAlign: 'center',
-    marginBottom: theme.spacing.sm,
+    marginTop: 40,
   },
-  subtitle: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: theme.colors.textSecondary,
+  featureCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    width: 328,
+    height: 164,
+    marginTop: 40,
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontFamily: 'Pretendard Variable',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#3060F1',
+    letterSpacing: -0.4,
+    lineHeight: 22.4,
     textAlign: 'center',
-    letterSpacing: -0.2,
+    marginLeft: 57,
+    marginTop: 20,
+    width: 214,
+    height: 44,
   },
   features: {
-    width: '100%',
-    backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.xxxl,
-    padding: theme.spacing.xl,
-    gap: theme.spacing.lg,
+    alignSelf: 'center',
+    marginLeft: -104,
+    width: 160,
+    height: 68,
+    gap: 4,
+    marginTop: 12,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.md,
+    gap: 12,
   },
   featureBullet: {
-    width: 6,
-    height: 6,
+    backgroundColor: '#A9BFF3',
     borderRadius: 3,
-    backgroundColor: theme.colors.primary,
+    height: 6,
+    width: 6,
   },
   featureText: {
-    fontSize: 15,
+    fontFamily: 'Pretendard Variable',
+    fontSize: 14,
     fontWeight: '500',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
+    color: '#000000',
+    letterSpacing: -0.35,
+    lineHeight: 19.6,
   },
   button: {
-    width: '100%',
-    height: 56,
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.full,
+    backgroundColor: '#3060F1',
+    borderRadius: 20,
+    width: 326,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: theme.spacing.xl,
+    marginTop: 48,
   },
   buttonText: {
-    fontSize: 16,
+    fontFamily: 'Pretendard',
+    fontSize: 18,
     fontWeight: '600',
-    color: theme.colors.white,
-    letterSpacing: -0.3,
-  },
-  progressDots: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.lg,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  dotActive: {
-    width: 24,
-    backgroundColor: theme.colors.primary,
-  },
-  skipButton: {
-    position: 'absolute',
-    top: theme.spacing.xxxl + 16,
-    right: theme.spacing.xl,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    zIndex: 10,
-  },
-  skipButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
+    color: '#FFFFFF',
+    letterSpacing: -0.45,
+    lineHeight: 26,
   },
 });
