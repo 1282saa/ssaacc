@@ -9,16 +9,30 @@
 /**
  * 백엔드 API Base URL
  *
- * 환경에 따라 자동으로 설정됩니다:
- * - Web: http://localhost:8000
- * - iOS Simulator: http://localhost:8000
- * - Android Emulator: http://10.0.2.2:8000
- * - 실제 디바이스: 호스트 머신의 IP 주소 사용
+ * 현재 설정: 프로덕션 EC2 백엔드 (http://3.239.115.86:8000)
+ *
+ * 로컬 개발 환경으로 전환하려면:
+ * - getApiBaseUrl() 함수 내부의 주석을 해제하고
+ * - return EC2_API_URL 라인을 주석 처리하세요
+ *
+ * 로컬 환경별 주소:
+ * - Web: http://localhost:8001
+ * - iOS Simulator: http://localhost:8001
+ * - Android Emulator: http://10.0.2.2:8001
  */
 import { Platform } from 'react-native';
 
+// 배포된 EC2 백엔드 API 주소 (프로덕션)
+const EC2_API_URL = 'http://3.239.115.86:8000';
+
 // 개발 환경에서 사용할 백엔드 API 주소
 const getApiBaseUrl = (): string => {
+  // 프로덕션 EC2 백엔드 사용
+  // 모든 플랫폼에서 동일한 EC2 주소 사용
+  return EC2_API_URL;
+
+  // 로컬 개발 시 아래 주석 해제
+  /*
   // 웹 브라우저에서 실행 중인 경우
   if (Platform.OS === 'web') {
     return 'http://localhost:8001';
@@ -36,6 +50,7 @@ const getApiBaseUrl = (): string => {
 
   // 기본값
   return 'http://localhost:8001';
+  */
 };
 
 export const API_BASE_URL = getApiBaseUrl();

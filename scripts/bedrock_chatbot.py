@@ -22,7 +22,7 @@ class BedrockPolicyBot:
         self,
         db_config: Dict[str, str],
         aws_profile: Optional[str] = None,
-        model_id: str = 'us.anthropic.claude-3-5-sonnet-20240620-v1:0',
+        model_id: str = 'anthropic.claude-3-5-sonnet-20240620-v1:0',
         max_tokens: int = 4000,
         temperature: float = 0.7
     ):

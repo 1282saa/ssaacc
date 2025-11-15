@@ -74,3 +74,14 @@ claude-*
 prototypes/*/node_modules/
 prototypes/*/dist/
 prototypes/*/.vite/
+
+# AWS EC2 키 파일
+*.pem
+
+# 배포 정보 (민감한 정보 포함)
+deployment-info.txt
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
