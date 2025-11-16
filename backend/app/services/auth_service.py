@@ -15,9 +15,13 @@ class AuthService:
         import os
         self.google_client_id = os.getenv("GOOGLE_CLIENT_ID")
         self.google_client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
-        
+
+        # Google OAuth는 선택적 기능으로 변경 (이메일/비밀번호 로그인은 항상 가능)
         if not self.google_client_id or not self.google_client_secret:
-            raise ValueError("Google OAuth 환경변수 (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)가 설정되지 않았습니다")
+            print("⚠️  Google OAuth 환경변수가 설정되지 않았습니다. 소셜 로그인은 비활성화됩니다.")
+            self.google_enabled = False
+        else:
+            self.google_enabled = True
         
     async def verify_google_token(self, token: str) -> Optional[dict]:
         """구글 OAuth 토큰 검증"""
@@ -95,6 +99,9 @@ class AuthService:
     
     async def authenticate_with_google(self, db: Session, access_token: str) -> Optional[tuple[User, Token]]:
         """구글 OAuth 인증"""
+        if not self.google_enabled:
+            raise ValueError("Google OAuth가 활성화되지 않았습니다")
+
         google_user = await self.get_google_user_info(access_token)
         if not google_user:
             return None

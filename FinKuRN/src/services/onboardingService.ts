@@ -19,7 +19,7 @@ import type {
   ConsentData 
 } from '../types/onboarding';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'http://localhost:8001/api/v1';
 
 /**
  * 온보딩 상태 응답 인터페이스
@@ -106,7 +106,7 @@ export const getOnboardingStatus = async (): Promise<OnboardingStatusResponse | 
 export const saveGoals = async (goals: UserGoal[]): Promise<ApiResponse> => {
   try {
     const headers = await getApiHeaders();
-    
+
     const response = await fetch(`${API_BASE_URL}/onboarding/goals`, {
       method: 'POST',
       headers,
@@ -114,12 +114,16 @@ export const saveGoals = async (goals: UserGoal[]): Promise<ApiResponse> => {
     });
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || `API 오류: ${response.status}`);
     }
 
-    return data;
+    // 백엔드가 {message: "..."} 형식으로 반환하므로 success: true 추가
+    return {
+      success: true,
+      message: data.message || '목표가 저장되었습니다.'
+    };
   } catch (error) {
     console.error('목표 저장 실패:', error);
     return {
@@ -135,27 +139,31 @@ export const saveGoals = async (goals: UserGoal[]): Promise<ApiResponse> => {
 export const saveProfile = async (profile: BasicInfoData): Promise<ApiResponse> => {
   try {
     const headers = await getApiHeaders();
-    
+
     const requestData = {
       age: profile.age,
       region: profile.region,
       job_category: profile.jobCategory,
       income_range: profile.incomeRange,
     };
-    
+
     const response = await fetch(`${API_BASE_URL}/onboarding/profile`, {
-      method: 'POST', 
+      method: 'POST',
       headers,
       body: JSON.stringify(requestData),
     });
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || `API 오류: ${response.status}`);
     }
 
-    return data;
+    // 백엔드가 {message: "..."} 형식으로 반환하므로 success: true 추가
+    return {
+      success: true,
+      message: data.message || '기본 정보가 저장되었습니다.'
+    };
   } catch (error) {
     console.error('기본 정보 저장 실패:', error);
     return {

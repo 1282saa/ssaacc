@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import { ArrowIcon } from '../../components/ArrowIcon';
 import type { AppNavigation } from '../../types/navigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * 홈 화면 (Home Screen)
@@ -64,9 +65,57 @@ import type { AppNavigation } from '../../types/navigation';
  */
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
+  const [userName, setUserName] = useState<string>('회원');
+  const [loading, setLoading] = useState<boolean>(true);
 
   const savingsFilters = ['전체', '내 집 마련 적금', '여름 여행', '비상금'];
   const spendingFilters = ['오늘', '이번 주', '이번 달'];
+
+  // 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        // AsyncStorage에서 토큰 가져오기
+        const token = await AsyncStorage.getItem('authToken');
+
+        console.log('🔍 AsyncStorage 토큰 조회:', token ? '있음' : '없음');
+
+        if (!token) {
+          console.log('❌ 토큰이 없습니다. 로그인이 필요합니다.');
+          setLoading(false);
+          return;
+        }
+
+        console.log('🔑 토큰 확인:', token.substring(0, 20) + '...');
+
+        // 사용자 정보 API 호출
+        const response = await fetch('http://localhost:8001/api/v1/users/me', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log('📡 API 응답 상태:', response.status, response.statusText);
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ 사용자 정보 조회 성공:', data);
+          setUserName(data.name || '회원');
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ 사용자 정보 조회 실패:', response.status, errorData);
+        }
+      } catch (error) {
+        console.error('❌ 사용자 정보 조회 오류:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -87,7 +136,7 @@ export const HomeScreen: React.FC = () => {
 
         {/* 인사말 섹션 */}
         <View style={styles.greetingSection}>
-          <Text style={styles.greetingTitle}>좋은 아침이에요, 은별님</Text>
+          <Text style={styles.greetingTitle}>좋은 아침이에요, {userName}님</Text>
           <Text style={styles.greetingSubtitle}>
             오늘은 커피값만큼 절약 도전 어떨까요? 💙
           </Text>

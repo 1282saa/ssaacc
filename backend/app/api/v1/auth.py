@@ -8,13 +8,109 @@ import json
 
 from app.database import get_db
 from app.services.auth_service import auth_service
-from app.schemas.auth import UserResponse, Token
+from app.schemas.auth import UserResponse, Token, UserCreate, UserLogin
+from app.core.security import create_access_token, get_password_hash, verify_password
+from app.models.user import User
 
 router = APIRouter()
 security = HTTPBearer()
 
 class GoogleAuthRequest(BaseModel):
     access_token: str
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Email/Password Authentication
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@router.post("/register", response_model=dict)
+def register(
+    user_data: UserCreate,
+    db: Session = Depends(get_db)
+):
+    """이메일/비밀번호로 회원가입"""
+    # 이메일 중복 확인
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미 등록된 이메일입니다"
+        )
+
+    # 새 사용자 생성
+    hashed_password = get_password_hash(user_data.password)
+    new_user = User(
+        email=user_data.email,
+        name=user_data.name,
+        password_hash=hashed_password,
+        is_active=True
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    # JWT 토큰 생성
+    access_token = create_access_token(subject=new_user.email)
+
+    return {
+        "user": UserResponse(
+            id=str(new_user.id),
+            email=new_user.email,
+            name=new_user.name,
+            is_active=new_user.is_active,
+            created_at=new_user.created_at
+        ),
+        "token": Token(access_token=access_token),
+        "message": "회원가입 성공"
+    }
+
+@router.post("/login", response_model=dict)
+def login(
+    login_data: UserLogin,
+    db: Session = Depends(get_db)
+):
+    """이메일/비밀번호로 로그인"""
+    # 사용자 조회
+    user = db.query(User).filter(User.email == login_data.email).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="이메일 또는 비밀번호가 올바르지 않습니다"
+        )
+
+    # 비밀번호 확인
+    if not verify_password(login_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="이메일 또는 비밀번호가 올바르지 않습니다"
+        )
+
+    # 계정 활성화 확인
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="비활성화된 계정입니다"
+        )
+
+    # JWT 토큰 생성
+    access_token = create_access_token(subject=user.email)
+
+    return {
+        "user": UserResponse(
+            id=str(user.id),
+            email=user.email,
+            name=user.name,
+            is_active=user.is_active,
+            created_at=user.created_at
+        ),
+        "token": Token(access_token=access_token),
+        "message": "로그인 성공"
+    }
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Google OAuth
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @router.get("/google/login")
 async def google_login():
@@ -127,7 +223,7 @@ async def google_callback(code: str = None, error: str = None, db: Session = Dep
             </head>
             <body>
                 <div class="container">
-                    <h2 class="success">✅ 구글 로그인 성공!</h2>
+                    <h2 class="success">구글 로그인 성공!</h2>
                     <p>로그인이 완료되었습니다.</p>
                     <p>이 창은 자동으로 닫힙니다...</p>
                 </div>
@@ -156,7 +252,7 @@ async def google_callback(code: str = None, error: str = None, db: Session = Dep
             return HTMLResponse(content=html_content)
             
     except Exception as e:
-        print(f"❌ Exception in callback: {str(e)}")
+        print(f"Exception in callback: {str(e)}")
         # 에러 시 프론트엔드 에러 페이지로 리디렉션  
         error_url = f"{os.getenv('FRONTEND_URL', 'http://localhost:8081')}/auth/error?message={urllib.parse.quote(str(e))}"
         return RedirectResponse(url=error_url)
@@ -204,14 +300,20 @@ def get_current_user(
     """현재 사용자 정보 조회"""
     token = credentials.credentials
     user = auth_service.get_current_user(db, token)
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="유효하지 않은 토큰입니다"
         )
-    
-    return UserResponse.model_validate(user)
+
+    return UserResponse(
+        id=str(user.id),
+        email=user.email,
+        name=user.name,
+        is_active=user.is_active,
+        created_at=user.created_at
+    )
 
 @router.post("/logout")
 def logout():

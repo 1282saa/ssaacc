@@ -176,7 +176,15 @@ export const OnboardingBasicInfoScreen: React.FC = () => {
       
       if (response.success) {
         console.log('기본 정보 저장 성공:', basicInfo);
-        navigation.navigate('OnboardingConsent' as any);
+
+        // 온보딩 완료 처리
+        const completeResponse = await onboardingService.completeOnboarding();
+        if (completeResponse) {
+          console.log('온보딩 완료 처리 성공');
+        }
+
+        // 메인 화면으로 이동
+        navigation.navigate('Main' as any);
       } else {
         Alert.alert('저장 실패', response.error || '기본 정보 저장에 실패했습니다.');
       }

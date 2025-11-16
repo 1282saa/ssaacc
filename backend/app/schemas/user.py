@@ -34,10 +34,8 @@ class UserResponse(UserBase):
     """사용자 정보 응답"""
     id: str = Field(..., description="사용자 ID")
     is_active: bool = Field(..., description="계정 활성화 상태")
-    is_email_verified: bool = Field(..., description="이메일 인증 여부")
     created_at: datetime = Field(..., description="계정 생성 시간")
-    updated_at: datetime = Field(..., description="계정 업데이트 시간")
-    last_login: Optional[datetime] = Field(None, description="마지막 로그인 시간")
+    updated_at: Optional[datetime] = Field(None, description="계정 업데이트 시간")
     profile: Optional["UserProfileResponse"] = Field(None, description="프로필 정보")
     consents: Optional[Dict[str, bool]] = Field(None, description="동의 정보")
 
@@ -49,13 +47,8 @@ class UserProfileBase(BaseModel):
     age: Optional[int] = Field(None, ge=14, le=100, description="나이 (14-100세)")
     region: Optional[str] = Field(None, max_length=100, description="거주 지역")
     job_category: Optional[str] = Field(None, max_length=50, description="직업 카테고리")
-    employment_status: Optional[str] = Field(None, max_length=50, description="고용 상태")
     income_range: Optional[str] = Field(None, max_length=50, description="소득 구간")
-    education_level: Optional[str] = Field(None, max_length=50, description="학력")
     goals: Optional[List[str]] = Field(None, description="사용자 목표 리스트")
-    interests: Optional[List[str]] = Field(None, description="관심 분야 리스트")
-    preferred_language: str = Field(default="ko", description="선호 언어")
-    ai_personality: Optional[str] = Field(None, max_length=50, description="AI 성격 설정")
 
     @field_validator('job_category')
     @classmethod
@@ -66,43 +59,16 @@ class UserProfileBase(BaseModel):
                 raise ValueError(f"직업 카테고리는 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
 
-    @field_validator('employment_status')
-    @classmethod
-    def validate_employment_status(cls, v):
-        if v is not None:
-            allowed = ["재직", "구직", "자영업", "학업", "휴직", "기타"]
-            if v not in allowed:
-                raise ValueError(f"고용 상태는 다음 중 하나여야 합니다: {', '.join(allowed)}")
-        return v
-
     @field_validator('income_range')
     @classmethod
     def validate_income_range(cls, v):
         if v is not None:
             allowed = [
-                "100만원 미만", "100-200만원", "200-300만원", 
+                "100만원 미만", "100-200만원", "200-300만원",
                 "300-400만원", "400만원 이상"
             ]
             if v not in allowed:
                 raise ValueError(f"소득 구간은 다음 중 하나여야 합니다: {', '.join(allowed)}")
-        return v
-
-    @field_validator('education_level')
-    @classmethod
-    def validate_education_level(cls, v):
-        if v is not None:
-            allowed = ["중졸 이하", "고졸", "전문대졸", "대졸", "대학원졸"]
-            if v not in allowed:
-                raise ValueError(f"학력은 다음 중 하나여야 합니다: {', '.join(allowed)}")
-        return v
-
-    @field_validator('ai_personality')
-    @classmethod
-    def validate_ai_personality(cls, v):
-        if v is not None:
-            allowed = ["친근한", "전문적인", "간결한", "상세한"]
-            if v not in allowed:
-                raise ValueError(f"AI 성격은 다음 중 하나여야 합니다: {', '.join(allowed)}")
         return v
 
 
@@ -116,21 +82,17 @@ class UserProfileUpdate(BaseModel):
     age: Optional[int] = Field(None, ge=14, le=100)
     region: Optional[str] = Field(None, max_length=100)
     job_category: Optional[str] = Field(None, max_length=50)
-    employment_status: Optional[str] = Field(None, max_length=50)
     income_range: Optional[str] = Field(None, max_length=50)
-    education_level: Optional[str] = Field(None, max_length=50)
     goals: Optional[List[str]] = Field(None)
-    interests: Optional[List[str]] = Field(None)
-    ai_personality: Optional[str] = Field(None, max_length=50)
 
 
 class UserProfileResponse(UserProfileBase):
     """사용자 프로필 응답"""
     user_id: str = Field(..., description="사용자 ID")
-    onboarding_completed: bool = Field(..., description="온보딩 완료 여부")
-    profile_completion_rate: int = Field(..., ge=0, le=100, description="프로필 완성도")
-    created_at: datetime = Field(..., description="프로필 생성 시간")
-    updated_at: datetime = Field(..., description="프로필 업데이트 시간")
+    onboarding_completed: bool = Field(default=False, description="온보딩 완료 여부")
+    profile_completion_rate: int = Field(default=0, ge=0, le=100, description="프로필 완성도")
+    created_at: Optional[datetime] = Field(None, description="프로필 생성 시간")
+    updated_at: Optional[datetime] = Field(None, description="프로필 업데이트 시간")
 
     model_config = {"from_attributes": True}
 
@@ -141,8 +103,7 @@ class UserConsentBase(BaseModel):
     terms_of_service: bool = Field(..., description="서비스 이용약관 동의 (필수)")
     push_notification: bool = Field(default=False, description="푸시 알림 수신 동의")
     marketing_notification: bool = Field(default=False, description="마케팅 알림 수신 동의")
-    data_analytics: bool = Field(default=False, description="데이터 분석 활용 동의")
-    personalized_ads: bool = Field(default=False, description="개인화 광고 활용 동의")
+    reward_program: bool = Field(default=False, description="리워드 프로그램 참여 동의")
 
     @field_validator('privacy_policy', 'terms_of_service')
     @classmethod
@@ -162,8 +123,7 @@ class UserConsentUpdate(BaseModel):
     """사용자 동의 업데이트 요청 (선택적 동의만 변경 가능)"""
     push_notification: Optional[bool] = Field(None, description="푸시 알림 수신 동의")
     marketing_notification: Optional[bool] = Field(None, description="마케팅 알림 수신 동의")
-    data_analytics: Optional[bool] = Field(None, description="데이터 분석 활용 동의")
-    personalized_ads: Optional[bool] = Field(None, description="개인화 광고 활용 동의")
+    reward_program: Optional[bool] = Field(None, description="리워드 프로그램 참여 동의")
 
 
 class UserConsentResponse(UserConsentBase):
