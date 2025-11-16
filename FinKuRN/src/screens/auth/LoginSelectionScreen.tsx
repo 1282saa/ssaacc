@@ -95,14 +95,14 @@ export const LoginSelectionScreen: React.FC = () => {
           />
         </View>
 
-        {/* Social Login Buttons */}
+        {/* Social Login Buttons - OAuth 비활성화됨 */}
         <View style={styles.socialButtonsContainer}>
           {/* Kakao Login */}
           <TouchableOpacity
-            style={[styles.socialButton, loading && styles.socialButtonDisabled]}
+            style={styles.socialButton}
             activeOpacity={0.8}
             onPress={() => handleSocialLogin('kakao')}
-            disabled={loading}
+            disabled={true}
           >
             <Image
               source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/kakaotalk-1.svg' }}
@@ -114,29 +114,25 @@ export const LoginSelectionScreen: React.FC = () => {
 
           {/* Google Login */}
           <TouchableOpacity
-            style={[styles.socialButton, loading && styles.socialButtonDisabled]}
+            style={styles.socialButton}
             activeOpacity={0.8}
             onPress={() => handleSocialLogin('google')}
-            disabled={loading}
+            disabled={true}
           >
             <Image
               source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/google---original-1.svg' }}
               style={styles.socialIcon}
               resizeMode="contain"
             />
-            {loading ? (
-              <ActivityIndicator size="small" color={theme.colors.textPrimary} style={{ marginLeft: 12 }} />
-            ) : (
-              <Text style={styles.socialButtonText}>구글로 로그인</Text>
-            )}
+            <Text style={styles.socialButtonText}>구글로 로그인</Text>
           </TouchableOpacity>
 
           {/* Apple Login */}
           <TouchableOpacity
-            style={[styles.socialButton, loading && styles.socialButtonDisabled]}
+            style={styles.socialButton}
             activeOpacity={0.8}
             onPress={() => handleSocialLogin('apple')}
-            disabled={loading}
+            disabled={true}
           >
             <Image
               source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/apple---original-1.svg' }}

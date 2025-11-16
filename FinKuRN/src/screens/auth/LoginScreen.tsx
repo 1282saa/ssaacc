@@ -62,10 +62,16 @@ export const LoginScreen: React.FC = () => {
       const response = await authService.login(email, password);
 
       if (response.success && response.data?.token) {
-        console.log('Login successful:', response.data.user);
+        // 온보딩 완료 여부 확인
+        const onboardingCompleted =
+          response.data.user?.profile?.onboarding_completed ||
+          response.data.user?.onboarding_completed;
 
-        // 온보딩으로 이동
-        navigation.navigate('OnboardingWelcome' as any);
+        if (onboardingCompleted) {
+          navigation.navigate('Main');
+        } else {
+          navigation.navigate('OnboardingWelcome' as any);
+        }
       } else {
         setError(response.error || '로그인에 실패했습니다.');
       }
@@ -226,13 +232,13 @@ export const LoginScreen: React.FC = () => {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Social Login Icons */}
+            {/* Social Login Icons - OAuth 비활성화됨 */}
             <View style={styles.socialIconsContainer}>
               {/* Kakao */}
               <TouchableOpacity
                 style={styles.socialIconButton}
                 onPress={() => handleSocialLogin('kakao')}
-                disabled={loading}
+                disabled={true}
                 activeOpacity={0.8}
               >
                 <Image
@@ -246,7 +252,7 @@ export const LoginScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.socialIconButton}
                 onPress={() => handleSocialLogin('google')}
-                disabled={loading}
+                disabled={true}
                 activeOpacity={0.8}
               >
                 <Image
@@ -260,7 +266,7 @@ export const LoginScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.socialIconButton}
                 onPress={() => handleSocialLogin('apple')}
-                disabled={loading}
+                disabled={true}
                 activeOpacity={0.8}
               >
                 <Image

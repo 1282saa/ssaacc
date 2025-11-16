@@ -117,8 +117,8 @@ async def get_my_info(
                 job_category=profile.job_category if profile else None,
                 income_range=profile.income_range if profile else None,
                 goals=parse_goals(profile.goals) if profile else [],
-                onboarding_completed=profile.onboarding_completed if profile else False,
-                profile_completion_rate=profile.profile_completion_rate if profile else 0,
+                onboarding_completed=profile.onboarding_completed if profile and profile.onboarding_completed is not None else False,
+                profile_completion_rate=profile.profile_completion_rate if profile and profile.profile_completion_rate is not None else 0,
                 created_at=profile.created_at if profile else None,
                 updated_at=profile.updated_at if profile else None
             ) if profile else None,
@@ -226,8 +226,8 @@ async def update_my_info(
                 job_category=profile.job_category if profile else None,
                 income_range=profile.income_range if profile else None,
                 goals=parse_goals(profile.goals) if profile else [],
-                onboarding_completed=profile.onboarding_completed if profile else False,
-                profile_completion_rate=profile.profile_completion_rate if profile else 0,
+                onboarding_completed=profile.onboarding_completed if profile and profile.onboarding_completed is not None else False,
+                profile_completion_rate=profile.profile_completion_rate if profile and profile.profile_completion_rate is not None else 0,
                 created_at=profile.created_at if profile else None,
                 updated_at=profile.updated_at if profile else None
             ) if profile else None,

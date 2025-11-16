@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import RedirectResponse, HTMLResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
 import urllib.parse
 import json
 
 from app.database import get_db
 from app.services.auth_service import auth_service
-from app.schemas.auth import UserResponse, Token, UserCreate, UserLogin
+from app.schemas.auth import UserResponse, Token, UserCreate, UserLogin, UserProfileResponse
 from app.core.security import create_access_token, get_password_hash, verify_password
-from app.models.user import User
+from app.models.user import User, UserProfile
 
 router = APIRouter()
 security = HTTPBearer()
@@ -70,8 +70,8 @@ def login(
     db: Session = Depends(get_db)
 ):
     """이메일/비밀번호로 로그인"""
-    # 사용자 조회
-    user = db.query(User).filter(User.email == login_data.email).first()
+    # 사용자 조회 (프로필 정보 포함)
+    user = db.query(User).options(joinedload(User.profile)).filter(User.email == login_data.email).first()
 
     if not user:
         raise HTTPException(
@@ -96,15 +96,40 @@ def login(
     # JWT 토큰 생성
     access_token = create_access_token(subject=user.email)
 
+    # 프로필 정보가 없으면 기본 프로필 생성
+    if not user.profile:
+        user_profile = UserProfile(user_id=user.id)
+        db.add(user_profile)
+        db.commit()
+        db.refresh(user)
+
+    # 프로필 응답 데이터 생성
+    profile_data = None
+    if user.profile:
+        profile_data = {
+            "age": user.profile.age,
+            "region": user.profile.region,
+            "job_category": user.profile.job_category,
+            "income_range": user.profile.income_range,
+            "goals": user.profile.goals,
+            "profile_image_url": user.profile.profile_image_url,
+            "onboarding_completed": user.profile.onboarding_completed if user.profile.onboarding_completed is not None else False,
+            "profile_completion_rate": user.profile.profile_completion_rate if user.profile.profile_completion_rate is not None else 0
+        }
+
     return {
-        "user": UserResponse(
-            id=str(user.id),
-            email=user.email,
-            name=user.name,
-            is_active=user.is_active,
-            created_at=user.created_at
-        ),
-        "token": Token(access_token=access_token),
+        "user": {
+            "id": str(user.id),
+            "email": user.email,
+            "name": user.name,
+            "is_active": user.is_active,
+            "created_at": user.created_at.isoformat(),
+            "profile": profile_data
+        },
+        "token": {
+            "access_token": access_token,
+            "token_type": "bearer"
+        },
         "message": "로그인 성공"
     }
 

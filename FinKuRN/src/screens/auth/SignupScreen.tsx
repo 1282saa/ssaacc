@@ -227,13 +227,13 @@ export const SignupScreen: React.FC = () => {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Social Signup Icons */}
+            {/* Social Signup Icons - OAuth 비활성화됨 */}
             <View style={styles.socialIconsContainer}>
               {/* Kakao */}
               <TouchableOpacity
                 style={styles.socialIconButton}
                 onPress={() => handleSocialSignup('kakao')}
-                disabled={loading}
+                disabled={true}
                 activeOpacity={0.8}
               >
                 <Image
@@ -247,7 +247,7 @@ export const SignupScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.socialIconButton}
                 onPress={() => handleSocialSignup('google')}
-                disabled={loading}
+                disabled={true}
                 activeOpacity={0.8}
               >
                 <Image
@@ -261,7 +261,7 @@ export const SignupScreen: React.FC = () => {
               <TouchableOpacity
                 style={styles.socialIconButton}
                 onPress={() => handleSocialSignup('apple')}
-                disabled={loading}
+                disabled={true}
                 activeOpacity={0.8}
               >
                 <Image
