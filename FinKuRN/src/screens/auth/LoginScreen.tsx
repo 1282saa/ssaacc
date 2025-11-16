@@ -12,51 +12,18 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from '../../components/common/StatusBar';
-import { BackgroundGradient } from '../../components/common/BackgroundGradient';
-import { HOME_GRADIENTS } from '../../constants/gradients';
 import { theme } from '../../constants/theme';
 import type { AppNavigation } from '../../types/navigation';
 import { authService } from '../../services/authService';
-import { signInWithGoogle, initializeGoogleSignIn } from '../../services/googleAuthService';
 
 /**
- * 로그인 화면 (Login Screen)
+ * 새싹 해커톤 디자인 로그인 화면
  *
- * 사용자 인증을 위한 프리미엄 로그인 화면입니다.
- * 이메일/비밀번호 기반 로그인과 소셜 로그인을 지원합니다.
- *
- * @component
- * @category UI/Screens
- * @since 1.0.0
- *
- * @example
- * ```tsx
- * import { LoginScreen } from './screens/LoginScreen';
- *
- * <LoginScreen />
- * ```
- *
- * @description
- * 주요 기능:
- * - 이메일/비밀번호 기반 로그인 (Email/Password Login)
- * - 소셜 로그인 지원 (Kakao, Naver, Google)
- * - 실시간 입력 유효성 검사 (Real-time Validation)
- * - 포커스 상태에 따른 입력 필드 스타일 변경 (Focus State Styling)
- * - 로딩 상태 표시 (Loading State Indicator)
- * - 에러 메시지 배너 (Error Message Banner)
- * - 비밀번호 찾기 링크 (Forgot Password Link)
- * - 회원가입 페이지로 이동 (Navigate to Signup)
- *
- * @features
- * - 키보드 회피 레이아웃 (KeyboardAvoidingView)
- * - 스크롤 가능한 폼 (Scrollable Form)
- * - 그라디언트 배경 (Gradient Background)
- * - 펭귄 마스코트 이미지 (Penguin Mascot)
- * - 반응형 입력 필드 (Responsive Input Fields)
- *
- * @see {@link SignupScreen}
- * @see {@link authService}
+ * React 디자인을 React Native로 변환
+ * - 기존 백엔드 API 연결 유지
+ * - 새로운 UI 디자인 적용
  */
 export const LoginScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
@@ -65,37 +32,11 @@ export const LoginScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-
-  // Google Sign-In 초기화
-  useEffect(() => {
-    initializeGoogleSignIn();
-  }, []);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   /**
-   * 로그인 처리 핸들러 (Login Handler)
-   *
-   * 이메일과 비밀번호를 검증하고 authService를 통해 로그인을 시도합니다.
-   *
-   * @async
-   * @function handleLogin
-   *
-   * @description
-   * 처리 과정:
-   * 1. 입력값 검증 (빈 값, 이메일 형식, 비밀번호 길이)
-   * 2. authService.login() 호출
-   * 3. 성공 시 Main 화면으로 이동
-   * 4. 실패 시 에러 메시지 표시
-   *
-   * @validation
-   * - 이메일과 비밀번호 필수 입력 확인
-   * - 이메일 형식 검증 (@ 포함 여부)
-   * - 비밀번호 최소 6자 이상
-   *
-   * @throws {Error} 로그인 실패 시 에러 메시지 표시
-   *
-   * @see {@link authService.login}
+   * 로그인 처리 핸들러
    */
   const handleLogin = async () => {
     setError(null);
@@ -123,15 +64,7 @@ export const LoginScreen: React.FC = () => {
       if (response.success && response.data?.token) {
         console.log('Login successful:', response.data.user);
 
-        // TODO: 실제 구현 시 checkOnboardingStatus API로 확인
-        // const status = await checkOnboardingStatus(response.user.id);
-        // if (status.completed) {
-        //   navigation.navigate('Main');
-        // } else {
-        //   navigation.navigate('OnboardingWelcome' as any);
-        // }
-
-        // 임시: 로그인 시 온보딩으로 이동
+        // 온보딩으로 이동
         navigation.navigate('OnboardingWelcome' as any);
       } else {
         setError(response.error || '로그인에 실패했습니다.');
@@ -145,68 +78,20 @@ export const LoginScreen: React.FC = () => {
   };
 
   /**
-   * 소셜 로그인 처리 핸들러 (Social Login Handler)
-   *
-   * 카카오, 네이버, 구글 등의 소셜 로그인을 처리합니다.
-   *
-   * @async
-   * @function handleSocialLogin
-   * @param {('kakao'|'naver'|'google')} provider - 소셜 로그인 제공자
-   *
-   * @description
-   * 처리 과정:
-   * 1. authService.socialLogin() 호출
-   * 2. 성공 시 Main 화면으로 이동
-   * 3. 실패 시 에러 메시지 표시
-   *
-   * @example
-   * ```tsx
-   * handleSocialLogin('kakao');
-   * handleSocialLogin('naver');
-   * handleSocialLogin('google');
-   * ```
-   *
-   * @see {@link authService.socialLogin}
+   * 소셜 로그인 처리 핸들러
    */
-  const handleSocialLogin = async (provider: 'kakao' | 'naver' | 'google') => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (provider === 'google') {
-        // 실제 Google OAuth 처리
-        const googleResult = await signInWithGoogle();
-        
-        if (!googleResult.success) {
-          setError(googleResult.error || 'Google 로그인에 실패했습니다.');
-          return;
-        }
-
-        // 백엔드에 Google 액세스 토큰 전달
-        const response = await authService.socialLogin('google', googleResult.accessToken || '');
-        
-        if (response.success && response.data?.token) {
-          console.log('Google login successful:', response.data.user);
-          navigation.navigate('OnboardingWelcome' as any);
-        } else {
-          setError(response.error || 'Google 로그인에 실패했습니다.');
-        }
-      } else {
-        // 카카오, 네이버는 아직 구현 중
-        setError(`${provider} 로그인은 준비 중입니다. 이메일 로그인을 이용해주세요.`);
-      }
-    } catch (err) {
-      setError('소셜 로그인에 실패했습니다.');
-      console.error('Social login error:', err);
-    } finally {
-      setLoading(false);
-    }
+  const handleSocialLogin = async (provider: 'kakao' | 'google' | 'apple') => {
+    setError(`${provider === 'kakao' ? '카카오' : provider === 'google' ? '구글' : '애플'} 로그인은 준비 중입니다.`);
   };
 
   return (
     <View style={styles.container}>
-      <BackgroundGradient layers={HOME_GRADIENTS} />
+      {/* Status Bar */}
       <StatusBar />
+
+      {/* Gradient Background Blobs */}
+      <View style={styles.gradientBlob1} />
+      <View style={styles.gradientBlob2} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -217,55 +102,37 @@ export const LoginScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Skip Button */}
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={() => navigation.navigate('Main')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.skipButtonText}>건너뛰기</Text>
-          </TouchableOpacity>
-
-          {/* Header with Logo and Penguin */}
+          {/* Header with Back Button */}
           <View style={styles.header}>
-            <Text style={styles.logo}>FinKuRN</Text>
-            <Text style={styles.tagline}>금융 지식과 자원 내비게이터</Text>
-
-            <Image
-              source={{ uri: 'https://c.animaapp.com/FwW9Xg6K/img/--@2x.png' }}
-              style={styles.penguinImage}
-              resizeMode="contain"
-            />
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chevron-back" size={28} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>로그인</Text>
+            <View style={{ width: 32 }} />
           </View>
 
           {/* Login Form Card */}
           <View style={styles.formCard}>
-            <View style={styles.formHeader}>
-              <Text style={styles.formTitle}>로그인</Text>
-              <Text style={styles.welcomeText}>다시 만나서 반가워요</Text>
-            </View>
+            {/* Logo */}
+            <Text style={styles.logo}>FinKuRN</Text>
 
             {/* Email Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>이메일</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  emailFocused && styles.inputWrapperFocused,
-                  error && !emailFocused && styles.inputWrapperError,
-                ]}
-              >
+              <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
-                  placeholder="example@email.com"
-                  placeholderTextColor="#A0A0A0"
+                  placeholder="이메일을 입력해 주세요"
+                  placeholderTextColor="#B0B5BF"
                   value={email}
                   onChangeText={(text) => {
                     setEmail(text);
                     setError(null);
                   }}
-                  onFocus={() => setEmailFocused(true)}
-                  onBlur={() => setEmailFocused(false)}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -277,29 +144,32 @@ export const LoginScreen: React.FC = () => {
             {/* Password Input */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>비밀번호</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  passwordFocused && styles.inputWrapperFocused,
-                  error && !passwordFocused && styles.inputWrapperError,
-                ]}
-              >
+              <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
-                  placeholder="6자 이상 입력"
-                  placeholderTextColor="#A0A0A0"
+                  placeholder="비밀번호를 입력해 주세요"
+                  placeholderTextColor="#B0B5BF"
                   value={password}
                   onChangeText={(text) => {
                     setPassword(text);
                     setError(null);
                   }}
-                  onFocus={() => setPasswordFocused(true)}
-                  onBlur={() => setPasswordFocused(false)}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!loading}
                 />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color="#92A3B2"
+                  />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -310,18 +180,34 @@ export const LoginScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Forgot Password Link */}
-            <TouchableOpacity
-              style={styles.forgotPasswordLink}
-              onPress={() => console.log('Forgot password')}
-              disabled={loading}
-            >
-              <Text style={styles.forgotPasswordText}>비밀번호를 잊으셨나요?</Text>
-            </TouchableOpacity>
+            {/* Remember Me & Forgot Password */}
+            <View style={styles.optionsRow}>
+              <TouchableOpacity
+                style={styles.rememberMeContainer}
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.7}
+                disabled={loading}
+              >
+                <View style={styles.checkbox}>
+                  {rememberMe && (
+                    <Ionicons name="checkmark" size={16} color="#3060F1" />
+                  )}
+                </View>
+                <Text style={styles.rememberMeText}>아이디 저장</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => console.log('Forgot password')}
+                disabled={loading}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.forgotPasswordText}>아이디/비밀번호 찾기</Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Login Button */}
             <TouchableOpacity
-              style={[styles.primaryButton, loading && styles.primaryButtonDisabled]}
+              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
               onPress={handleLogin}
               disabled={loading}
               activeOpacity={0.85}
@@ -329,7 +215,7 @@ export const LoginScreen: React.FC = () => {
               {loading ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={styles.primaryButtonText}>로그인</Text>
+                <Text style={styles.loginButtonText}>로그인</Text>
               )}
             </TouchableOpacity>
 
@@ -340,39 +226,54 @@ export const LoginScreen: React.FC = () => {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Social Login Buttons */}
-            <View style={styles.socialButtonsContainer}>
+            {/* Social Login Icons */}
+            <View style={styles.socialIconsContainer}>
+              {/* Kakao */}
               <TouchableOpacity
-                style={[styles.socialButton, styles.kakaoButton]}
+                style={styles.socialIconButton}
                 onPress={() => handleSocialLogin('kakao')}
                 disabled={loading}
-                activeOpacity={0.85}
+                activeOpacity={0.8}
               >
-                <Text style={styles.kakaoText}>카카오로 계속하기</Text>
+                <Image
+                  source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/kakaotalk-1.svg' }}
+                  style={styles.socialIcon}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
 
+              {/* Google */}
               <TouchableOpacity
-                style={[styles.socialButton, styles.naverButton]}
-                onPress={() => handleSocialLogin('naver')}
-                disabled={loading}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.naverText}>네이버로 계속하기</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.socialButton, styles.googleButton]}
+                style={styles.socialIconButton}
                 onPress={() => handleSocialLogin('google')}
                 disabled={loading}
-                activeOpacity={0.85}
+                activeOpacity={0.8}
               >
-                <Text style={styles.googleText}>Google로 계속하기</Text>
+                <Image
+                  source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/google---original-1.svg' }}
+                  style={styles.socialIcon}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+
+              {/* Apple */}
+              <TouchableOpacity
+                style={styles.socialIconButton}
+                onPress={() => handleSocialLogin('apple')}
+                disabled={loading}
+                activeOpacity={0.8}
+              >
+                <Image
+                  source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/apple---original-1.svg' }}
+                  style={styles.socialIcon}
+                  resizeMode="contain"
+                />
               </TouchableOpacity>
             </View>
 
             {/* Signup Link */}
             <View style={styles.signupPrompt}>
-              <Text style={styles.signupPromptText}>계정이 없으신가요? </Text>
+              <Text style={styles.signupPromptText}>아직 회원이 아니신가요? </Text>
               <TouchableOpacity
                 onPress={() => navigation.navigate('Signup')}
                 disabled={loading}
@@ -383,6 +284,11 @@ export const LoginScreen: React.FC = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Home Indicator (iOS style) */}
+      <View style={styles.homeIndicatorWrapper}>
+        <View style={styles.homeIndicator} />
+      </View>
     </View>
   );
 };
@@ -390,158 +296,210 @@ export const LoginScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: '#FFFFFF',
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingTop: theme.layout.statusBarHeight + 16,
-    paddingBottom: 32,
-    paddingHorizontal: 16,
+    paddingTop: theme.layout.statusBarHeight,
   },
+
+  // Gradient Background Blobs (matching React design)
+  gradientBlob1: {
+    position: 'absolute',
+    width: 330,
+    height: 330,
+    borderRadius: 165,
+    left: 18,
+    top: 70,
+    backgroundColor: 'rgba(66, 0, 255, 0.2)',
+    // Note: React Native doesn't support blur filter natively
+    // You may need to use react-native-blur or similar library
+    opacity: 0.3,
+  },
+  gradientBlob2: {
+    position: 'absolute',
+    width: 607,
+    height: 607,
+    borderRadius: 303.5,
+    left: -231,
+    top: 159,
+    backgroundColor: 'rgba(223, 127, 127, 0.2)',
+    opacity: 0.3,
+  },
+
+  // Header
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 12,
-    paddingBottom: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    height: 56,
   },
-  logo: {
+  backButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#000000',
     fontFamily: 'Pretendard Variable',
+  },
+
+  // Form Card
+  formCard: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingHorizontal: 17,
+    paddingTop: 40,
+    paddingBottom: 24,
+    marginTop: 132, // Position below header
+    minHeight: 612,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+
+  // Logo
+  logo: {
     fontSize: 32,
     fontWeight: '700',
-    color: theme.colors.primary,
-    letterSpacing: -0.5,
-    marginBottom: 2,
+    color: '#3060F1',
+    textAlign: 'center',
+    marginBottom: 40,
+    fontFamily: 'Almarai',
   },
-  tagline: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 12,
-    fontWeight: '400',
-    color: theme.colors.textSecondary,
-    marginBottom: 12,
-  },
-  penguinImage: {
-    width: 120,
-    height: 120,
-  },
-  formCard: {
-    backgroundColor: theme.colors.white,
-    borderRadius: 32,
-    paddingHorizontal: 20,
-    paddingTop: 28,
-    paddingBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
-  },
-  formHeader: {
-    marginBottom: 24,
-  },
-  formTitle: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 22,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    marginBottom: 4,
-    letterSpacing: -0.3,
-  },
-  welcomeText: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 13,
-    fontWeight: '400',
-    color: theme.colors.textSecondary,
-  },
+
+  // Input Group
   inputGroup: {
-    marginBottom: 14,
+    marginBottom: 20,
   },
   label: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginBottom: 6,
-    paddingLeft: 2,
-  },
-  inputWrapper: {
-    backgroundColor: '#F5F5F7',
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: 'transparent',
-  },
-  inputWrapperFocused: {
-    borderColor: theme.colors.primary,
-    backgroundColor: '#FAFAFA',
-  },
-  inputWrapperError: {
-    borderColor: theme.colors.error,
-    backgroundColor: '#FFF9F9',
-  },
-  input: {
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontFamily: 'Pretendard Variable',
     fontSize: 14,
     fontWeight: '400',
-    color: theme.colors.textPrimary,
+    color: '#45474C',
+    marginBottom: 8,
+    paddingLeft: 8,
+    fontFamily: 'SF Pro Text',
   },
+  inputWrapper: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 2,
+    height: 60,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    position: 'relative',
+  },
+  input: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#000000',
+    fontFamily: 'SF Pro Text',
+    height: '100%',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+  },
+
+  // Error Banner
   errorBanner: {
     backgroundColor: '#FFF1F1',
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginTop: 4,
-    marginBottom: 8,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#FFD6D6',
   },
   errorText: {
-    fontFamily: 'Pretendard Variable',
     fontSize: 12,
     fontWeight: '500',
     color: theme.colors.error,
     textAlign: 'center',
-    lineHeight: 16,
-  },
-  forgotPasswordLink: {
-    alignSelf: 'flex-end',
-    paddingVertical: 8,
-    marginBottom: 12,
-  },
-  forgotPasswordText: {
     fontFamily: 'Pretendard Variable',
-    fontSize: 12,
-    fontWeight: '500',
-    color: theme.colors.primary,
   },
-  primaryButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 14,
-    height: 52,
+
+  // Options Row (Remember Me + Forgot Password)
+  optionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    backgroundColor: '#FFFFFF',
   },
-  primaryButtonDisabled: {
+  rememberMeText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#92A3B2',
+    fontFamily: 'SF Pro Text',
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#92A3B2',
+    fontFamily: 'SF Pro Text',
+  },
+
+  // Login Button
+  loginButton: {
+    backgroundColor: '#3060F1',
+    borderRadius: 20,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#3060F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+    marginBottom: 24,
+  },
+  loginButtonDisabled: {
     opacity: 0.5,
   },
-  primaryButtonText: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 15,
+  loginButtonText: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
-    letterSpacing: -0.2,
+    color: '#FFFFFF',
+    fontFamily: 'Pretendard',
   },
+
+  // Divider
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 20,
+    marginBottom: 24,
   },
   dividerLine: {
     flex: 1,
@@ -549,85 +507,72 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5E5',
   },
   dividerText: {
-    fontFamily: 'Pretendard Variable',
     fontSize: 12,
     fontWeight: '400',
     color: '#999',
     marginHorizontal: 12,
+    fontFamily: 'Pretendard Variable',
   },
-  socialButtonsContainer: {
-    gap: 10,
+
+  // Social Icons Container
+  socialIconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 24,
   },
-  socialButton: {
+  socialIconButton: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    height: 50,
-    borderRadius: 14,
-    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  kakaoButton: {
-    backgroundColor: '#FEE500',
-    borderColor: '#FEE500',
+  socialIcon: {
+    width: 24,
+    height: 24,
   },
-  kakaoText: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#3C1E1E',
-    letterSpacing: -0.2,
-  },
-  naverButton: {
-    backgroundColor: '#03C75A',
-    borderColor: '#03C75A',
-  },
-  naverText: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
-    letterSpacing: -0.2,
-  },
-  googleButton: {
-    backgroundColor: '#fff',
-    borderColor: '#DADCE0',
-  },
-  googleText: {
-    fontFamily: 'Pretendard Variable',
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
+
+  // Signup Prompt
   signupPrompt: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
   },
   signupPromptText: {
-    fontFamily: 'Pretendard Variable',
     fontSize: 13,
     fontWeight: '400',
     color: '#666',
+    fontFamily: 'Pretendard Variable',
   },
   signupLink: {
-    fontFamily: 'Pretendard Variable',
     fontSize: 13,
     fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  skipButton: {
-    position: 'absolute',
-    top: theme.layout.statusBarHeight + 16,
-    right: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    zIndex: 10,
-  },
-  skipButtonText: {
+    color: '#3060F1',
     fontFamily: 'Pretendard Variable',
-    fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.primary,
+  },
+
+  // Home Indicator (iOS style)
+  homeIndicatorWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 8,
+  },
+  homeIndicator: {
+    width: 134,
+    height: 5,
+    borderRadius: 100,
+    backgroundColor: '#000000',
   },
 });

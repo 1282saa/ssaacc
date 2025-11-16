@@ -104,9 +104,11 @@ export const LoginSelectionScreen: React.FC = () => {
             onPress={() => handleSocialLogin('kakao')}
             disabled={loading}
           >
-            <View style={styles.socialIcon}>
-              {/* Kakao icon placeholder */}
-            </View>
+            <Image
+              source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/kakaotalk-1.svg' }}
+              style={styles.socialIcon}
+              resizeMode="contain"
+            />
             <Text style={styles.socialButtonText}>카카오 로그인</Text>
           </TouchableOpacity>
 
@@ -117,9 +119,11 @@ export const LoginSelectionScreen: React.FC = () => {
             onPress={() => handleSocialLogin('google')}
             disabled={loading}
           >
-            <View style={styles.socialIcon}>
-              {/* Google icon placeholder */}
-            </View>
+            <Image
+              source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/google---original-1.svg' }}
+              style={styles.socialIcon}
+              resizeMode="contain"
+            />
             {loading ? (
               <ActivityIndicator size="small" color={theme.colors.textPrimary} style={{ marginLeft: 12 }} />
             ) : (
@@ -134,9 +138,11 @@ export const LoginSelectionScreen: React.FC = () => {
             onPress={() => handleSocialLogin('apple')}
             disabled={loading}
           >
-            <View style={styles.socialIcon}>
-              {/* Apple icon placeholder */}
-            </View>
+            <Image
+              source={{ uri: 'https://c.animaapp.com/91rwi3X0/img/apple---original-1.svg' }}
+              style={styles.socialIcon}
+              resizeMode="contain"
+            />
             <Text style={styles.socialButtonText}>애플로 로그인</Text>
           </TouchableOpacity>
         </View>
@@ -193,8 +199,8 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   socialButtonsContainer: {
-    gap: 12,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 60,
   },
   socialButton: {
     flexDirection: 'row',
@@ -231,7 +237,8 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    marginTop: 8,
   },
   loginButtonDisabled: {
     opacity: 0.5,
