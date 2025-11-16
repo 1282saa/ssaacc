@@ -1,3 +1,3 @@
-from .user import User, UserProfile, UserSocialAccount, UserConsent
+from .user import User, UserProfile, UserSocialAccount, UserConsent, UserPolicy, Task
 
-__all__ = ["User", "UserProfile", "UserSocialAccount", "UserConsent"]
+__all__ = ["User", "UserProfile", "UserSocialAccount", "UserConsent", "UserPolicy", "Task"]

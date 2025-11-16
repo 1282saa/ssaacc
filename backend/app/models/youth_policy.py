@@ -141,17 +141,23 @@ class YouthPolicy(Base):
         nullable=True,
         comment="자격 조건 JSON"
     )
-    
+
     application_info: Optional[Dict[str, Any]] = Column(
         JSON,
         nullable=True,
         comment="신청 정보 JSON"
     )
-    
+
     additional_info: Optional[Dict[str, Any]] = Column(
         JSON,
         nullable=True,
         comment="추가 정보 JSON"
+    )
+
+    required_documents: Optional[List[Dict[str, Any]]] = Column(
+        JSON,
+        nullable=True,
+        comment="필요 서류 목록 JSON"
     )
     
     # S3 참조 (현재 미사용)

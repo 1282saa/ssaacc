@@ -72,6 +72,25 @@ export const API_ENDPOINTS = {
     CONSENT: `${API_BASE_URL}/api/v1/onboarding/consent`,
     STATUS: `${API_BASE_URL}/api/v1/onboarding/status`,
   },
+
+  // Task Management Endpoints
+  TASKS: {
+    BASE: `${API_BASE_URL}/api/v1/tasks`,
+    TODAY: `${API_BASE_URL}/api/v1/tasks/today`,
+  },
+
+  // Policy Management Endpoints
+  POLICIES: {
+    BASE: `${API_BASE_URL}/api/v1/policies`,
+    PROGRESS: `${API_BASE_URL}/api/v1/policies/progress`,
+  },
+
+  // Youth Policy Endpoints (모든 사용자에게 공통으로 제공)
+  YOUTH_POLICIES: {
+    BASE: `${API_BASE_URL}/api/v1/youth-policies`,
+    CATEGORIES: `${API_BASE_URL}/api/v1/youth-policies/categories/list`,
+    REGIONS: `${API_BASE_URL}/api/v1/youth-policies/regions/list`,
+  },
 };
 
 /**

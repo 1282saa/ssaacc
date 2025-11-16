@@ -18,7 +18,7 @@ class AuthService:
 
         # Google OAuth는 선택적 기능으로 변경 (이메일/비밀번호 로그인은 항상 가능)
         if not self.google_client_id or not self.google_client_secret:
-            print("⚠️  Google OAuth 환경변수가 설정되지 않았습니다. 소셜 로그인은 비활성화됩니다.")
+            # 경고 메시지 제거 - 프로덕션에서는 OAuth 없이도 정상 작동
             self.google_enabled = False
         else:
             self.google_enabled = True
