@@ -67,6 +67,7 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<AppNavigation>();
   const [userName, setUserName] = useState<string>('회원');
   const [loading, setLoading] = useState<boolean>(true);
+  const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(false);
 
   const savingsFilters = ['전체', '내 집 마련 적금', '여름 여행', '비상금'];
   const spendingFilters = ['오늘', '이번 주', '이번 달'];
@@ -89,7 +90,7 @@ export const HomeScreen: React.FC = () => {
         console.log('🔑 토큰 확인:', token.substring(0, 20) + '...');
 
         // 사용자 정보 API 호출
-        const response = await fetch('http://localhost:8001/api/v1/users/me', {
+        const response = await fetch('http://localhost:8000/api/v1/users/me', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -117,6 +118,12 @@ export const HomeScreen: React.FC = () => {
     fetchUserInfo();
   }, []);
 
+  // 온보딩 다시 보기 핸들러
+  const handleReviewOnboarding = () => {
+    setShowSettingsMenu(false);
+    navigation.navigate('OnboardingWelcome' as any);
+  };
+
   return (
     <View style={styles.container}>
       <BackgroundGradient layers={HOME_GRADIENTS} />
@@ -124,8 +131,14 @@ export const HomeScreen: React.FC = () => {
       <StatusBar />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* 상단 알림 버튼 */}
+        {/* 상단 알림 및 설정 버튼 */}
         <View style={styles.topBar}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => setShowSettingsMenu(!showSettingsMenu)}
+          >
+            <Ionicons name="settings-outline" size={28} color={theme.colors.black} />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.notificationButton}>
             <Ionicons name="notifications-outline" size={28} color={theme.colors.black} />
             <View style={styles.badge}>
@@ -133,6 +146,19 @@ export const HomeScreen: React.FC = () => {
             </View>
           </TouchableOpacity>
         </View>
+
+        {/* 설정 메뉴 드롭다운 */}
+        {showSettingsMenu && (
+          <View style={styles.settingsMenu}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleReviewOnboarding}
+            >
+              <Ionicons name="refresh-outline" size={20} color={theme.colors.black} />
+              <Text style={styles.menuItemText}>온보딩 다시 보기</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* 인사말 섹션 */}
         <View style={styles.greetingSection}>
@@ -253,8 +279,18 @@ const styles = StyleSheet.create({
     marginTop: theme.layout.statusBarHeight,
     paddingHorizontal: theme.spacing.lg,
     height: 56,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.4)',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   notificationButton: {
     width: 40,
@@ -263,6 +299,34 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  settingsMenu: {
+    position: 'absolute',
+    top: theme.layout.statusBarHeight + 50,
+    right: theme.spacing.lg + 52,
+    backgroundColor: theme.colors.white,
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+    zIndex: 1000,
+    minWidth: 180,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  menuItemText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: theme.colors.black,
   },
   badge: {
     position: 'absolute',

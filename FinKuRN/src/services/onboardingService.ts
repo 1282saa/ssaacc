@@ -19,7 +19,7 @@ import type {
   ConsentData 
 } from '../types/onboarding';
 
-const API_BASE_URL = 'http://localhost:8001/api/v1';
+const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 /**
  * 온보딩 상태 응답 인터페이스

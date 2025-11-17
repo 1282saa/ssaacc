@@ -21,21 +21,21 @@ import { Platform } from 'react-native';
 const getApiBaseUrl = (): string => {
   // 웹 브라우저에서 실행 중인 경우
   if (Platform.OS === 'web') {
-    return 'http://localhost:8001';
+    return 'http://localhost:8000';
   }
 
   // iOS 시뮬레이터
   if (Platform.OS === 'ios') {
-    return 'http://localhost:8001';
+    return 'http://localhost:8000';
   }
 
   // Android 에뮬레이터 (10.0.2.2는 호스트 머신을 가리킴)
   if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8001';
+    return 'http://10.0.2.2:8000';
   }
 
   // 기본값
-  return 'http://localhost:8001';
+  return 'http://localhost:8000';
 };
 
 export const API_BASE_URL = getApiBaseUrl();

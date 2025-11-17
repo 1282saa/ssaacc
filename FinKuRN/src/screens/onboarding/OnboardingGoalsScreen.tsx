@@ -48,28 +48,28 @@ interface GoalOption {
  */
 const GOAL_OPTIONS: GoalOption[] = [
   {
-    value: '저축',
+    value: '지원금',
     icon: '',
-    title: '저축',
-    description: '목돈 모으기와 저축 상품 찾기',
+    title: '지원금(자산 형성·금융안정)',
+    description: '#금리혜택 #대출 #보조금',
   },
   {
-    value: '학자금',
+    value: '주거·임대 지원',
     icon: '',
-    title: '학자금',
-    description: '학자금 대출과 상환 관리',
+    title: '주거·임대 지원',
+    description: '#주거지원 #공공임대주택 #청년가장',
   },
   {
-    value: '신용관리',
+    value: '취업·경력 개발',
     icon: '',
-    title: '신용관리',
-    description: '신용점수 향상과 카드 관리',
+    title: '취업·경력 개발',
+    description: '#인턴 #벤처 #해외진출',
   },
   {
-    value: '투자기초',
+    value: '가족·생활 지원',
     icon: '',
-    title: '투자기초',
-    description: '첫 투자 시작과 기본 지식',
+    title: '가족·생활 지원',
+    description: '#출산 #육아 #교육지원',
   },
 ];
 
@@ -145,9 +145,9 @@ export const OnboardingGoalsScreen: React.FC = () => {
       // 이미 선택된 목표 → 선택 해제
       setSelectedGoals(selectedGoals.filter((g) => g !== goal));
     } else {
-      // 선택되지 않은 목표 → 선택 (최대 3개)
-      if (selectedGoals.length >= 3) {
-        // TODO: 토스트 메시지 표시 ("최대 3개까지 선택할 수 있어요")
+      // 선택되지 않은 목표 → 선택 (최대 2개)
+      if (selectedGoals.length >= 2) {
+        // TODO: 토스트 메시지 표시 ("최대 2개까지 선택할 수 있어요")
         return;
       }
       setSelectedGoals([...selectedGoals, goal]);
@@ -234,7 +234,7 @@ export const OnboardingGoalsScreen: React.FC = () => {
           <View style={styles.headerSection}>
             <Text style={styles.title}>어떤 목표를 가지고{'\n'}계신가요?</Text>
             <Text style={styles.subtitle}>
-              최대 3개까지 선택할 수 있어요
+              최대 2개까지 선택할 수 있어요
             </Text>
           </View>
 
@@ -283,7 +283,7 @@ export const OnboardingGoalsScreen: React.FC = () => {
 
           {/* 선택된 개수 표시 */}
           <Text style={styles.selectionCount}>
-            {selectedGoals.length}/3 선택됨
+            {selectedGoals.length}/2 선택됨
           </Text>
         </View>
       </ScrollView>
