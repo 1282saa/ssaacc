@@ -84,7 +84,11 @@ export const ChatScreen: React.FC = () => {
         </View>
 
         {/* 새로운 금융 대화 시작하기 카드 (view-4) */}
-        <View style={styles.chatCard}>
+        <TouchableOpacity
+          style={styles.chatCard}
+          onPress={() => navigation.navigate('NewChat')}
+          activeOpacity={0.9}
+        >
           <Text style={styles.chatTitle}>새로운 금융 대화 시작하기</Text>
           <Image
             source={{ uri: 'https://c.animaapp.com/3xV80UqJ/img/3d---------@2x.png' }}
@@ -94,14 +98,14 @@ export const ChatScreen: React.FC = () => {
           <Text style={styles.chatDescription}>
             금융에 관한 모든 질문은 핀쿠에게 맡기세요! 핀쿠가 자세히 알려드릴게요
           </Text>
-          <TouchableOpacity style={styles.chatButton}>
+          <View style={styles.chatButton}>
             <Image
               source={{ uri: 'https://c.animaapp.com/3xV80UqJ/img/arrow-sm-right-2.svg' }}
               style={styles.chatArrowIcon}
               resizeMode="contain"
             />
-          </TouchableOpacity>
-        </View>
+          </View>
+        </TouchableOpacity>
 
         {/* 최근 대화 섹션 */}
         <View style={styles.recentHeader}>

@@ -18,8 +18,8 @@ import { CHAT_GRADIENTS_LARGE } from "../../constants/gradients";
 import { theme } from "../../constants/theme";
 import type { Message } from "../../types/chat";
 import type { AppNavigation, RootStackParamList } from "../../types/navigation";
-import { websocketService } from "../../services/websocketService";
-import { API_ENDPOINTS } from "../config/api";
+import { chatService } from "../../services/chatService";
+import { API_ENDPOINTS } from "../../config/api";
 import { PolicyComparisonCard, PolicyCardData } from "../../components/PolicyComparisonCard";
 import Markdown from 'react-native-markdown-display';
 
@@ -86,8 +86,6 @@ export const ChatConversationPage: React.FC = () => {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [streamingMessage, setStreamingMessage] = useState<string>("");
-  const streamingMessageId = useRef<number>(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
 
@@ -222,168 +220,146 @@ export const ChatConversationPage: React.FC = () => {
   };
 
   /**
-   * WebSocket 연결 및 초기 질문 전송
+   * 초기 질문 전송 (REST API)
    */
   useEffect(() => {
-    const chatId = route.params?.chatId || "default-chat";
+    const sendInitialMessage = async () => {
+      // 초기 질문이 있는 경우에만 자동 전송
+      if (chatTitle && chatTitle !== "대화") {
+        setInitialLoading(true);
 
-    // WebSocket 연결
-    websocketService.connect(chatId, {
-      onStart: (data) => {
-        console.log('🚀 Streaming started:', data);
-        setInitialLoading(false);
-        setSending(false);
+        try {
+          const chatId = route.params?.chatId || "default-chat";
+          console.log('🚀 Sending initial message:', chatTitle);
 
-        // 새로운 AI 메시지 ID 생성
-        streamingMessageId.current = Date.now();
-        setStreamingMessage("");
-      },
+          // REST API로 메시지 전송
+          const [userMsg, aiMsg] = await chatService.sendMessage(chatId, chatTitle, {});
 
-      onChunk: (chunk) => {
-        // 청크를 받을 때마다 스트리밍 메시지 업데이트
-        setStreamingMessage((prev) => prev + chunk);
-      },
+          console.log('✅ Received AI response:', aiMsg.text);
 
-      onPolicy: (policies) => {
-        console.log('📋 Retrieved policies:', policies);
-      },
+          // 추천 질문 파싱
+          const questions = parseSuggestedQuestions(aiMsg.text);
+          console.log('❓ Parsed questions:', questions);
+          setSuggestedQuestions(questions);
 
-      onEnd: (fullResponse) => {
-        console.log('✅ Streaming completed');
-        console.log('📝 Full response:', fullResponse);
+          // 메시지에서 추천 질문 부분 제거
+          const cleanedResponse = removeQuestionsFromText(aiMsg.text);
+          console.log('🧹 Cleaned response:', cleanedResponse);
 
-        // 추천 질문 파싱
-        const questions = parseSuggestedQuestions(fullResponse);
-        console.log('❓ Parsed questions:', questions);
-        setSuggestedQuestions(questions);
+          // AI 메시지 업데이트
+          const cleanedAiMsg: Message = {
+            ...aiMsg,
+            text: cleanedResponse,
+          };
 
-        // 메시지에서 추천 질문 부분 제거
-        const cleanedResponse = removeQuestionsFromText(fullResponse);
-        console.log('🧹 Cleaned response:', cleanedResponse);
+          // 메시지 목록에 AI 응답 추가 (userMsg는 이미 messages에 있음)
+          setMessages((prev) => [...prev, cleanedAiMsg]);
 
-        // 완성된 AI 응답을 메시지 목록에 추가
-        const aiMessage: Message = {
-          id: streamingMessageId.current,
-          text: cleanedResponse,
-          isUser: false,
-          timestamp: new Date(),
-        };
+        } catch (error) {
+          console.error('❌ Failed to send initial message:', error);
 
-        setMessages((prev) => [...prev, aiMessage]);
-        setStreamingMessage("");
-        setSending(false);
-      },
-
-      onError: (error) => {
-        console.error('❌ WebSocket error:', error);
-
-        // 에러 메시지 표시
-        const errorMessage: Message = {
-          id: Date.now(),
-          text: "죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.",
-          isUser: false,
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, errorMessage]);
-        setStreamingMessage("");
-        setInitialLoading(false);
-        setSending(false);
-      },
-
-      onClose: () => {
-        console.log('🔌 WebSocket closed');
-      },
-    });
-
-    // 초기 질문 자동 전송
-    if (chatTitle && chatTitle !== "대화") {
-      setInitialLoading(true);
-
-      // WebSocket이 연결될 때까지 대기
-      const sendInitialMessage = setInterval(() => {
-        if (websocketService.isConnected()) {
-          // 초기 질문은 대화 기록이 없으므로 빈 배열 전달
-          websocketService.sendMessage(chatTitle, {
-            conversation_history: [],
-          });
-          clearInterval(sendInitialMessage);
-        }
-      }, 100);
-
-      // 10초 후에도 연결 안 되면 타임아웃
-      setTimeout(() => {
-        clearInterval(sendInitialMessage);
-        if (initialLoading) {
-          setInitialLoading(false);
           const errorMessage: Message = {
             id: Date.now(),
-            text: "서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.",
+            text: "죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.",
             isUser: false,
             timestamp: new Date(),
           };
-          setMessages((prev) => [...prev, errorMessage]);
-        }
-      }, 10000);
-    } else {
-      setInitialLoading(false);
-    }
 
-    // 컴포넌트 언마운트 시 WebSocket 연결 종료
-    return () => {
-      websocketService.disconnect();
+          setMessages((prev) => [...prev, errorMessage]);
+        } finally {
+          setInitialLoading(false);
+        }
+      } else {
+        setInitialLoading(false);
+      }
     };
-  }, []);
+
+    sendInitialMessage();
+  }, [chatTitle]);
 
   /**
-   * 메시지 전송 핸들러 (WebSocket Streaming)
+   * 메시지 전송 핸들러 (REST API)
    *
-   * WebSocket을 통해 메시지를 전송하고 스트리밍 응답을 받습니다.
+   * REST API를 통해 메시지를 전송하고 응답을 받습니다.
    */
-  const handleSend = (messageOverride?: string) => {
+  const handleSend = async (messageOverride?: string) => {
     const messageToSend = messageOverride || inputText;
 
     if (!messageToSend.trim() || sending) return;
 
-    if (!websocketService.isConnected()) {
-      console.error('WebSocket is not connected');
-      return;
-    }
-
-    // 숫자 입력 감지 (1, 2, 3) - 버튼 클릭이 아닐 때만
-    let actualMessage = messageToSend;
-    if (!messageOverride && suggestedQuestions.length === 3) {
-      const numberMatch = messageToSend.match(/^[1-3]$/);
-      if (numberMatch) {
-        const questionIndex = parseInt(numberMatch[0]) - 1;
-        actualMessage = suggestedQuestions[questionIndex];
-      }
-    }
-
-    // 사용자 메시지 추가
-    const userMessage: Message = {
-      id: Date.now(),
-      text: actualMessage,
-      isUser: true,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    // 대화 기록 구성 (최근 10개 메시지만 전송)
-    const conversationHistory = messages.slice(-10).map((msg) => ({
-      role: msg.isUser ? 'user' : 'assistant',
-      content: msg.text,
-    }));
-
-    // WebSocket으로 메시지 전송 (대화 기록 포함)
     setSending(true);
-    websocketService.sendMessage(actualMessage, {
-      conversation_history: conversationHistory,
-    });
 
-    setInputText("");
-    setSuggestedQuestions([]); // 질문 전송 후 선택지 초기화
+    try {
+      // 숫자 입력 감지 (1, 2, 3) - 버튼 클릭이 아닐 때만
+      let actualMessage = messageToSend;
+      if (!messageOverride && suggestedQuestions.length === 3) {
+        const numberMatch = messageToSend.match(/^[1-3]$/);
+        if (numberMatch) {
+          const questionIndex = parseInt(numberMatch[0]) - 1;
+          actualMessage = suggestedQuestions[questionIndex];
+        }
+      }
+
+      // 사용자 메시지 추가
+      const userMessage: Message = {
+        id: Date.now(),
+        text: actualMessage,
+        isUser: true,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+
+      // 대화 기록 구성 (최근 10개 메시지만 context로 전송)
+      const conversationHistory = messages.slice(-10).map((msg) => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.text,
+      }));
+
+      const chatId = route.params?.chatId || "default-chat";
+      console.log('📤 Sending message:', actualMessage);
+
+      // REST API로 메시지 전송
+      const [_, aiMsg] = await chatService.sendMessage(chatId, actualMessage, {
+        conversation_history: conversationHistory,
+      });
+
+      console.log('✅ Received AI response:', aiMsg.text);
+
+      // 추천 질문 파싱
+      const questions = parseSuggestedQuestions(aiMsg.text);
+      console.log('❓ Parsed questions:', questions);
+      setSuggestedQuestions(questions);
+
+      // 메시지에서 추천 질문 부분 제거
+      const cleanedResponse = removeQuestionsFromText(aiMsg.text);
+      console.log('🧹 Cleaned response:', cleanedResponse);
+
+      // AI 메시지 추가
+      const cleanedAiMsg: Message = {
+        ...aiMsg,
+        text: cleanedResponse,
+      };
+
+      setMessages((prev) => [...prev, cleanedAiMsg]);
+
+      setInputText("");
+
+    } catch (error) {
+      console.error('❌ Failed to send message:', error);
+
+      // 에러 메시지 표시
+      const errorMessage: Message = {
+        id: Date.now(),
+        text: "죄송합니다. 일시적인 오류가 발생했습니다. 다시 시도해주세요.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -472,53 +448,6 @@ export const ChatConversationPage: React.FC = () => {
             </View>
           );
         })}
-
-        {/* 스트리밍 중인 메시지 표시 */}
-        {useMemo(() => {
-          if (!streamingMessage) return null;
-
-          // 스트리밍 메시지에서 추천 질문 부분 제거
-          const cleanedStreaming = removeQuestionsFromText(streamingMessage);
-          const parsed = parsePolicyCard(cleanedStreaming);
-
-          return (
-            <View style={styles.botMessageContainer}>
-              {/* 카드 이전 텍스트 */}
-              {parsed.beforeCard && parsed.beforeCard.trim() && (
-                <View style={[styles.messageBubble, styles.botMessage, styles.streamingMessage]}>
-                  <Markdown style={markdownStyles}>
-                    {parsed.beforeCard}
-                  </Markdown>
-                  {!parsed.hasCard && (
-                    <View style={styles.streamingIndicator}>
-                      <ActivityIndicator size="small" color={theme.colors.primary} />
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {/* 정책 비교 카드 (스트리밍 중에도 표시) */}
-              {parsed.hasCard && parsed.policyA && parsed.policyB && (
-                <PolicyComparisonCard
-                  policyA={parsed.policyA}
-                  policyB={parsed.policyB}
-                />
-              )}
-
-              {/* 카드 이후 텍스트 */}
-              {parsed.afterCard && parsed.afterCard.trim() && (
-                <View style={[styles.messageBubble, styles.botMessage, styles.streamingMessage]}>
-                  <Markdown style={markdownStyles}>
-                    {parsed.afterCard}
-                  </Markdown>
-                  <View style={styles.streamingIndicator}>
-                    <ActivityIndicator size="small" color={theme.colors.primary} />
-                  </View>
-                </View>
-              )}
-            </View>
-          );
-        }, [streamingMessage])}
 
         {initialLoading && (
           <View style={styles.loadingContainer}>
@@ -734,14 +663,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: theme.colors.textSecondary,
     marginLeft: 8,
-  },
-  streamingMessage: {
-    opacity: 1,
-  },
-  streamingIndicator: {
-    position: 'absolute',
-    bottom: 6,
-    right: 6,
   },
   botMessageContainer: {
     width: '100%',
