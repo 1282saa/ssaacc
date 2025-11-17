@@ -5,10 +5,10 @@ FastMCP Tools - Model Context Protocol 도구 정의
 메이크리 AI 워크플로우 아키텍처에서 사용하는 공유 도구들을 정의합니다.
 
 ## 아키텍처 위치:
-Supervisor Agent → 전문 에이전트들 → **FastMCP Tools** → Database (Milvus/Neo4j)
+Supervisor Agent → 전문 에이전트들 → **FastMCP Tools** → Database (PostgreSQL + pgvector)
 
 ## 도구 목록:
-1. search_policies: 벡터 유사도 기반 정책 검색 (Milvus)
+1. search_policies: 벡터 유사도 기반 정책 검색 (PostgreSQL + pgvector)
 2. find_related_policies: 관계 기반 정책 찾기 (Neo4j) - Phase 2
 3. check_eligibility: 사용자 자격 조건 확인
 
@@ -29,8 +29,8 @@ result = await search_policies(
 
 from typing import List, Dict, Any, Optional
 from fastmcp import FastMCP
-from app.db.milvus_client import get_milvus_client
-from app.llm_config import get_embeddings  # ⭐ AWS Bedrock 또는 OpenAI 자동 선택
+from app.db.pgvector_client import get_pgvector_client
+from app.llm_config import get_embeddings  # ⭐ AWS Bedrock Titan Embeddings
 import os
 from loguru import logger
 
@@ -125,8 +125,8 @@ async def search_policies(
             ]
 
     ## 데이터 흐름:
-    1. query → 임베딩 생성 (OpenAI)
-    2. 임베딩 → Milvus 벡터 검색 (COSINE 유사도)
+    1. query → 임베딩 생성 (AWS Bedrock Titan Embeddings V2)
+    2. 임베딩 → pgvector 벡터 검색 (COSINE 유사도)
     3. 결과 → JSON 파싱 및 반환
 
     ## 사용 예시:
@@ -150,12 +150,11 @@ async def search_policies(
         query_embedding = generate_embedding(query)
         logger.debug(f"Generated embedding with dimension: {len(query_embedding)}")
 
-        # Step 2: Milvus에서 유사도 검색
-        milvus_client = get_milvus_client()
-        results = milvus_client.search(
+        # Step 2: pgvector에서 유사도 검색
+        pgvector_client = get_pgvector_client()
+        results = pgvector_client.search(
             query_embedding=query_embedding,
-            top_k=top_k,
-            output_fields=["policy_id", "metadata"]
+            top_k=top_k
         )
 
         # Step 3: 결과 포맷팅

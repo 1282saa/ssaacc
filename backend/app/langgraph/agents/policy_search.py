@@ -10,7 +10,7 @@ Supervisor → **Policy Search Agent** → Response Generator → Synthesizer
 
 ## 주요 기능:
 1. 사용자 쿼리 분석 및 최적화
-2. Milvus 벡터 검색 실행
+2. pgvector 벡터 검색 실행
 3. 검색 결과 필터링 및 정렬
 4. 사용자 컨텍스트 반영
 
@@ -24,7 +24,7 @@ Supervisor → **Policy Search Agent** → Response Generator → Synthesizer
 ## 예시:
 입력: "25살인데 적금 추천해줘"
 → 쿼리 최적화: "25세 청년 적금 저축 상품 우대 금리"
-→ Milvus 검색
+→ pgvector 검색
 → 상위 5개 정책 반환
 """
 
@@ -201,7 +201,7 @@ async def policy_search_agent(state: AgentState) -> AgentState:
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         # Step 4: FastMCP search_policies 도구 호출
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        logger.info(f"🔎 Milvus 검색 실행: '{optimized_query}'")
+        logger.info(f"🔎 pgvector 검색 실행: '{optimized_query}'")
 
         # 검색 실행 (상위 5개 결과 요청)
         search_results = await search_policies(
