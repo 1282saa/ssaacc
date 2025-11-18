@@ -178,12 +178,14 @@ graph TB
         Tavily[Tavily Search API<br/>실시간 정보 검색]
     end
 
-    subgraph "Data Layer - AWS RDS"
-        PostgreSQL[(PostgreSQL<br/>pgvector)]
+    subgraph "Data Layer"
+        PostgreSQL[(PostgreSQL<br/>사용자 데이터)]
+        Milvus[(Milvus<br/>벡터 DB)]
         UserTable[Users 테이블]
-        PolicyTable[YouthPolicies 테이블]
+        PolicyTable[YouthPolicies 원본]
         ChatTable[Chats & Messages]
         UserPolicyTable[UserPolicies 테이블]
+        PolicyVectors[정책 임베딩<br/>3,977개 벡터]
     end
 
     Mobile -->|HTTPS| APIGW
@@ -197,7 +199,7 @@ graph TB
     Supervisor -->|라우팅| ResponseGen
 
     PolicySearch -->|임베딩 생성| Titan
-    PolicySearch -->|벡터 검색| PostgreSQL
+    PolicySearch -->|벡터 검색| Milvus
     PolicySearch -->|LLM 호출| Claude
 
     ResponseGen -->|LLM 호출| Claude
@@ -206,15 +208,18 @@ graph TB
     Auth --> PostgreSQL
     Chat --> PostgreSQL
     Policy --> PostgreSQL
+    Policy --> Milvus
 
     PostgreSQL --> UserTable
     PostgreSQL --> PolicyTable
     PostgreSQL --> ChatTable
     PostgreSQL --> UserPolicyTable
+    Milvus --> PolicyVectors
 
     style Mobile fill:#e1f5ff
     style Claude fill:#fff4e1
     style PostgreSQL fill:#e8f5e9
+    style Milvus fill:#ffe1f5
     style LangGraph fill:#f3e5f5
 ```
 
@@ -228,6 +233,7 @@ erDiagram
     CHATS ||--o{ MESSAGES : "포함"
     YOUTH_POLICIES ||--o{ USER_POLICIES : "참조"
     YOUTH_POLICIES ||--o{ REQUIRED_DOCUMENTS : "요구"
+    YOUTH_POLICIES ||--|| POLICY_EMBEDDINGS : "임베딩"
     USER_POLICIES ||--o{ DOCUMENT_PROGRESS : "추적"
 
     USERS {
@@ -253,7 +259,13 @@ erDiagram
         text full_text
         jsonb eligibility
         jsonb application_info
-        vector embedding "1024d pgvector"
+        timestamp created_at
+    }
+
+    POLICY_EMBEDDINGS {
+        string id PK "Milvus collection"
+        int policy_id FK
+        vector embedding "1024d"
         timestamp created_at
     }
 
@@ -318,7 +330,7 @@ graph TD
     SupervisorNode -->|대화 종료| End([응답 반환])
 
     PolicySearchNode --> EmbedQuery[쿼리 임베딩<br/>Titan Embeddings V2]
-    EmbedQuery --> VectorSearch[벡터 검색<br/>PostgreSQL pgvector<br/>COSINE Similarity]
+    EmbedQuery --> VectorSearch[벡터 검색<br/>Milvus Vector DB<br/>COSINE Similarity]
     VectorSearch --> Top5Policies[Top-5 정책 추출]
 
     Top5Policies --> RefineResults{결과 충분?}
@@ -355,7 +367,7 @@ graph TD
 - **인증 서비스**: JWT 기반 사용자 인증
 - **정책 서비스**: 청년 정책 CRUD 및 검색
 - **챗봇 서비스**: LangGraph 워크플로우 오케스트레이션
-- **벡터 검색**: pgvector를 활용한 시맨틱 검색
+- **벡터 검색**: Milvus를 활용한 시맨틱 검색
 
 #### 3. AI Layer (LangGraph + AWS Bedrock)
 - **Supervisor Agent**: 사용자 의도 분석 및 워크플로우 라우팅 (Temperature: 0.1)
@@ -364,12 +376,15 @@ graph TD
 - **Claude 3.5 Sonnet**: 200K 컨텍스트, 4K 최대 출력
 - **Titan Embeddings V2**: 1024차원 벡터 임베딩
 
-#### 4. Data Layer (PostgreSQL + pgvector)
-- **Users**: 사용자 정보 및 프로필
-- **YouthPolicies**: 청년 정책 원본 데이터 + 벡터 임베딩
-- **UserPolicies**: 사용자별 관심 정책 및 진행 현황
-- **Chats & Messages**: 대화 내역 저장
-- **DocumentProgress**: 서류 제출 진행 상황 추적
+#### 4. Data Layer (PostgreSQL + Milvus)
+- **PostgreSQL**: 사용자 데이터, 정책 메타데이터, 대화 내역
+  - Users: 사용자 정보 및 프로필
+  - YouthPolicies: 청년 정책 원본 데이터
+  - UserPolicies: 사용자별 관심 정책 및 진행 현황
+  - Chats & Messages: 대화 내역 저장
+  - DocumentProgress: 서류 제출 진행 상황 추적
+- **Milvus**: 정책 벡터 임베딩 및 시맨틱 검색
+  - PolicyEmbeddings: 3,977개 정책의 1024차원 벡터
 
 ---
 
