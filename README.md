@@ -147,72 +147,229 @@ FinQ는 AI 기술을 활용하여 이러한 문제를 해결합니다:
 
 ## 시스템 아키텍처
 
-### 전체 시스템 구조
+### 1. 전체 시스템 아키텍처
 
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        Mobile[React Native App<br/>Expo]
+    end
+
+    subgraph "API Gateway"
+        APIGW[AWS API Gateway<br/>RESTful API]
+    end
+
+    subgraph "Application Layer - AWS Lambda"
+        Auth[Auth Service<br/>JWT 인증]
+        Chat[Chat Service<br/>대화 관리]
+        Policy[Policy Service<br/>정책 관리]
+        LangGraph[LangGraph Workflow<br/>Multi-Agent Orchestration]
+    end
+
+    subgraph "AI Layer - AWS Bedrock"
+        Supervisor[Supervisor Agent<br/>Temperature: 0.1]
+        PolicySearch[Policy Search Agent<br/>Temperature: 0.3]
+        ResponseGen[Response Generator<br/>Temperature: 0.7]
+        Claude[Claude 3.5 Sonnet<br/>Max Tokens: 4000]
+        Titan[Titan Embeddings V2<br/>1024 dimensions]
+    end
+
+    subgraph "External APIs"
+        Tavily[Tavily Search API<br/>실시간 정보 검색]
+    end
+
+    subgraph "Data Layer - AWS RDS"
+        PostgreSQL[(PostgreSQL<br/>pgvector)]
+        UserTable[Users 테이블]
+        PolicyTable[YouthPolicies 테이블]
+        ChatTable[Chats & Messages]
+        UserPolicyTable[UserPolicies 테이블]
+    end
+
+    Mobile -->|HTTPS| APIGW
+    APIGW --> Auth
+    APIGW --> Chat
+    APIGW --> Policy
+
+    Chat --> LangGraph
+    LangGraph --> Supervisor
+    Supervisor -->|라우팅| PolicySearch
+    Supervisor -->|라우팅| ResponseGen
+
+    PolicySearch -->|임베딩 생성| Titan
+    PolicySearch -->|벡터 검색| PostgreSQL
+    PolicySearch -->|LLM 호출| Claude
+
+    ResponseGen -->|LLM 호출| Claude
+    ResponseGen -->|실시간 검색| Tavily
+
+    Auth --> PostgreSQL
+    Chat --> PostgreSQL
+    Policy --> PostgreSQL
+
+    PostgreSQL --> UserTable
+    PostgreSQL --> PolicyTable
+    PostgreSQL --> ChatTable
+    PostgreSQL --> UserPolicyTable
+
+    style Mobile fill:#e1f5ff
+    style Claude fill:#fff4e1
+    style PostgreSQL fill:#e8f5e9
+    style LangGraph fill:#f3e5f5
 ```
-사용자 질문 입력
-    ↓
-[대화 분류 노드]
-    ↓
-질문 유형 판단
-    ├─ 정책 관련 질문 → [정책 검색 노드]
-    │                      ↓
-    │                   Milvus 벡터 검색
-    │                      ↓
-    │                   정책 상세 정보 추출
-    │
-    ├─ 일반 금융 질문 → [Tavily 검색 노드]
-    │                      ↓
-    │                   실시간 웹 검색
-    │
-    └─ 일상 대화 → [일반 응답 노드]
 
-    ↓
-[응답 생성 노드]
-    ↓
-Claude 3.5 Sonnet으로 답변 생성
-    ↓
-사용자에게 응답 반환
+### 2. 데이터베이스 ER 다이어그램
+
+```mermaid
+erDiagram
+    USERS ||--o{ USER_POLICIES : "관리"
+    USERS ||--o{ CHATS : "생성"
+    USERS ||--o{ DOCUMENT_PROGRESS : "진행"
+    CHATS ||--o{ MESSAGES : "포함"
+    YOUTH_POLICIES ||--o{ USER_POLICIES : "참조"
+    YOUTH_POLICIES ||--o{ REQUIRED_DOCUMENTS : "요구"
+    USER_POLICIES ||--o{ DOCUMENT_PROGRESS : "추적"
+
+    USERS {
+        uuid id PK
+        string email UK
+        string username
+        string password_hash
+        int age
+        string region
+        string employment_status
+        jsonb goals
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    YOUTH_POLICIES {
+        int id PK
+        string policy_name
+        string category
+        string region
+        date deadline
+        text summary
+        text full_text
+        jsonb eligibility
+        jsonb application_info
+        vector embedding "1024d pgvector"
+        timestamp created_at
+    }
+
+    USER_POLICIES {
+        uuid id PK
+        uuid user_id FK
+        int policy_id FK
+        string status "interested|in_progress|completed"
+        date personal_deadline
+        int documents_total
+        int documents_submitted
+        text notes
+        boolean reminder_enabled
+        timestamp created_at
+    }
+
+    CHATS {
+        uuid id PK
+        uuid user_id FK
+        string title
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    MESSAGES {
+        uuid id PK
+        uuid chat_id FK
+        string role "user|assistant"
+        text content
+        jsonb metadata
+        timestamp created_at
+    }
+
+    REQUIRED_DOCUMENTS {
+        int id PK
+        int policy_id FK
+        string name
+        text description
+        boolean is_required
+        string issue_location
+    }
+
+    DOCUMENT_PROGRESS {
+        uuid id PK
+        uuid user_id FK
+        uuid user_policy_id FK
+        int document_id FK
+        boolean is_submitted
+        date submission_date
+        text notes
+    }
 ```
 
-### 데이터 흐름
+### 3. LangGraph Multi-Agent 워크플로우
 
+```mermaid
+graph TD
+    Start([사용자 질문 입력]) --> SupervisorNode[Supervisor Agent<br/>의도 분석 & 라우팅]
+
+    SupervisorNode -->|정책 검색 필요| PolicySearchNode[Policy Search Agent]
+    SupervisorNode -->|일반 응답 생성| ResponseGenNode[Response Generator]
+    SupervisorNode -->|대화 종료| End([응답 반환])
+
+    PolicySearchNode --> EmbedQuery[쿼리 임베딩<br/>Titan Embeddings V2]
+    EmbedQuery --> VectorSearch[벡터 검색<br/>PostgreSQL pgvector<br/>COSINE Similarity]
+    VectorSearch --> Top5Policies[Top-5 정책 추출]
+
+    Top5Policies --> RefineResults{결과 충분?}
+    RefineResults -->|No| PolicySearchNode
+    RefineResults -->|Yes| ResponseGenNode
+
+    ResponseGenNode --> CheckNewsNeed{뉴스 필요?}
+    CheckNewsNeed -->|Yes| TavilySearch[Tavily 실시간 검색]
+    CheckNewsNeed -->|No| GenerateResponse[Claude 3.5 응답 생성<br/>RAG 기반]
+
+    TavilySearch --> GenerateResponse
+    GenerateResponse --> FormatResponse[응답 포맷팅<br/>페르소나: 핀쿠]
+
+    FormatResponse --> SaveToChat[대화 내역 저장<br/>PostgreSQL]
+    SaveToChat --> End
+
+    style SupervisorNode fill:#fff4e1
+    style PolicySearchNode fill:#e1f5ff
+    style ResponseGenNode fill:#f3e5f5
+    style VectorSearch fill:#e8f5e9
+    style GenerateResponse fill:#fff4e1
+    style End fill:#c8e6c9
 ```
-[Mobile App] ←→ [Backend API] ←→ [PostgreSQL]
-                       ↓
-                  [AWS Bedrock]
-                       ↓
-           ┌──────────┴──────────┐
-           ↓                     ↓
-    [Claude 3.5 Sonnet]    [Milvus Vector DB]
-           ↓
-    [Tavily Search API]
-```
 
-### 주요 컴포넌트
+### 주요 컴포넌트 설명
 
-1. **Frontend (React Native)**
-   - 사용자 인터페이스
-   - 온보딩 플로우
-   - 챗봇 UI
-   - 정책 탐색 UI
-   - 일정 관리 UI
+#### 1. Frontend (React Native + Expo)
+- **사용자 인터페이스**: 온보딩, 챗봇, 정책 탐색, 일정 관리
+- **상태 관리**: React Hooks, Context API
+- **네비게이션**: React Navigation (Stack + Bottom Tab)
+- **API 통신**: AWS API Gateway 연동
 
-2. **Backend (FastAPI)**
-   - RESTful API 엔드포인트
-   - 사용자 인증 및 세션 관리
-   - 데이터베이스 연동
-   - AI Agent 오케스트레이션
+#### 2. Backend (AWS Lambda + FastAPI)
+- **인증 서비스**: JWT 기반 사용자 인증
+- **정책 서비스**: 청년 정책 CRUD 및 검색
+- **챗봇 서비스**: LangGraph 워크플로우 오케스트레이션
+- **벡터 검색**: pgvector를 활용한 시맨틱 검색
 
-3. **AI Layer (LangGraph + AWS Bedrock)**
-   - 대화 분류
-   - 정책 검색 및 매칭
-   - 실시간 정보 검색
-   - 응답 생성
+#### 3. AI Layer (LangGraph + AWS Bedrock)
+- **Supervisor Agent**: 사용자 의도 분석 및 워크플로우 라우팅 (Temperature: 0.1)
+- **Policy Search Agent**: 정책 검색 및 필터링 (Temperature: 0.3)
+- **Response Generator**: RAG 기반 개인화 응답 생성 (Temperature: 0.7)
+- **Claude 3.5 Sonnet**: 200K 컨텍스트, 4K 최대 출력
+- **Titan Embeddings V2**: 1024차원 벡터 임베딩
 
-4. **Data Layer**
-   - PostgreSQL: 사용자 데이터, 정책 메타데이터
-   - Milvus: 정책 임베딩 벡터
+#### 4. Data Layer (PostgreSQL + pgvector)
+- **Users**: 사용자 정보 및 프로필
+- **YouthPolicies**: 청년 정책 원본 데이터 + 벡터 임베딩
+- **UserPolicies**: 사용자별 관심 정책 및 진행 현황
+- **Chats & Messages**: 대화 내역 저장
+- **DocumentProgress**: 서류 제출 진행 상황 추적
 
 ---
 
