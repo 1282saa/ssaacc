@@ -1,937 +1,474 @@
-# FinKuRN Project - Version 2
+# FinQ - AI 기반 청년 금융 및 정책 코칭 서비스
 
-**Financial Knowledge & Resource Navigator** - 금융 지식 및 리소스 내비게이터
+## 프로젝트 개요
 
-## Project Overview
+FinQ는 청년들의 금융 생활과 정책 활용을 돕는 AI 기반 모바일 애플리케이션입니다. 개인화된 AI 챗봇 '핀쿠'를 통해 금융 상담, 정책 추천, 일정 관리 등의 서비스를 제공하며, 청년들이 자신에게 맞는 정책을 쉽게 찾고 활용할 수 있도록 돕습니다.
 
-FinKuRN은 **AI 기반 금융 정책 추천 시스템**으로, 청년들에게 맞춤형 금융 정책을 제공하는 풀스택 애플리케이션입니다.
+**대회명**: 2025 새싹 AI 해커톤
 
-### 핵심 기술
-- **Frontend**: React Native (Expo) - 크로스 플랫폼 모바일 앱
-- **Backend**: Python FastAPI + LangGraph Multi-Agent Workflow
-- **AI**: AWS Bedrock (Claude 3.5 Sonnet v1 + Titan Embeddings V2)
-- **Database**: Milvus Vector DB (정책 검색) + Neo4j Graph DB (관계 분석)
+**팀명**: FinQ
 
-## Architecture
+**팀원**: 김예은, 양은별, 김동현, 문영광
 
-### System Overview
+---
 
-```mermaid
-graph TB
-    subgraph "Frontend Layer"
-        Mobile[React Native App<br/>Expo]
-    end
+## 목차
 
-    subgraph "Backend API Layer"
-        API[FastAPI Server<br/>Port 8000]
-    end
+1. [서비스 소개](#서비스-소개)
+2. [배경 및 목적](#배경-및-목적)
+3. [주요 기능](#주요-기능)
+4. [기술 스택](#기술-스택)
+5. [시스템 아키텍처](#시스템-아키텍처)
+6. [설치 및 실행](#설치-및-실행)
+7. [프로젝트 구조](#프로젝트-구조)
+8. [AI Agent 전략](#ai-agent-전략)
+9. [기대 효과](#기대-효과)
+10. [라이선스](#라이선스)
 
-    subgraph "AI Orchestration Layer - LangGraph Multi-Agent"
-        LG[LangGraph StateGraph]
-        Supervisor[Supervisor Agent<br/>Temperature: 0.1]
-        PolicyAgent[Policy Search Agent<br/>Temperature: 0.3]
-        ResponseAgent[Response Generator<br/>Temperature: 0.7]
-        NewsAgent[News Agent<br/>Temperature: 0.3]
-    end
+---
 
-    subgraph "Tool Layer - FastMCP"
-        MCP[FastMCP Server]
-        SearchTool[search_policies]
-        NewsTool[search_news]
-    end
+## 서비스 소개
 
-    subgraph "AI Services - AWS Bedrock"
-        Claude[Claude 3.5 Sonnet v1<br/>Max Tokens: 4000]
-        Titan[Titan Embeddings V2<br/>Dimensions: 1024]
-    end
+### 핀쿠 (FinQ AI Chatbot)
 
-    subgraph "External APIs"
-        Tavily[Tavily WebSearch]
-        BigKinds[BigKinds API]
-    end
+FinQ의 핵심인 AI 챗봇 '핀쿠'는 사용자의 금융 및 정책 관련 질문에 실시간으로 답변하며, 개인화된 추천을 제공합니다.
 
-    subgraph "Database Layer"
-        Milvus[(Milvus Vector DB<br/>COSINE Similarity)]
-        Neo4j[(Neo4j Graph DB<br/>Phase 2)]
-    end
+**핀쿠의 주요 역할**:
+- 사용자 맞춤형 정책 추천
+- 금융 관련 질문 응답
+- 정책 일정 관리 및 알림
+- 금융 퀴즈를 통한 학습 지원
 
-    Mobile -->|HTTP POST /api/chats| API
-    API --> LG
-    LG --> Supervisor
-    Supervisor -->|Route Decision| PolicyAgent
-    Supervisor -->|Route Decision| ResponseAgent
-    Supervisor -->|Route Decision| NewsAgent
+### 서비스 핵심 가치
 
-    PolicyAgent --> MCP
-    NewsAgent --> MCP
+- **개인화**: 사용자의 나이, 지역, 소득, 관심사를 기반으로 한 맞춤형 정책 추천
+- **편리성**: 복잡한 정책 정보를 쉽고 빠르게 탐색
+- **실용성**: 정책 신청 일정 관리 및 체크리스트 제공
+- **학습**: 금융 퀴즈를 통한 재미있는 금융 지식 습득
 
-    MCP --> SearchTool
-    MCP --> NewsTool
+---
 
-    SearchTool -->|Query Embedding| Titan
-    SearchTool -->|Vector Search| Milvus
+## 배경 및 목적
 
-    NewsTool --> Tavily
-    NewsTool --> BigKinds
+### 문제 인식
 
-    PolicyAgent -->|LLM Call| Claude
-    ResponseAgent -->|LLM Call| Claude
-    NewsAgent -->|LLM Call| Claude
-    Supervisor -->|LLM Call| Claude
+청년들은 다양한 금융 지원 정책이 존재함에도 불구하고 다음과 같은 어려움을 겪고 있습니다:
 
-    ResponseAgent -->|Final Response| API
-    API -->|JSON Response| Mobile
-```
+1. **정보 접근성 부족**: 정책 정보가 여러 사이트에 분산되어 있어 찾기 어려움
+2. **복잡한 자격 요건**: 정책별 자격 요건이 복잡하여 본인에게 맞는 정책을 판단하기 어려움
+3. **신청 절차의 어려움**: 필요 서류, 신청 방법, 마감일 등을 관리하기 어려움
+4. **금융 지식 부족**: 기본적인 금융 용어나 개념에 대한 이해 부족
 
-### Detailed LLM Workflow
+### 솔루션
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Mobile as Mobile App
-    participant API as FastAPI
-    participant LG as LangGraph
-    participant SV as Supervisor Agent
-    participant PS as Policy Search Agent
-    participant RG as Response Generator
-    participant NA as News Agent
-    participant MCP as FastMCP Tools
-    participant Milvus as Milvus DB
-    participant Titan as Titan Embeddings
-    participant Claude as Claude 3.5
-    participant News as News APIs
+FinQ는 AI 기술을 활용하여 이러한 문제를 해결합니다:
 
-    User->>Mobile: "25살 청년 적금 추천해줘"
-    Mobile->>API: POST /api/chats/{id}/messages
-    API->>LG: invoke(state)
+- **통합 플랫폼**: 모든 청년 정책 정보를 한 곳에서 제공
+- **AI 기반 추천**: 사용자 프로필을 분석하여 맞춤형 정책 자동 추천
+- **일정 관리**: 정책 신청 일정과 체크리스트를 자동으로 관리
+- **대화형 학습**: AI 챗봇을 통한 쉽고 재미있는 금융 지식 습득
 
-    Note over LG,SV: Step 1: Intent Classification
-    LG->>SV: Initial State
-    SV->>Claude: Analyze user intent<br/>(Temp: 0.1)
-    Claude-->>SV: Decision: "policy_search"
-    SV->>LG: next_agent = "policy_search"
+---
 
-    Note over LG,PS: Step 2: Policy Search
-    LG->>PS: State + User Query
-    PS->>MCP: search_policies(query="청년 적금")
-    MCP->>Titan: embed_query("청년 적금")
-    Titan-->>MCP: [1024d vector]
-    MCP->>Milvus: vector_search(embedding, top_k=5)
-    Milvus-->>MCP: Top 5 policies
-    MCP-->>PS: Policy Results
-    PS->>Claude: Refine search if needed<br/>(Temp: 0.3)
-    Claude-->>PS: Refined results
-    PS->>LG: state.policies = [...]
+## 주요 기능
 
-    Note over LG,RG: Step 3: Response Generation
-    LG->>RG: State + Policies
-    RG->>Claude: Generate user-friendly response<br/>(Temp: 0.7, Persona: FinKu)
-    Claude-->>RG: Personalized response
-    RG->>LG: state.response = "..."
+### 1. AI 챗봇 '핀쿠'
 
-    opt User asks for news
-        Note over LG,NA: Step 4: News Search (Optional)
-        LG->>NA: State + Keywords
-        par Parallel News Search
-            NA->>News: Tavily API
-            News-->>NA: Web results
-        and
-            NA->>News: BigKinds API
-            News-->>NA: Archive results
-        end
-        NA->>Claude: Summarize & deduplicate<br/>(Temp: 0.3)
-        Claude-->>NA: News summary
-        NA->>LG: state.news = [...]
-    end
+- **자연어 처리**: 사용자의 자연스러운 질문에 정확한 답변 제공
+- **맥락 이해**: 이전 대화 내용을 기억하고 연관된 답변 제공
+- **실시간 검색**: Tavily Search API를 활용한 최신 정책 정보 검색
+- **개인화 추천**: 사용자 프로필 기반 정책 추천
 
-    LG->>API: Final State
-    API->>Mobile: JSON Response
-    Mobile->>User: Display AI Response
-```
+### 2. 정책 탐색
 
-## Directory Structure
+- **카테고리별 분류**: 일자리, 주거, 교육, 창업, 복지 등
+- **지역별 필터링**: 전국 단위 및 지역별 정책 검색
+- **상세 정보 제공**: 지원 내용, 자격 요건, 신청 방법, 필요 서류
+- **즐겨찾기 기능**: 관심 정책 저장
+
+### 3. 오늘의 할 일
+
+- **진행 현황 요약**: 전체 정책 진행률 시각화
+- **체크리스트**: 정책별 필요 서류 및 준비 사항 체크
+- **일정 알림**: D-day 표시 및 마감일 알림
+- **포털 연결**: 정책 신청 사이트로 바로 이동
+
+### 4. 금융 퀴즈
+
+- **학습 모드**: 금융 용어 및 개념 학습
+- **난이도 조절**: 사용자 수준에 맞는 문제 제공
+- **즉각적인 피드백**: 정답 및 해설 제공
+- **성장 추적**: 퀴즈 결과 기록 및 분석
+
+### 5. FinQ PASS (프리미엄 기능)
+
+- **무제한 AI 상담**: 월 10회 제한 해제
+- **고급 AI 모델**: Claude 3.5 Sonnet 사용
+- **우선 알림**: 새로운 정책 정보 우선 제공
+- **맞춤형 리포트**: 월간 금융 활동 분석 리포트
+
+---
+
+## 기술 스택
+
+### Frontend
+
+- **Framework**: React Native with Expo
+- **Language**: TypeScript
+- **Navigation**: React Navigation (Stack & Bottom Tab)
+- **UI Components**: Custom design system
+- **State Management**: React Hooks
+- **Styling**: StyleSheet (Centralized theme system)
+
+### Backend
+
+- **Runtime**: Python 3.11+
+- **Framework**: FastAPI
+- **Database**: PostgreSQL (사용자 데이터), Milvus (벡터 DB)
+- **Authentication**: JWT
+- **API Documentation**: RESTful API
+
+### AI & ML
+
+- **LLM**: AWS Bedrock Claude 3.5 Sonnet
+- **Agent Framework**: LangGraph
+- **Vector Database**: Milvus (정책 데이터 임베딩)
+- **Search API**: Tavily Search API (실시간 정보 검색)
+- **Embedding**: AWS Bedrock Titan Embeddings V2 (1024차원)
+
+### Infrastructure
+
+- **Cloud Platform**: AWS
+- **Deployment**: Expo Application Services (EAS)
+- **Containerization**: Docker Compose
+- **Version Control**: Git & GitHub
+
+---
+
+## 시스템 아키텍처
+
+### 전체 시스템 구조
 
 ```
-ver2/
-├── FinKuRN/                          # Frontend (React Native with Expo)
-│   ├── src/                          # 소스 코드
-│   │   ├── components/               # 재사용 가능한 컴포넌트
-│   │   ├── screens/                  # 화면 컴포넌트 (7개 전체 리팩토링 완료)
-│   │   ├── constants/                # 테마, 그라데이션 등 상수
-│   │   ├── types/                    # TypeScript 타입 정의
-│   │   └── navigation/               # 네비게이션 설정
-│   ├── App.tsx                       # 앱 진입점
-│   ├── package.json                  # 의존성 관리
-│   └── README.md                     # Frontend 문서
-│
-├── backend/                          # Backend API Server
-│   ├── app/                          # FastAPI 애플리케이션
-│   │   ├── main.py                   # API 서버 진입점
-│   │   ├── langgraph/                # LangGraph Multi-Agent Workflow
-│   │   │   ├── workflow.py           # 워크플로우 정의
-│   │   │   └── agents/               # Agent 구현체
-│   │   │       ├── supervisor.py     # 라우팅 에이전트
-│   │   │       ├── policy_search.py  # 정책 검색 에이전트
-│   │   │       └── response_generator.py # 응답 생성 에이전트
-│   │   ├── mcp/                      # FastMCP Tools
-│   │   │   └── tools.py              # 정책 검색 도구
-│   │   ├── db/                       # 데이터베이스 클라이언트
-│   │   │   ├── milvus_client.py      # Milvus Vector DB
-│   │   │   └── neo4j_client.py       # Neo4j Graph DB
-│   │   └── llm_config.py             # AWS Bedrock 설정
-│   ├── data/                         # 데이터
-│   │   └── mock_policies.json        # 목업 정책 데이터 (10개)
-│   ├── scripts/                      # 유틸리티 스크립트
-│   │   ├── load_mock_data.py         # Milvus 데이터 로드
-│   │   └── reset_milvus.py           # Milvus 초기화
-│   ├── docker-compose.yml            # 멀티 컨테이너 설정
-│   ├── Dockerfile                    # API 서버 이미지
-│   ├── .env.example                  # 환경 변수 템플릿
-│   └── README.md                     # Backend 문서 (1,120줄)
-│
-├── data/                             # 공유 데이터 파일
-│   ├── data.json                     # 대용량 데이터 (42MB, git에서 제외)
-│   └── .gitkeep                      # 폴더 유지용
-│
-├── docs/                             # 문서 및 디자인 자료
-│   └── images/                       # 이미지 에셋
-│       ├── source_image.png          # 소스 이미지
-│       └── 핀쿠.png                   # 로고/디자인
-│
-├── prototypes/                       # 프로토타입 및 테스트
-│   └── anima-web-prototype/          # Anima 웹 프로토타입
-│       ├── index.html                # 웹 프로토타입 진입점
-│       ├── package.json              # Vite + React 설정
-│       └── README.md                 # 프로토타입 문서
-│
-├── .git/                             # Git 저장소
-├── .gitignore                        # Git 제외 파일 목록
-└── README.md                         # 이 파일 (프로젝트 개요)
+사용자 질문 입력
+    ↓
+[대화 분류 노드]
+    ↓
+질문 유형 판단
+    ├─ 정책 관련 질문 → [정책 검색 노드]
+    │                      ↓
+    │                   Milvus 벡터 검색
+    │                      ↓
+    │                   정책 상세 정보 추출
+    │
+    ├─ 일반 금융 질문 → [Tavily 검색 노드]
+    │                      ↓
+    │                   실시간 웹 검색
+    │
+    └─ 일상 대화 → [일반 응답 노드]
+
+    ↓
+[응답 생성 노드]
+    ↓
+Claude 3.5 Sonnet으로 답변 생성
+    ↓
+사용자에게 응답 반환
 ```
 
-## Quick Start
+### 데이터 흐름
 
-### Prerequisites
-- **Frontend**: Node.js 18+, npm
-- **Backend**: Docker, Docker Compose, AWS credentials
-- **Optional**: iOS Simulator (Mac), Android Emulator
+```
+[Mobile App] ←→ [Backend API] ←→ [PostgreSQL]
+                       ↓
+                  [AWS Bedrock]
+                       ↓
+           ┌──────────┴──────────┐
+           ↓                     ↓
+    [Claude 3.5 Sonnet]    [Milvus Vector DB]
+           ↓
+    [Tavily Search API]
+```
 
-### 1. Backend API Server
+### 주요 컴포넌트
+
+1. **Frontend (React Native)**
+   - 사용자 인터페이스
+   - 온보딩 플로우
+   - 챗봇 UI
+   - 정책 탐색 UI
+   - 일정 관리 UI
+
+2. **Backend (FastAPI)**
+   - RESTful API 엔드포인트
+   - 사용자 인증 및 세션 관리
+   - 데이터베이스 연동
+   - AI Agent 오케스트레이션
+
+3. **AI Layer (LangGraph + AWS Bedrock)**
+   - 대화 분류
+   - 정책 검색 및 매칭
+   - 실시간 정보 검색
+   - 응답 생성
+
+4. **Data Layer**
+   - PostgreSQL: 사용자 데이터, 정책 메타데이터
+   - Milvus: 정책 임베딩 벡터
+
+---
+
+## 설치 및 실행
+
+### 사전 요구사항
+
+- Node.js 18 이상
+- Python 3.11 이상
+- Docker & Docker Compose
+- AWS 계정 (Bedrock 액세스)
+- Expo CLI
+
+### Frontend 설치 및 실행
+
+```bash
+# 저장소 클론
+git clone https://github.com/your-repo/FinKuRN.git
+cd FinKuRN
+
+# 의존성 설치
+npm install
+
+# Expo 개발 서버 시작
+npx expo start
+```
+
+**실행 옵션**:
+- 웹 브라우저: `npx expo start --web`
+- iOS 시뮬레이터 (macOS): `npx expo start --ios`
+- Android 에뮬레이터: `npx expo start --android`
+
+### Backend 설치 및 실행
 
 ```bash
 cd backend
 
-# 1. 환경 변수 설정
+# 환경 변수 설정
 cp .env.example .env
 # .env 파일을 열어 AWS credentials 입력
 
-# 2. Docker 컨테이너 실행 (Milvus, Neo4j, API 서버)
+# Docker 컨테이너 실행 (Milvus, API 서버)
 docker-compose up -d
 
-# 3. 목업 데이터 로드 (최초 1회)
+# 목업 데이터 로드 (최초 1회)
 docker exec -it finkurn-backend python scripts/load_mock_data.py
 
-# 4. API 서버 확인
+# API 서버 확인
 curl http://localhost:8000/health
 ```
 
-API Documentation: http://localhost:8000/docs
+**API 문서**: http://localhost:8000/docs
 
-### 2. Frontend (React Native)
+### 환경 변수 설정
 
-```bash
-cd FinKuRN
+프로젝트 루트에 `.env` 파일을 생성하고 다음 내용을 추가하세요:
 
-# 1. 의존성 설치
-npm install
-
-# 2. Expo 개발 서버 실행
-npx expo start
+```
+API_BASE_URL=https://your-api-endpoint.com
+AWS_BEDROCK_REGION=us-east-1
+AWS_BEDROCK_MODEL_ID=anthropic.claude-3-5-sonnet-20241022-v2:0
+MILVUS_HOST=your-milvus-host
+MILVUS_PORT=19530
+TAVILY_API_KEY=your-tavily-api-key
 ```
 
-- Press `i` for iOS simulator
-- Press `a` for Android emulator
-- Scan QR code with Expo Go app on your phone
+---
 
-### 3. Web Prototype (Optional)
+## 프로젝트 구조
 
-```bash
-cd prototypes/anima-web-prototype
-npm install
-npm run dev
+```
+ver4/
+├── FinKuRN/                          # Frontend (React Native with Expo)
+│   ├── src/
+│   │   ├── screens/              # 화면 컴포넌트 (기능별 분류)
+│   │   │   ├── auth/             # 인증 관련 화면
+│   │   │   ├── onboarding/       # 온보딩 플로우
+│   │   │   ├── home/             # 홈 화면
+│   │   │   ├── chat/             # 챗봇 화면
+│   │   │   ├── explore/          # 정책 탐색 화면
+│   │   │   ├── plan/             # 일정 관리 화면
+│   │   │   ├── policy/           # 정책 추천 화면
+│   │   │   └── quiz/             # 퀴즈 화면
+│   │   │
+│   │   ├── components/           # 재사용 가능한 컴포넌트
+│   │   │   ├── common/           # 공통 컴포넌트
+│   │   │   ├── home/             # 홈 화면 전용 컴포넌트
+│   │   │   └── plan/             # 일정 관리 전용 컴포넌트
+│   │   │
+│   │   ├── services/             # API 서비스 레이어
+│   │   │   ├── authService.ts
+│   │   │   ├── chatService.ts
+│   │   │   ├── policyService.ts
+│   │   │   └── quizService.ts
+│   │   │
+│   │   ├── types/                # TypeScript 타입 정의
+│   │   ├── constants/            # 상수 및 테마
+│   │   └── navigation/           # 네비게이션 설정
+│   │
+│   ├── App.tsx
+│   └── package.json
+│
+├── backend/                          # Backend API Server
+│   ├── app/
+│   │   ├── main.py               # FastAPI 진입점
+│   │   ├── langgraph/            # LangGraph Multi-Agent
+│   │   │   ├── workflow.py
+│   │   │   └── agents/
+│   │   │       ├── supervisor.py
+│   │   │       ├── policy_search.py
+│   │   │       └── response_generator.py
+│   │   │
+│   │   ├── mcp/                  # FastMCP Tools
+│   │   │   └── tools.py
+│   │   │
+│   │   └── db/                   # 데이터베이스 클라이언트
+│   │       ├── milvus_client.py
+│   │       └── neo4j_client.py
+│   │
+│   ├── data/
+│   │   └── mock_policies.json
+│   │
+│   ├── docker-compose.yml
+│   └── requirements.txt
+│
+└── README.md                         # 이 파일
 ```
 
-## Tech Stack
+---
 
-### Frontend (FinKuRN)
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Framework** | React Native | - | 크로스 플랫폼 모바일 개발 |
-| **Platform** | Expo | - | 빌드 및 배포 도구 |
-| **Language** | TypeScript | 5.x | 타입 안전성 보장 |
-| **Navigation** | React Navigation | 6.x | 화면 라우팅 |
-| **Styling** | StyleSheet API | - | 중앙화된 테마 시스템 |
-| **State** | React Hooks | - | 상태 관리 |
-
-### Backend API
-| Category | Technology | Version | Purpose |
-|----------|-----------|---------|---------|
-| **Web Framework** | FastAPI | 0.104+ | REST API 서버 |
-| **Language** | Python | 3.11+ | 백엔드 개발 언어 |
-| **AI Framework** | LangGraph | 0.2+ | Multi-Agent 워크플로우 |
-| **LLM Provider** | AWS Bedrock | - | Claude 3.5 Sonnet v1 |
-| **Embeddings** | AWS Bedrock Titan | - | 1024차원 벡터 임베딩 |
-| **MCP** | FastMCP | - | Model Context Protocol |
-| **Vector DB** | Milvus | 2.3+ | 정책 임베딩 저장/검색 |
-| **Graph DB** | Neo4j | 5.x | 관계 분석 (Phase 2) |
-| **News APIs** | Tavily, BigKinds | - | 실시간 뉴스 크롤링 |
-| **Containerization** | Docker Compose | - | 멀티 컨테이너 오케스트레이션 |
-
-### AI Models & Parameters
-
-#### LLM Configuration (Claude 3.5 Sonnet v1)
-
-| Parameter | Value | 설명 |
-|-----------|-------|------|
-| **Model ID** | `anthropic.claude-3-5-sonnet-20240620-v1:0` | AWS Bedrock Model ID |
-| **Provider** | AWS Bedrock | 호스팅 서비스 |
-| **Context Window** | 200,000 tokens | 최대 입력 토큰 |
-| **Max Output Tokens** | 4,000 tokens | 최대 생성 토큰 |
-| **Training Data Cutoff** | April 2024 | 학습 데이터 기준일 |
-
-#### Embeddings Configuration (Titan Embeddings V2)
-
-| Parameter | Value | 설명 |
-|-----------|-------|------|
-| **Model ID** | `amazon.titan-embed-text-v2:0` | AWS Bedrock Model ID |
-| **Provider** | AWS Bedrock | 호스팅 서비스 |
-| **Dimensions** | 1,024 | 벡터 차원 |
-| **Max Input Tokens** | 8,000 tokens | 최대 입력 길이 |
-| **Normalize** | True | 벡터 정규화 활성화 |
-
-#### Agent-Specific Parameters
-
-| Agent | Temperature | Top-P | Max Tokens | Stop Sequences | 목적 |
-|-------|-------------|-------|------------|----------------|------|
-| **Supervisor** | 0.1 | 0.95 | 500 | `["```", "END"]` | 결정론적 라우팅, 일관된 의사결정 |
-| **Policy Search** | 0.3 | 0.9 | 1,000 | `["```"]` | 일관된 쿼리 생성, 정확한 검색 |
-| **Response Generator** | 0.7 | 0.95 | 2,500 | - | 자연스럽고 창의적인 응답 |
-| **News Agent** | 0.3 | 0.9 | 1,500 | `["```"]` | 정확한 뉴스 요약 |
-
-#### Vector Search Parameters (Milvus)
-
-| Parameter | Value | 설명 |
-|-----------|-------|------|
-| **Metric Type** | COSINE | 유사도 측정 방식 |
-| **Top-K** | 5 | 반환할 최대 결과 수 |
-| **Consistency Level** | Strong | 일관성 수준 |
-| **Search Timeout** | 5초 | 검색 타임아웃 |
-| **nprobe** | 10 | IVF 인덱스 탐색 클러스터 수 |
-
-#### Reranking Strategy (검색 품질 향상)
-
-**Reranking**은 초기 벡터 검색 결과를 더 정교한 모델로 재정렬하여 검색 품질을 향상시키는 기법입니다.
-
-**현재 워크플로우 (Without Rerank)**:
-```
-Query → Titan Embedding → Milvus Vector Search → Top-5 Results → Response Generator
-```
-
-**개선된 워크플로우 (With Rerank)**:
-```
-Query → Titan Embedding → Milvus Vector Search → Top-10 Results
-  ↓
-Reranker (Cross-Encoder 또는 AWS Bedrock Rerank)
-  ↓
-Top-3 Reranked Results → Response Generator
-```
-
-**Reranking 전략**:
-
-| Aspect | Value | 설명 |
-|--------|-------|------|
-| **Initial Retrieval** | Top-10 | Milvus에서 먼저 더 많은 후보 검색 |
-| **Reranking Model** | AWS Bedrock Rerank 또는 Cross-Encoder | Query-Document 쌍의 관련성 직접 평가 |
-| **Final Selection** | Top-3 | Reranking 후 상위 3개만 Response Generator에 전달 |
-| **Rerank Temperature** | 0.1 | 결정론적 재정렬 |
-
-**Reranking 장점**:
-
-1. **검색 정확도 향상**:
-   - 벡터 유사도만으로는 놓칠 수 있는 의미적 관련성 포착
-   - Cross-Encoder는 Query와 Document를 동시에 고려하여 더 정확한 평가
-
-2. **RAG 품질 개선**:
-   - Response Generator에게 더 관련성 높은 정책 전달
-   - 불필요한 정보 제거로 응답 품질 향상
-
-3. **효율성**:
-   - 초기 벡터 검색은 빠르게 후보 필터링
-   - 비용이 높은 Reranker는 소수 후보에만 적용
-
-**구현 옵션**:
-
-**Option 1: AWS Bedrock Rerank API** (추천)
-```python
-# Policy Search Agent에서 Reranking 추가
-from langchain_aws import BedrockRerank
-
-reranker = BedrockRerank(
-    model_id="anthropic.rerank-v1:0",  # 가상의 모델 ID
-    top_n=3
-)
-
-# Milvus에서 Top-10 검색
-initial_results = milvus_client.search(query_embedding, top_k=10)
-
-# Reranking
-reranked_results = reranker.rerank(
-    query=query,
-    documents=[doc["content"] for doc in initial_results]
-)
-```
-
-**Option 2: Cohere Rerank API**
-```python
-import cohere
-
-co = cohere.Client(api_key="...")
-reranked = co.rerank(
-    query=query,
-    documents=[doc["content"] for doc in initial_results],
-    top_n=3,
-    model="rerank-multilingual-v2.0"  # 한국어 지원
-)
-```
-
-**Option 3: Cross-Encoder (Self-Hosted)**
-```python
-from sentence_transformers import CrossEncoder
-
-cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-12-v2")
-scores = cross_encoder.predict([
-    (query, doc["content"]) for doc in initial_results
-])
-# 점수 기준 정렬 후 Top-3 선택
-```
-
-**성능 예상치**:
-
-| Metric | Without Rerank | With Rerank | 개선률 |
-|--------|---------------|-------------|-------|
-| **검색 정확도 (Precision@3)** | 65% | 85% | +20% |
-| **응답 관련성** | 70% | 88% | +18% |
-| **평균 응답 시간** | 18초 | 20초 | +2초 |
-| **비용 (per query)** | $0.05 | $0.07 | +40% |
-
-**도입 시 고려사항**:
-
-- Reranking은 추가 API 호출이 필요하므로 응답 시간과 비용 증가
-- Top-10 → Top-3로 줄이면 응답 시간은 최소화하면서 품질 향상 가능
-- 한국어 정책 데이터에 최적화된 Reranker 선택 중요
-
-#### API Rate Limits & Timeouts
-
-| Service | Rate Limit | Timeout | Retry Strategy |
-|---------|------------|---------|----------------|
-| **AWS Bedrock (Claude)** | 100 req/min | 60초 | Exponential backoff (3회) |
-| **AWS Bedrock (Titan)** | 200 req/min | 30초 | Exponential backoff (3회) |
-| **Milvus** | Unlimited | 5초 | 즉시 실패 |
-| **Tavily API** | 1,000 req/day | 10초 | Linear backoff (2회) |
-| **BigKinds API** | 100 req/hour | 15초 | Linear backoff (2회) |
-
-#### Prompt Engineering Parameters
-
-| Technique | Parameter | Value | 적용 Agent |
-|-----------|-----------|-------|-----------|
-| **Few-Shot Examples** | 예제 개수 | 3-5개 | Supervisor, Policy Search |
-| **CoT Steps** | 추론 단계 | 4단계 | Supervisor |
-| **Persona Traits** | 특성 개수 | 4개 | Response Generator |
-| **Context Window Management** | 대화 히스토리 제한 | 최근 5턴 | All Agents |
-| **XML Tag Depth** | 최대 중첩 깊이 | 3단계 | All Agents |
-
-### Code Quality Standards
-| Aspect | Frontend | Backend |
-|--------|----------|---------|
-| **Type Safety** | ✅ 100% TypeScript | ✅ 100% Type Hints |
-| **Documentation** | ✅ JSDoc | ✅ Docstrings (40%) |
-| **Principles** | SRP, DRY | SRP, DRY, SOLID |
-| **Architecture** | Component-based | Multi-Agent Pattern |
-| **Testing** | Manual | API Testing |
-
-## Project Status
-
-### ✅ Completed Features
-
-#### Frontend (FinKuRN)
-- [x] 전체 프로젝트 구조 재구성
-- [x] 7개 화면 전체 리팩토링 완료
-  1. ChatConversationPage
-  2. NewChatPage
-  3. ChatbotScreenV2
-  4. HomeScreen
-  5. ExploreScreen
-  6. TodayListScreen
-  7. PlanUpgradePage
-- [x] 공통 컴포넌트 분리 (StatusBar, BackgroundGradient, ChatItem)
-- [x] 테마 시스템 구축
-- [x] TypeScript 타입 시스템 구축
-- [x] 문서화 완료 (README, 리팩토링 가이드, 요약서)
-
-#### Backend API
-- [x] FastAPI REST API 서버 구축
-- [x] LangGraph Multi-Agent 워크플로우 구현
-  - Supervisor Agent (라우팅)
-  - Policy Search Agent (정책 검색)
-  - Response Generator Agent (응답 생성)
-- [x] AWS Bedrock 통합
-  - Claude 3.5 Sonnet v1 (LLM)
-  - Titan Embeddings V2 (1024d)
-- [x] Milvus Vector DB 통합
-  - Collection 생성 및 초기화
-  - 벡터 검색 (COSINE similarity)
-  - 목업 데이터 10개 로드
-- [x] Docker Compose 멀티 컨테이너 환경
-  - API Server
-  - Milvus (Vector DB)
-  - Etcd (Milvus 메타데이터)
-  - Minio (Milvus 스토리지)
-  - Neo4j (Graph DB, Phase 2)
-- [x] End-to-End 테스트 검증
-  - 벡터 검색 워크플로우 동작 확인
-  - 18초 응답 시간 (Claude API 호출 포함)
-- [x] 종합 문서화 (1,120줄 README)
-
-### 🚧 In Progress / Phase 2
-- [ ] Neo4j Graph DB 통합 (관계 분석)
-- [ ] Cypher Agent 구현
-- [ ] Frontend-Backend API 연동
-- [ ] 실제 정책 데이터 수집 및 로드
-- [ ] 프로덕션 배포 (AWS ECS/Fargate)
-
-## AI Agent Strategy & Prompt Engineering
+## AI Agent 전략
 
 ### Multi-Agent Architecture
 
 본 프로젝트는 **LangGraph 기반 Multi-Agent 시스템**을 채택하여, 복잡한 정책 추천 워크플로우를 단계별로 분리하고 각 단계에 특화된 에이전트를 배치했습니다.
 
-#### Agent 역할 분리 전략
+### Agent 역할
 
-```
-User Query → Supervisor → Policy Search → Response Generator → User
-              (라우팅)     (검색)          (생성)
-```
-
-**1. Supervisor Agent** (`supervisor.py`)
+**1. Supervisor Agent**
 - **역할**: 사용자 의도 분석 및 워크플로우 라우팅
-- **입력**: 사용자 메시지, 대화 히스토리
-- **출력**: 다음 실행할 에이전트 결정 (policy_search, response_generator, end)
-- **전략**: 의도 분류 (Intent Classification)
+- **Temperature**: 0.1 (결정론적 라우팅)
 
-**2. Policy Search Agent** (`policy_search.py`)
+**2. Policy Search Agent**
 - **역할**: 사용자 쿼리에 적합한 정책 검색
-- **입력**: 사용자 메시지, 컨텍스트 (나이, 지역, 고용 상태)
-- **출력**: 관련 정책 리스트 (Top-K Vector Search 결과)
-- **도구**: FastMCP Tool (`search_policies`) - Milvus Vector DB 접근
+- **Temperature**: 0.3 (일관된 검색)
+- **도구**: Milvus Vector Search
 
-**3. Response Generator Agent** (`response_generator.py`)
+**3. Response Generator Agent**
 - **역할**: 검색된 정책 기반 맞춤형 응답 생성
-- **입력**: 사용자 메시지, 검색된 정책 데이터, 컨텍스트
-- **출력**: 사용자 친화적인 최종 응답
+- **Temperature**: 0.7 (창의적 응답)
 - **전략**: RAG (Retrieval-Augmented Generation)
-
-**4. News Agent** (`news_agent.py`)
-- **역할**: 정책 관련 최신 뉴스 수집 및 분석
-- **입력**: 정책 키워드, 검색 날짜 범위
-- **출력**: 관련 뉴스 기사 리스트 (제목, 요약, URL, 발행일)
-- **도구**:
-  - **Tavily WebSearch API**: 실시간 웹 검색
-  - **빅카인즈 (BigKinds) API**: 한국 언론사 뉴스 데이터베이스
 
 ### Prompt Engineering Techniques
 
-각 에이전트는 **고급 프롬프트 엔지니어링 기법**을 활용하여 성능과 정확도를 극대화합니다.
-
-> **중요**: 모든 에이전트 프롬프트는 **XML 태그 기반 구조화**를 따릅니다. Claude는 XML 태그를 통해 프롬프트의 각 섹션을 명확히 구분하고, 더 정확한 응답을 생성할 수 있습니다.
-
 #### 1. Chain-of-Thought (CoT) Reasoning
-
-**Supervisor Agent**에서 사용자 의도를 분석할 때 단계별 추론 과정을 명시합니다.
-
-```python
-# supervisor.py 시스템 프롬프트 (XML 태그 구조)
-"""
-<system_role>
-당신은 Multi-Agent 시스템의 Supervisor로, 사용자 의도를 분석하여 적절한 에이전트로 라우팅합니다.
-</system_role>
-
-<task>
-사용자 메시지를 분석하여 다음 에이전트 중 하나를 선택하세요:
-- policy_search: 정책 검색이 필요한 경우
-- response_generator: 단순 응답 생성이 필요한 경우
-- news_agent: 정책 관련 뉴스가 필요한 경우
-- end: 대화 종료
-</task>
-
-<reasoning_steps>
-1. 사용자가 정책 검색을 요청하는가?
-2. 이미 충분한 정보가 수집되었는가?
-3. 최신 뉴스 정보가 필요한가?
-4. 사용자에게 추가 질문이 필요한가?
-</reasoning_steps>
-
-<output_format>
-JSON 형식으로 다음 에이전트를 반환:
-{"next_agent": "policy_search", "reason": "이유"}
-</output_format>
-"""
-```
-
-**효과**: 복잡한 의사결정 과정에서 오류 감소, 추론 과정 추적 가능, 프롬프트 섹션 명확화
+단계별 추론 과정을 명시하여 의사결정 과정을 투명하게 합니다.
 
 #### 2. Persona-Based Prompting
+금융 전문가 페르소나를 부여하여 일관성 있는 응답을 생성합니다.
 
-**Response Generator Agent**는 **금융 전문가 페르소나**를 부여받아 일관성 있는 응답을 생성합니다.
-
-```python
-# response_generator.py 시스템 프롬프트 (XML 태그 구조)
-"""
-<persona>
-당신은 청년을 위한 친절한 금융 전문가입니다.
-이름: 핀쿠(FinKu)
-</persona>
-
-<characteristics>
-- 복잡한 금융 용어를 쉽게 설명합니다
-- 사용자의 상황(나이, 지역, 직업)을 고려한 맞춤형 조언을 제공합니다
-- 긍정적이고 격려하는 어조를 사용합니다
-- 구체적인 수치와 예시를 활용합니다
-</characteristics>
-
-<context>
-<user_profile>
-나이: {age}
-지역: {region}
-고용 상태: {employment_status}
-</user_profile>
-
-<retrieved_policies>
-{policies_json}
-</retrieved_policies>
-</context>
-
-<instructions>
-위 정책 정보를 바탕으로 사용자에게 맞춤형 금융 조언을 제공하세요.
-반드시 검색된 정책 정보만 사용하고, 없는 정보는 만들지 마세요.
-</instructions>
-"""
-```
-
-**효과**: 응답 품질 향상, 사용자 만족도 증가, 브랜드 일관성 유지, 컨텍스트 명확화
-
-#### 3. ReAct (Reasoning + Acting) Pattern
-
-**Policy Search Agent**는 ReAct 패턴을 따라 **추론**과 **행동**(Tool 사용)을 번갈아 수행합니다.
-
-```
-Thought: 사용자가 "25살 청년 적금"을 찾고 있다
-Action: search_policies(query="청년 적금", filters={"age_range": "19-34"})
-Observation: 5개의 관련 정책을 찾음
-Thought: 충분한 정책을 찾았으므로 다음 단계로 전달
-```
-
-**효과**: Tool 사용 결과를 반영한 동적 의사결정, 검색 정확도 향상
+#### 3. ReAct Pattern
+추론과 행동(Tool 사용)을 번갈아 수행하여 동적 의사결정을 합니다.
 
 #### 4. Few-Shot Learning
+예제 입출력을 포함하여 모델의 이해도를 높입니다.
 
-각 에이전트의 프롬프트에는 **예제 입출력**을 포함하여 모델의 이해도를 높입니다.
+### Model Parameters
 
-```python
-# supervisor.py 예제 (일부)
-"""
-예제 1:
-입력: "청년 대출 상품 알려줘"
-분석: 정책 검색 필요 → 다음: policy_search
+| Agent | Temperature | Max Tokens | Purpose |
+|-------|-------------|------------|---------|
+| Supervisor | 0.1 | 500 | 결정론적 라우팅 |
+| Policy Search | 0.3 | 1,000 | 일관된 검색 |
+| Response Generator | 0.7 | 2,500 | 창의적 응답 |
 
-예제 2:
-입력: "고마워!"
-분석: 인사 메시지, 정책 검색 불필요 → 다음: response_generator
+### Vector Search Parameters
 
-예제 3:
-입력: "청년 적금과 대출 상품 모두 알려줘"
-분석: 복합 질문, 정책 검색 필요 → 다음: policy_search
-"""
-```
+- **Metric Type**: COSINE
+- **Top-K**: 5
+- **Embedding Dimensions**: 1,024
+- **Model**: AWS Bedrock Titan Embeddings V2
 
-**효과**: Zero-shot 대비 정확도 15-20% 향상, 엣지 케이스 처리 개선
+---
 
-### Model Context Protocol (MCP)
+## 기대 효과
 
-**FastMCP**를 활용하여 LLM이 외부 시스템(Milvus, Neo4j)에 안전하게 접근할 수 있도록 **Tool Abstraction Layer**를 구축했습니다.
+### 사용자 측면
 
-#### MCP Tools
+1. **시간 절약**: 여러 사이트를 돌아다니며 정책을 찾을 필요 없이 한 곳에서 해결
+2. **정보 접근성 향상**: 본인에게 맞는 정책을 쉽게 발견
+3. **신청 성공률 증가**: 체계적인 일정 관리로 마감일을 놓치지 않음
+4. **금융 지식 향상**: 퀴즈를 통한 재미있는 학습 경험
 
-**1. `search_policies` Tool** (`app/mcp/tools.py`)
-```python
-@mcp.tool()
-def search_policies(
-    query: str,
-    filters: Optional[Dict[str, Any]] = None,
-    top_k: int = 5
-) -> List[Dict[str, Any]]:
-    """
-    정책 검색 도구
+### 사회적 측면
 
-    Args:
-        query: 검색 쿼리 (자연어)
-        filters: 필터 조건 (age_range, region, category 등)
-        top_k: 반환할 정책 개수
+1. **청년 정책 활용률 증가**: 좋은 정책이 더 많은 청년에게 혜택 제공
+2. **금융 격차 해소**: 정보 접근성 향상으로 금융 불평등 완화
+3. **청년 경제 활성화**: 금융 지원을 통한 청년 경제력 강화
+4. **AI 기술의 사회적 가치 실현**: AI를 활용한 공공서비스 개선 사례
 
-    Returns:
-        List[Dict]: 관련 정책 리스트
-    """
-    # 1. Titan Embeddings로 쿼리 벡터화
-    # 2. Milvus에서 Vector Search (COSINE similarity)
-    # 3. 메타데이터와 함께 반환
-```
+---
 
-**특징**:
-- **Type Safety**: Pydantic 기반 입출력 검증
-- **Error Handling**: LLM에게 명확한 에러 메시지 반환
-- **Observability**: 도구 호출 로깅 및 모니터링
+## 개발 원칙
 
-#### MCP 아키텍처
+### 코드 품질
 
-```
-LangGraph Agent → FastMCP → Tool Function → Milvus/Neo4j
-                   (검증)     (실행)        (데이터)
-```
+- **타입 안정성**: TypeScript strict mode 사용, any 타입 금지
+- **단일 책임 원칙**: 각 컴포넌트와 함수는 하나의 명확한 역할만 수행
+- **DRY 원칙**: 코드 중복 제거, 재사용 가능한 컴포넌트 설계
+- **명확한 네이밍**: 변수, 함수, 컴포넌트명을 의미 있게 작성
+- **JSDoc 주석**: 모든 공개 함수와 컴포넌트에 문서화 주석 작성
 
-**장점**:
-- Agent가 데이터베이스 세부사항을 몰라도 됨
-- Tool 인터페이스만 변경하면 백엔드 교체 가능
-- 보안: Agent가 직접 DB 접근 불가
+### 아키텍처
 
-### Prompt Optimization Strategies
+- **관심사 분리**: UI, 비즈니스 로직, 데이터 레이어 명확히 분리
+- **Feature-based 구조**: 기능별로 파일 조직화
+- **Barrel exports**: index.ts를 통한 깔끔한 import 경로
+- **중앙화된 테마**: 디자인 토큰 시스템으로 일관된 UI 유지
 
-#### 1. 컨텍스트 윈도우 관리
-- **대화 히스토리 요약**: 긴 대화는 요약하여 토큰 절약
-- **관련 정보만 전달**: Policy Search 결과 중 Top-K만 Response Generator에 전달
+---
 
-#### 2. Temperature 조정
-- **Supervisor** (Temperature 0.1): 결정론적 라우팅
-- **Policy Search** (Temperature 0.3): 일관된 쿼리 생성
-- **Response Generator** (Temperature 0.7): 창의적이고 자연스러운 응답
+## 향후 계획
 
-#### 3. 출력 형식 제약
-```python
-# response_generator.py 출력 형식 지시
-"""
-다음 형식으로 응답하세요:
+### Phase 1 (현재)
 
-1. **인사 및 공감**
-2. **추천 정책 목록** (최대 3개)
-   - 정책명
-   - 주요 혜택
-   - 신청 방법
-3. **추가 조언**
-4. **마무리 인사**
+- React Native 앱 기본 구조 완성
+- AI 챗봇 핵심 기능 구현
+- 정책 탐색 및 관리 기능 구현
+- LangGraph Multi-Agent 워크플로우 구축
+- Milvus Vector DB 통합
 
-이모지 사용: 적절히 활용하되 과하지 않게
-"""
-```
+### Phase 2
 
-### Performance Metrics
+- Frontend-Backend API 연동
+- 실제 정책 데이터베이스 연동
+- 사용자 인증 및 프로필 관리
+- Neo4j Graph DB 통합
 
-| Metric | Value | 비고 |
-|--------|-------|------|
-| **평균 응답 시간** | 18초 | Claude API 호출 포함 |
-| **정책 검색 정확도** | 85% | Vector Search Top-5 |
-| **사용자 만족도** | - | Phase 2에서 측정 예정 |
-| **에이전트 라우팅 정확도** | 92% | 테스트 100건 기준 |
+### Phase 3
 
-### News Crawling & Real-time Updates
+- FinQ PASS 프리미엄 기능 개발
+- 푸시 알림 시스템 구축
+- 금융 퀴즈 콘텐츠 확장
 
-**News Agent**는 정책 관련 최신 뉴스를 수집하여 사용자에게 실시간 정보를 제공합니다.
+### Phase 4
 
-#### 뉴스 소스
+- iOS 및 Android 앱스토어 출시
+- 사용자 피드백 수집 및 개선
+- 추가 정책 카테고리 확장
 
-**1. Tavily WebSearch API**
-- **특징**: 실시간 웹 검색, 다양한 소스 커버
-- **사용 케이스**: 최신 정책 발표, 정부 공지사항
-- **장점**:
-  - 빠른 응답 속도
-  - 다양한 언론사 및 공식 사이트 크롤링
-  - 검색 결과 랭킹 및 관련도 점수 제공
+---
 
-```python
-# Tavily API 사용 예시 (XML 태그 프롬프트)
-"""
-<task>
-"{policy_keyword}" 관련 최신 뉴스를 검색하세요.
-</task>
-
-<search_parameters>
-- 키워드: {policy_keyword}
-- 날짜 범위: 최근 30일
-- 지역: 대한민국
-- 언어: 한국어
-</search_parameters>
-
-<output_requirements>
-각 뉴스 기사마다 다음 정보를 포함:
-- 제목
-- 요약 (2-3문장)
-- 출처 (언론사명)
-- 발행일
-- URL
-</output_requirements>
-"""
-```
-
-**2. 빅카인즈 (BigKinds) API**
-- **특징**: 한국언론진흥재단의 공식 뉴스 아카이브
-- **커버리지**: 국내 주요 언론사 54개
-- **사용 케이스**: 정책 관련 심층 분석 기사
-- **장점**:
-  - 신뢰할 수 있는 언론사 데이터
-  - 정확한 메타데이터 (카테고리, 키워드)
-  - 기사 전문 제공
-
-```python
-# BigKinds API 사용 예시
-"""
-<search_config>
-<endpoint>https://www.bigkinds.or.kr/api/search</endpoint>
-<authentication>API_KEY: {bigkinds_api_key}</authentication>
-</search_config>
-
-<query>
-<keyword>청년 정책</keyword>
-<date_range>
-  <start>2024-01-01</start>
-  <end>2024-12-31</end>
-</date_range>
-<news_category>정치,경제</news_category>
-<provider>조선일보,중앙일보,한겨레,경향신문</provider>
-</query>
-
-<processing>
-1. API 응답 파싱
-2. 정책 관련성 점수 계산 (Claude 활용)
-3. Top-K 기사 선정
-4. 요약 생성 (Claude Summarization)
-</processing>
-"""
-```
-
-#### News Agent 워크플로우
-
-```
-User Query ("청년 적금 정책 최신 뉴스 알려줘")
-  ↓
-Supervisor Agent (news_agent로 라우팅)
-  ↓
-News Agent
-  ├─ Tavily API 호출 (실시간 검색)
-  ├─ BigKinds API 호출 (아카이브 검색)
-  ├─ 중복 제거 및 관련도 순 정렬
-  └─ Claude로 요약 생성
-  ↓
-Response Generator (뉴스 + 정책 정보 통합 응답)
-  ↓
-User
-```
-
-#### XML 태그 기반 News Agent 프롬프트
-
-```python
-# news_agent.py 시스템 프롬프트
-"""
-<system_role>
-당신은 금융 정책 관련 뉴스를 수집하고 분석하는 News Agent입니다.
-</system_role>
-
-<available_tools>
-1. tavily_search: 실시간 웹 검색
-2. bigkinds_search: 한국 언론사 뉴스 아카이브 검색
-</available_tools>
-
-<task>
-사용자가 요청한 정책 키워드에 대한 최신 뉴스를 검색하고 분석하세요.
-</task>
-
-<workflow>
-1. <keyword_extraction>
-   사용자 메시지에서 핵심 키워드 추출
-   예: "청년 적금 정책" → ["청년", "적금", "정책"]
-</keyword_extraction>
-
-2. <parallel_search>
-   Tavily와 BigKinds를 병렬로 호출
-</parallel_search>
-
-3. <deduplication>
-   중복 기사 제거 (제목 유사도 > 0.8)
-</deduplication>
-
-4. <relevance_scoring>
-   각 기사의 정책 관련성 점수 계산 (0-1)
-   기준: 키워드 매칭, 내용 관련성, 출처 신뢰도
-</relevance_scoring>
-
-5. <summarization>
-   Top-5 기사에 대해 2-3문장 요약 생성
-</summarization>
-</workflow>
-
-<output_format>
-<news_results>
-  <article>
-    <title>기사 제목</title>
-    <summary>요약</summary>
-    <source>언론사</source>
-    <date>발행일</date>
-    <url>링크</url>
-    <relevance_score>0.95</relevance_score>
-  </article>
-  ...
-</news_results>
-</output_format>
-"""
-```
-
-#### 환경 변수 설정
-
-```bash
-# .env 파일
-TAVILY_API_KEY=tvly-xxxxxxxxxxxxxxxxxxxxxx
-BIGKINDS_API_KEY=bk-xxxxxxxxxxxxxxxxxxxxxx
-```
-
-#### 기대 효과
-
-- **실시간성**: 최신 정책 변경 사항을 즉시 반영
-- **신뢰성**: 공식 언론사 데이터 활용
-- **맥락 제공**: 정책 검색 결과에 관련 뉴스 추가
-- **사용자 참여도 증가**: 최신 이슈에 대한 관심 유도
-
-### Future Enhancements
-
-- [ ] **Self-Reflection**: Agent가 자신의 응답을 평가하고 개선
-- [ ] **Multi-Turn Refinement**: 사용자 피드백 기반 정책 재검색
-- [ ] **Cypher Agent**: Neo4j 관계 분석을 통한 정책 간 연관성 탐색
-- [ ] **Memory System**: 사용자별 선호도 및 이력 저장
-- [ ] **News Sentiment Analysis**: 뉴스 기사의 긍정/부정 분석
-- [ ] **Policy Change Tracking**: 정책 변경 이력 추적 및 알림
-
-## API Integration
+## API 엔드포인트
 
 ### Backend API Endpoints
 
-```
-Base URL: http://localhost:8000
-```
+**Base URL**: http://localhost:8000
 
 #### Health Check
 ```bash
@@ -970,106 +507,12 @@ Response:
 
 자세한 API 문서: http://localhost:8000/docs
 
-## Team Collaboration
+---
 
-이 프로젝트는 프론트엔드와 백엔드 개발자가 협업하며, 모두 Claude Code를 사용합니다.
-
-### For Frontend Developers
-- **시작하기**: `FinKuRN/README.md` 참고
-- **소스 코드 구조**: `FinKuRN/src/README.md`
-- **API 연동**: 위 "API Integration" 섹션 참고
-- **타입 정의**: `FinKuRN/src/types/` 참고
-- **테마 시스템**: `FinKuRN/src/constants/theme.ts` 필수 사용
-
-### For Backend Developers
-- **시작하기**: `backend/README.md` (1,120줄 종합 문서)
-- **환경 설정**: `backend/.env.example` 참고
-- **데이터 로드**: `backend/scripts/load_mock_data.py`
-- **Agent 추가**: `backend/README.md`의 "Adding New Agents" 참고
-- **Tool 추가**: `backend/README.md`의 "Adding New Tools" 참고
-
-### For AI Assistants (Claude Code)
-- **전체 개요**: 이 README (프로젝트 루트)
-- **Frontend 상세**: `FinKuRN/README.md`, `FinKuRN/src/README.md`
-- **Backend 상세**: `backend/README.md` (1,120줄)
-- **리팩토링 패턴**: `FinKuRN/REFACTORING_GUIDE.md`
-- **Architecture**: 이 README의 Architecture 다이어그램
-
-## Key Features
-
-### 1. AI 기반 정책 추천 (Backend)
-- **Multi-Agent Workflow**: LangGraph 기반 3단계 에이전트 (Supervisor → Policy Search → Response Generator)
-- **Vector Search**: Milvus를 활용한 시맨틱 정책 검색 (COSINE similarity)
-- **AWS Bedrock**: Claude 3.5 Sonnet v1 + Titan Embeddings V2 (1024d)
-- **맞춤형 응답**: 사용자 나이, 지역, 고용 상태 기반 추천
-
-### 2. 모바일 앱 (Frontend)
-- **Home Dashboard** - 재정 관리 대시보드
-  - 오늘의 할 일 (D-DAY 알림)
-  - 저축 현황
-  - 소비 현황
-
-- **Explore** - 정부 지원금 및 혜택 탐색
-  - 청년 지원 혜택
-  - 금융 혜택
-  - 맞춤형 추천
-
-- **AI Chatbot** - 금융 상담 챗봇
-  - 실시간 대화
-  - 금융 관련 질문 답변
-  - 대화 히스토리 관리
-
-- **Today List** - 오늘의 할 일 상세 보기
-  - 납부 마감일 관리
-  - 서류 제출 마감일
-  - 자동 출금 알림
-
-## Development Guidelines
-
-### Code Style
-
-#### Frontend
-- TypeScript strict mode 사용
-- JSDoc 주석 필수
-- 테마 시스템 사용 (하드코딩 금지)
-- 컴포넌트는 단일 책임 원칙 준수
-
-#### Backend
-- Python 3.11+ Type Hints 100%
-- Docstrings for all public functions
-- 환경 변수 기반 설정 (`.env`)
-- SOLID 원칙 준수
-
-### Git Workflow
-- 대용량 파일은 `data/` 폴더에 저장 (git 제외)
-- 빌드 결과물은 commit 하지 않음
-- 의미 있는 commit 메시지 작성
-- `docker-compose.yml` 수정 시 팀원에게 공유
-
-## Documentation
-
-### Project Root
-- **README.md** (이 파일) - 전체 프로젝트 개요 및 시작 가이드
-
-### Frontend
-- **FinKuRN/README.md** - Frontend 프로젝트 개요
-- **FinKuRN/src/README.md** - 소스 코드 구조 및 컴포넌트 가이드
-- **FinKuRN/REFACTORING_GUIDE.md** - 리팩토링 패턴 및 예제
-- **FinKuRN/REFACTORING_SUMMARY.md** - 완료된 리팩토링 요약
-
-### Backend
-- **backend/README.md** - Backend API 종합 문서 (1,120줄)
-  - 프로젝트 구조
-  - 기술 스택
-  - 설치 및 설정 가이드
-  - API 문서
-  - Agent 및 Tool 추가 가이드
-  - 코드 품질 메트릭
-- **backend/.env.example** - 환경 변수 템플릿
-
-## Testing
+## 테스팅
 
 ### Backend API Testing
+
 ```bash
 # Health check
 curl http://localhost:8000/health
@@ -1088,16 +531,57 @@ curl -X POST "http://localhost:8000/api/chats/test-session-001/messages" \
 ```
 
 ### Frontend Testing
+
 - Expo 개발 서버에서 수동 테스트
 - iOS Simulator / Android Emulator 활용
 
-## License
+---
 
-Copyright 2025. All rights reserved.
+## 문서
 
-## Contact
+### Frontend
+- **FinKuRN/README.md**: Frontend 프로젝트 개요
+- **FinKuRN/src/README.md**: 소스 코드 구조
+- **FinKuRN/src/components/README.md**: 컴포넌트 가이드
 
-For questions about the project:
-- **Frontend**: `FinKuRN/README.md` 참고
-- **Backend**: `backend/README.md` 참고
-- **API**: http://localhost:8000/docs (FastAPI Swagger UI)
+### Backend
+- **backend/README.md**: Backend API 종합 문서
+- **backend/.env.example**: 환경 변수 템플릿
+
+---
+
+## 라이선스
+
+Copyright 2025 FinQ Team. All rights reserved.
+
+---
+
+## 팀원
+
+- **김예은**: Product Manager, UI/UX Designer
+- **양은별**: Frontend Developer
+- **김동현**: Backend Developer, AI Engineer
+- **문영광**: Frontend Developer, System Architect
+
+---
+
+## 연락처
+
+프로젝트 관련 문의사항이나 협업 제안은 아래로 연락주시기 바랍니다.
+
+- GitHub Issues: [https://github.com/your-repo/FinKuRN/issues](https://github.com/your-repo/FinKuRN/issues)
+- Email: finq.team@example.com
+
+---
+
+## Acknowledgments
+
+본 프로젝트는 2025 새싹 AI 해커톤 출품작입니다.
+
+- AWS Bedrock 및 Claude 3.5 Sonnet 사용
+- Tavily Search API 활용
+- Expo 및 React Native 커뮤니티의 지원
+
+---
+
+**FinQ - 청년들의 더 나은 금융 생활을 위한 AI 파트너**
